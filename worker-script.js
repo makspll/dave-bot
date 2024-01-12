@@ -7,7 +7,7 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-const API_KEY=${env:TELEGRAM_API_KEY};
+const API_KEY=env.TELEGRAM_API_KEY;
 const HARDLYKNOWER_PROBABILITY=0.05;
 const SICKOMODE_PROBABILITY=0.001;
 const KEYWORD_PROBABILITY=1;
