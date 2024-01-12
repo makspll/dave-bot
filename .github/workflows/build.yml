@@ -12,7 +12,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
+          vars:
+           - TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
           # CLOUDFLARE_ACCOUNT_ID: ${{secrets.CLOUDFLARE_ACCOUNT_ID}}
           # CLOUDFLARE_ZONE_ID: ${{secrets.CLOUDFLARE_ZONE_ID}}
           # CLOUDFLARE_AUTH_KEY: ${{secrets.CLOUDFLARE_AUTH_KEY}}
