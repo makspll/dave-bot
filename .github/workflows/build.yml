@@ -1,11 +1,18 @@
-on:
-  push:
-    # Sequence of patterns matched against refs/heads
-    branches:    
-      - main
+name: Cloudflare
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: Deploy Cloudflare Worker
     steps:
-      - run: echo "hello world"
+      - uses: actions/checkout@v2.0.0
+      - name: install dependencies
+        run: 'npm install'
+      - name: deploy using sls
+        run: 'npx sls deploy'
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{secrets.CLOUDFLARE_ACCOUNT_ID}}
+          CLOUDFLARE_ZONE_ID: ${{secrets.CLOUDFLARE_ZONE_ID}}
+          CLOUDFLARE_AUTH_KEY: ${{secrets.CLOUDFLARE_AUTH_KEY}}
+          CLOUDFLARE_AUTH_EMAIL: ${{secrets.CLOUDFLARE_AUTH_EMAIL}}
