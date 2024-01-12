@@ -10,7 +10,7 @@ jobs:
       - name: Build & Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         env:
           TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
