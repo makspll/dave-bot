@@ -175,6 +175,7 @@ async function sendMessage(msg, chatId, apiKey) {
     const url = `https://api.telegram.org/bot${apiKey}/sendMessage?chat_id=${chatId}&text=${msg}`
     const data = await fetch(url).then(resp => {
       console.log("Sending message went ok: " + resp.ok)
+      console.log(resp)
       return resp.json()
     }).catch(e => console.log(e));
     
