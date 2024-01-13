@@ -4,13 +4,14 @@ on: [push]
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Build & Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
-          # apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         env:
           TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
