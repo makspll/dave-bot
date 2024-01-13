@@ -7,7 +7,6 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-const API_KEY=env.TELEGRAM_API_KEY;
 const HARDLYKNOWER_PROBABILITY=0.05;
 const SICKOMODE_PROBABILITY=0.001;
 const KEYWORD_PROBABILITY=1;
@@ -52,9 +51,9 @@ export default {
         console.log("message is: " + payload.message.text)
 
         let words = to_words(payload.message.text)
-        await hardlyfier(words, payload.message.chat.id);
-        await sickomode(sender, payload.message.chat.id);
-        await keywords(words,  payload.message.chat.id);
+        await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
+        await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
+        await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
 
       }
     }
@@ -67,7 +66,7 @@ function to_words(message) {
   return message.split(' ').map(word => word.replace(/\W/g, '').trim().toLowerCase())
 }
 
-async function hardlyfier(words, chatId) {
+async function hardlyfier(words, chatId, apiKey) {
 
   let hers = words.filter(word => {
     let satisfies = word.length > 2 && (word.endsWith('er') || word.endsWith('ers'));
@@ -76,11 +75,11 @@ async function hardlyfier(words, chatId) {
 
   if (hers.length > 0) {
     const text = hers[0] + "? I hardly know er!!";
-    await sendMessage(text, chatId)
+    await sendMessage(text, chatId, apiKey)
   }
 }
 
-async function keywords(words, chatId) {
+async function keywords(words, chatId, apiKey) {
 
   console.log("keywords engaged")
   const keyword_insults = {
@@ -102,12 +101,12 @@ async function keywords(words, chatId) {
 
   if (triggers.length > 0) {
     const text = triggers[0]
-    await sendMessage(text, chatId)
+    await sendMessage(text, chatId, apiKey)
   }
 
 }
 
-async function sickomode(sender, chatId) {
+async function sickomode(sender, chatId, apiKey) {
   let firing = Math.random() < SICKOMODE_PROBABILITY;
   if (!firing) {
     return
@@ -167,13 +166,13 @@ async function sickomode(sender, chatId) {
 
   let random = Math.floor(Math.random() * sickomodes.length);
 
-  await sendMessage(sender + ". " + sickomodes[random], chatId);
+  await sendMessage(sender + ". " + sickomodes[random], chatId, apiKey);
 }
 
-async function sendMessage(msg, chatId) {
+async function sendMessage(msg, chatId, apiKey) {
     console.log("sending message: " + msg);
     // Calling the API endpoint to send a telegram message
-    const url = `https://api.telegram.org/bot${API_KEY}/sendMessage?chat_id=${chatId}&text=${msg}`
+    const url = `https://api.telegram.org/bot${apiKey}/sendMessage?chat_id=${chatId}&text=${msg}`
     const data = await fetch(url).then(resp => {
       console.log("Sending message went ok: " + resp.ok)
       return resp.json()
