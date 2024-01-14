@@ -57,7 +57,6 @@ export default {
         }
         
         // keep last n messages trigger data stored
-        let last_messages = get_trigger_history(env)
         last_messages.push(Boolean(anyTriggered)) // don't know why this is needed
         if (last_messages.length > 5) {
           last_messages.shift()
