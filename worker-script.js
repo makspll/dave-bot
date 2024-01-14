@@ -73,7 +73,7 @@ export default {
 
 // pick random element in array
 function sample(arr) {
-  Math.floor(Math.random() * arr.length())
+  return Math.floor(Math.random() * arr.length)
 }
 
 function to_words(message) {
