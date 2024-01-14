@@ -57,7 +57,7 @@ export default {
           await env.KV_STORE.put("message_triggers", last_messages)
         }
         last_messages = last_messages.split(",").map(v => v === 'true')
-        last_messages.push(anyTriggered)
+        last_messages.push(Boolean(anyTriggered)) // don't know why this is needed
         console.log("last 5 messages: " + last_messages)
         if (last_messages.length > 5) {
           last_messages.shift()
@@ -114,7 +114,7 @@ async function keywords(words, chatId, apiKey) {
   let triggers = words.map(word => {
     if (Math.random() < KEYWORD_PROBABILITY) {
       let match = keyword_insults[word];
-      console.log("match triggered: " + match)
+      if (match) {console.log("match triggered: " + match)}
       return match
     } else {
       return null
