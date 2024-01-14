@@ -128,10 +128,10 @@ async function keywords(words, chatId, apiKey) {
 
   // 1 - P(no triggers
   // P(no triggers) = (1 - KEYWORD_PROBABILITY)^n
-  let prob = 1 - ((1 - KEYWORD_PROBABILITY) ** hers.length);
+  let prob = 1 - ((1 - KEYWORD_PROBABILITY) ** triggers.length);
   console.log("keyword probability for message: " + prob);
   if (Math.random() < prob) {
-    const text = triggers[0]
+    const text = sample(triggers)
     await sendMessage(text, chatId, apiKey)
   }
   return triggers.length > 0
