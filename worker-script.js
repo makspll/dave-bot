@@ -95,7 +95,7 @@ async function hardlyfier(words, chatId, apiKey) {
   if (1 - ((1 - HARDLYKNOWER_PROBABILITY) ** hers.length)) {
     const text = sample(hers) + "? I hardly know er!!";
     (Math.random() < HARDLYKNOWER_PROBABILITY)
-    await sendMessage(text, chatId, apiKey)
+    // await sendMessage(text, chatId, apiKey)
   }
   return hers.length > 0
 }
