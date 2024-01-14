@@ -50,14 +50,18 @@ export default {
         anyTriggered = anyTriggered | await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
 
         // keep last n messages trigger data stored
-        let last_messages = await env.KV_STORE.get("last_20_messages", { type: "json" })
-        if (!last_messages) {await env.KV_STORE.put("last_20_messages", [])}
+        let last_messages = await env.KV_STORE.get("last_20_messages")
+        if (!last_messages) {
+          last_messages = ""
+          await env.KV_STORE.put("last_20_messages", last_messages)
+        }
+        last_messages = last_messages.split(",").map(v => v === 'true')
         last_messages.push(anyTriggered)
         console.log("last 20 messages: " + last_messages)
         if (last_messages.length > 20) {
           last_messages.shift()
         }
-        await env.KV_STORE.put("last_20_messages", last_messages)
+        await env.KV_STORE.put("last_20_messages", last_messages.join(","))
 
         // if more than 5 messages are triggers, tell em off
         if (last_messages.filter(Boolean).length > 5) {
