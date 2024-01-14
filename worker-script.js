@@ -43,9 +43,9 @@ export default {
 
         let last_messages = await get_trigger_history(env)
         let anti_spam_mode = last_messages.filter(Boolean).length > 3
+        let anyTriggered = false;
         if (!anti_spam_mode){ 
           let words = to_words(payload.message.text)
-          let anyTriggered = false;
           anyTriggered = anyTriggered | await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
           anyTriggered = anyTriggered | await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
           anyTriggered = anyTriggered | await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
