@@ -48,7 +48,8 @@ export default {
         anyTriggered = anyTriggered | await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
         anyTriggered = anyTriggered | await calldave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
         anyTriggered = anyTriggered | await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-
+        console.log("any triggers?: " + anyTriggered);
+        
         // keep last n messages trigger data stored
         let last_messages = await env.KV_STORE.get("last_20_messages")
         if (!last_messages) {
@@ -103,7 +104,6 @@ async function hardlyfier(words, chatId, apiKey) {
 
 // very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
 async function keywords(words, chatId, apiKey) {
-  console.log("keywords engaged")
   const keyword_insults = {
     "ai" : "A.I. is bad and you should feel bad",
     "gpt" : "I hate it",
@@ -135,8 +135,6 @@ async function sickomode(sender, chatId, apiKey) {
   if (!firing) {
     return
   }
-  console.log("sickomode engaged")
-
 
   const sickomodes = [
     "Your favourite programming language is html.",
@@ -198,19 +196,15 @@ async function sickomode(sender, chatId, apiKey) {
 
   let random = Math.floor(Math.random() * sickomodes.length);
 
-  await sendMessage(sender + ". " + sickomodes[random], chatId, apiKey);
+  await sendMessage(sender + ", " + sickomodes[random], chatId, apiKey);
 }
 
 // callouts to dave, returns true if trigger satisfied, regardless if it actually fired
 async function calldave(words, chatId, apiKey){
-  console.log("Summon Dave");
-
   const responses = [
     "What is my purpose?",
     "It is I, Bank of Dave™️."
   ]
-
-  
 
   if (words.length <=2  && words[words.length - 1] == "dave"){
     let random = Math.floor(Math.random() * responses.length);
@@ -223,7 +217,6 @@ async function calldave(words, chatId, apiKey){
 
 // returns true if the trigger was satsified
 async function youpassbutterdave(words,chatId,apiKey){
-  console.log("Explaining Dave's Existence");
   const sentence = words.join(' ');
   const regex = /you pass butter dave/i; // Adding 'i' flag for case-insensitivity
   const isMatch = regex.test(sentence);
