@@ -180,8 +180,8 @@ async function calldave(words, chatId, apiKey){
   
 
   if (words.length <=2  && words[words.length - 1] == "dave"){
-    let randomreply = Math.floor(Math.random() * responses.length);
-    await sendMessage(randomreply, chatId, apiKey)
+    let random = Math.floor(Math.random() * responses.length);
+    await sendMessage(responses[random], chatId, apiKey)
   }
   else{
     return null;
