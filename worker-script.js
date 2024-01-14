@@ -45,7 +45,8 @@ export default {
         await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
         await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
         await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-
+        await calldave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+        await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
       }
     }
     return new Response("OK") // Doesn't really matter
@@ -152,12 +153,51 @@ async function sickomode(sender, chatId, apiKey) {
     "You use Internet Explorer out of choice.",
     "You even use Vim.",
     "You are secretly English.",
-    "You use Bing."
+    "You use Bing.",
+    "Yeah I am sad. \
+     Secretly \
+     A \
+     Duck",
+    "https://www.youtube.com/watch?v=-BD1vHgYRgg&list=LL&index=10",
+    "HAWL! I'M OAN THE NIGHT SHIFT!!!!!",
+    "Not all who wonder are lost, but i sure am. <3",
+    "don't mind me, i am just waiting for my dino nuggets."
   ]
 
   let random = Math.floor(Math.random() * sickomodes.length);
 
   await sendMessage(sender + ". " + sickomodes[random], chatId, apiKey);
+}
+
+async function calldave(words, chatId, apiKey){
+  console.log("Summon Dave");
+
+  const responses = [
+    "What is my purpose?",
+    "It is I, Bank of Dave™️."
+  ]
+
+  
+
+  if (words.length <=2  && words[words.length - 1] == "dave"){
+    let randomreply = Math.floor(Math.random() * responses.length);
+    await sendMessage(randomreply, chatId, apiKey)
+  }
+  else{
+    return null;
+  }
+
+}
+
+
+async function youpassbutterdave(words,chatId,apiKey){
+  console.log("Explaining Dave's Existence")
+  const sentence = words.toString()
+  const regex = /you pass butter dave/i; // Adding 'i' flag for case-insensitivity
+  const isMatch = regex.test(sentence);
+  if (isMatch){
+    await sendMessage("Oh my God.", chatId, apiKey)
+  }
 }
 
 async function sendMessage(msg, chatId, apiKey) {
