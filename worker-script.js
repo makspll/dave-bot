@@ -76,7 +76,7 @@ export default {
   },
 };
 
-function async get_trigger_history(env) {
+async function get_trigger_history(env) {
   let last_messages = await env.KV_STORE.get("message_triggers")
   if (!last_messages) {
     last_messages = ""
