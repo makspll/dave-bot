@@ -191,8 +191,8 @@ async function calldave(words, chatId, apiKey){
 
 
 async function youpassbutterdave(words,chatId,apiKey){
-  console.log("Explaining Dave's Existence")
-  const sentence = words.toString()
+  console.log("Explaining Dave's Existence");
+  const sentence = words.toString();
   const regex = /you pass butter dave/i; // Adding 'i' flag for case-insensitivity
   const isMatch = regex.test(sentence);
   if (isMatch){
