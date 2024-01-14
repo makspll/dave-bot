@@ -58,16 +58,16 @@ export default {
         }
         last_messages = last_messages.split(",").map(v => v === 'true')
         last_messages.push(Boolean(anyTriggered)) // don't know why this is needed
-        console.log("last 5 messages: " + last_messages)
         if (last_messages.length > 5) {
           last_messages.shift()
         }
+        console.log("last 5 messages: " + last_messages)
         await env.KV_STORE.put("message_triggers", last_messages.join(","))
 
         // if more than 3 messages are triggers, tell em off
         if (last_messages.filter(Boolean).length > 3) {
             console.log("triggering anti spam" )
-          // await sendMessage("shut up", payload.message.chat.id, env.TELEGRAM_API_KEY)
+            await sendMessage("shut up", payload.message.chat.id, env.TELEGRAM_API_KEY)
         }
       
       }
@@ -97,7 +97,7 @@ async function hardlyfier(words, chatId, apiKey) {
   console.log("hardly know er probability for message: " + prob);
   if (Math.random() < prob) {
     const text = sample(hers) + "? I hardly know er!!";
-    // await sendMessage(text, chatId, apiKey)
+    await sendMessage(text, chatId, apiKey)
   }
   return hers.length > 0
 }
