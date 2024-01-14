@@ -41,22 +41,23 @@ export default {
 
         console.log("message is: " + payload.message.text)
 
-        let words = to_words(payload.message.text)
-        let anyTriggered = false;
-        anyTriggered = anyTriggered | await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
-        anyTriggered = anyTriggered | await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
-        anyTriggered = anyTriggered | await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-        anyTriggered = anyTriggered | await calldave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-        anyTriggered = anyTriggered | await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-        console.log("any triggers?: " + anyTriggered);
+        let last_messages = get_trigger_history(env)
+        let anti_spam_mode = last_messages.filter(Boolean).length > 3
+        if (!anti_spam_mode){ 
+          let words = to_words(payload.message.text)
+          let anyTriggered = false;
+          anyTriggered = anyTriggered | await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
+          anyTriggered = anyTriggered | await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
+          anyTriggered = anyTriggered | await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+          anyTriggered = anyTriggered | await calldave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+          anyTriggered = anyTriggered | await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+          console.log("any triggers?: " + anyTriggered);
+        } else {
+          console.log("ignoring, anti spam mode")
+        }
         
         // keep last n messages trigger data stored
-        let last_messages = await env.KV_STORE.get("message_triggers")
-        if (!last_messages) {
-          last_messages = ""
-          await env.KV_STORE.put("message_triggers", last_messages)
-        }
-        last_messages = last_messages.split(",").map(v => v === 'true')
+        let last_messages = get_trigger_history(env)
         last_messages.push(Boolean(anyTriggered)) // don't know why this is needed
         if (last_messages.length > 5) {
           last_messages.shift()
@@ -76,6 +77,15 @@ export default {
   },
 };
 
+function get_trigger_history(env) {
+  let last_messages = await env.KV_STORE.get("message_triggers")
+  if (!last_messages) {
+    last_messages = ""
+    await env.KV_STORE.put("message_triggers", last_messages)
+  }
+  last_messages = last_messages.split(",").map(v => v === 'true')
+  return last_messages
+}
 // pick random element in array
 function sample(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
