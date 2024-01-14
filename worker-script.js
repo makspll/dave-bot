@@ -58,14 +58,14 @@ export default {
         
         // keep last n messages trigger data stored
         last_messages.push(Boolean(anyTriggered)) // don't know why this is needed
-        if (last_messages.length > 5) {
+        if (last_messages.length > 8) {
           last_messages.shift()
         }
-        console.log("last 5 messages: " + last_messages)
+        console.log("last 8 messages: " + last_messages)
         await env.KV_STORE.put("message_triggers", last_messages.join(","))
 
         // if more than 3 messages are triggers, tell em off
-        if (last_messages.filter(Boolean).length > 3) {
+        if (last_messages.filter(Boolean).length > 4) {
             console.log("triggering anti spam" )
             await sendMessage("shut up", payload.message.chat.id, env.TELEGRAM_API_KEY)
         }
