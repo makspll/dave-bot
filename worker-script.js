@@ -42,37 +42,62 @@ export default {
         console.log("message is: " + payload.message.text)
 
         let words = to_words(payload.message.text)
-        await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
-        await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
-        await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-        await calldave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
-        await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+        let anyTriggered = false;
+        anyTriggered = anyTriggered | await hardlyfier(words, payload.message.chat.id, env.TELEGRAM_API_KEY);
+        anyTriggered = anyTriggered | await sickomode(sender, payload.message.chat.id, env.TELEGRAM_API_KEY);
+        anyTriggered = anyTriggered | await keywords(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+        anyTriggered = anyTriggered | await calldave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+        anyTriggered = anyTriggered | await youpassbutterdave(words,  payload.message.chat.id, env.TELEGRAM_API_KEY);
+
+        // keep last n messages trigger data stored
+        let last_messages = await env.KV_STORE.get("last_20_messages", { type: "json" })
+        if (!last_messages) {await env.KV_STORE.put("last_20_messages", [])}
+        last_messages.push(anyTriggered)
+        console.log("last 20 messages: " + last_messages)
+        if (last_messages.length > 20) {
+          last_messages.shift()
+        }
+        await env.KV_STORE.put("last_20_messages", last_messages)
+
+        // if more than 5 messages are triggers, tell em off
+        if (last_messages.filter(Boolean).length > 5) {
+            console.log("triggering anti spam" )
+          // await sendMessage("shut up", payload.message.chat.id, env.TELEGRAM_API_KEY)
+        }
+      
       }
     }
     return new Response("OK") // Doesn't really matter
   },
 };
 
+// pick random element in array
+function sample(arr) {
+  Math.floor(Math.random() * arr.length())
+}
 
 function to_words(message) {
   return message.split(' ').map(word => word.replace(/\W/g, '').trim().toLowerCase())
 }
 
+// very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
 async function hardlyfier(words, chatId, apiKey) {
-
   let hers = words.filter(word => {
-    let satisfies = word.length > 2 && (word.endsWith('er') || word.endsWith('ers'));
-    return satisfies && (Math.random() < HARDLYKNOWER_PROBABILITY)
+    return word.length > 2 && (word.endsWith('er') || word.endsWith('ers'));
   }) 
 
-  if (hers.length > 0) {
-    const text = hers[0] + "? I hardly know er!!";
+  // 1 - P(no triggers
+  // P(no triggers) = (1 - HARDLYKNOWER_PROBABILITY)^n
+  if (1 - ((1 - HARDLYKNOWER_PROBABILITY) ** hers.length)) {
+    const text = sample(hers) + "? I hardly know er!!";
+    (Math.random() < HARDLYKNOWER_PROBABILITY)
     await sendMessage(text, chatId, apiKey)
   }
+  return hers.length > 0
 }
 
+// very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
 async function keywords(words, chatId, apiKey) {
-
   console.log("keywords engaged")
   const keyword_insults = {
     "ai" : "A.I. is bad and you should feel bad",
@@ -93,11 +118,13 @@ async function keywords(words, chatId, apiKey) {
 
   if (triggers.length > 0) {
     const text = triggers[0]
+    return true
     await sendMessage(text, chatId, apiKey)
   }
-
+  return false
 }
 
+// very funi roasts aimed at sender
 async function sickomode(sender, chatId, apiKey) {
   let firing = Math.random() < SICKOMODE_PROBABILITY;
   if (!firing) {
@@ -169,6 +196,7 @@ async function sickomode(sender, chatId, apiKey) {
   await sendMessage(sender + ". " + sickomodes[random], chatId, apiKey);
 }
 
+// callouts to dave, returns true if trigger satisfied, regardless if it actually fired
 async function calldave(words, chatId, apiKey){
   console.log("Summon Dave");
 
@@ -182,14 +210,13 @@ async function calldave(words, chatId, apiKey){
   if (words.length <=2  && words[words.length - 1] == "dave"){
     let random = Math.floor(Math.random() * responses.length);
     await sendMessage(responses[random], chatId, apiKey)
+    return true
   }
-  else{
-    return null;
-  }
-
+  
+  return false
 }
 
-
+// returns true if the trigger was satsified
 async function youpassbutterdave(words,chatId,apiKey){
   console.log("Explaining Dave's Existence");
   const sentence = words.join(' ');
@@ -197,7 +224,9 @@ async function youpassbutterdave(words,chatId,apiKey){
   const isMatch = regex.test(sentence);
   if (isMatch){
     await sendMessage("Oh my God.", chatId, apiKey);
+    return true
   }
+  return false;
 }
 
 async function sendMessage(msg, chatId, apiKey) {
