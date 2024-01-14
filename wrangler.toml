@@ -1,3 +1,7 @@
 name = "hardly-know-her-telegram-bot"
 main = "worker-script.js"
 compatibility_date = "2024-01-01"
+
+kv_namespaces = [
+    { binding = "KV_STORE", id = "5f1b958a44be4df5b768ddb5e420da1e" }
+]
