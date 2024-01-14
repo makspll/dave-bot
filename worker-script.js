@@ -121,21 +121,20 @@ async function keywords(words, chatId, apiKey) {
   }
 
   let triggers = words.map(word => {
-    if (Math.random() < KEYWORD_PROBABILITY) {
       let match = keyword_insults[word];
       if (match) {console.log("match triggered: " + match)}
       return match
-    } else {
-      return null
-    }
   }).filter(a => a);
 
-  if (triggers.length > 0) {
+  // 1 - P(no triggers
+  // P(no triggers) = (1 - KEYWORD_PROBABILITY)^n
+  let prob = 1 - ((1 - KEYWORD_PROBABILITY) ** hers.length);
+  console.log("keyword probability for message: " + prob);
+  if (Math.random() < prob) {
     const text = triggers[0]
-    return true
     await sendMessage(text, chatId, apiKey)
   }
-  return false
+  return triggers.length > 0
 }
 
 // very funi roasts aimed at sender
