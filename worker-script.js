@@ -42,7 +42,8 @@ export default {
         console.log("message is: " + payload.message.text)
 
         let last_messages = await get_trigger_history(env)
-        let anti_spam_mode = last_messages.filter(Boolean).length > 3
+        const MAX_TRIGGER_MSG = 4
+        let anti_spam_mode = last_messages.filter(Boolean).length >= MAX_TRIGGER_MSG
         let anyTriggered = false;
         if (!anti_spam_mode){ 
           let words = to_words(payload.message.text)
@@ -65,7 +66,7 @@ export default {
         await env.KV_STORE.put("message_triggers", last_messages.join(","))
 
         // if more than n messages are triggers, tell em off
-        if (last_messages.filter(Boolean).length >= 4) {
+        if (last_messages.filter(Boolean).length >= MAX_TRIGGER_MSG) {
             console.log("triggering anti spam" )
             await sendMessage("shut up", payload.message.chat.id, env.TELEGRAM_API_KEY)
         }
