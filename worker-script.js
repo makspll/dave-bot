@@ -196,7 +196,7 @@ async function youpassbutterdave(words,chatId,apiKey){
   const regex = /you pass butter dave/i; // Adding 'i' flag for case-insensitivity
   const isMatch = regex.test(sentence);
   if (isMatch){
-    await sendMessage("Oh my God.", chatId, apiKey)
+    await sendMessage("Oh my God.", chatId, apiKey);
   }
 }
 
