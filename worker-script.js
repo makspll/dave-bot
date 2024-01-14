@@ -77,7 +77,7 @@ export default {
 
 // pick random element in array
 function sample(arr) {
-  return Math.floor(Math.random() * arr.length)
+  return arr[Math.floor(Math.random() * arr.length)]
 }
 
 function to_words(message) {
@@ -92,9 +92,10 @@ async function hardlyfier(words, chatId, apiKey) {
 
   // 1 - P(no triggers
   // P(no triggers) = (1 - HARDLYKNOWER_PROBABILITY)^n
-  if (1 - ((1 - HARDLYKNOWER_PROBABILITY) ** hers.length)) {
+  let prob = 1 - ((1 - HARDLYKNOWER_PROBABILITY) ** hers.length);
+  console.log("hardly know er probability for message: " + prob);
+  if (Math.random() < prob) {
     const text = sample(hers) + "? I hardly know er!!";
-    (Math.random() < HARDLYKNOWER_PROBABILITY)
     // await sendMessage(text, chatId, apiKey)
   }
   return hers.length > 0
