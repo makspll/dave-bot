@@ -41,7 +41,7 @@ export default {
 
         console.log("message is: " + payload.message.text)
 
-        let last_messages = get_trigger_history(env)
+        let last_messages = await get_trigger_history(env)
         let anti_spam_mode = last_messages.filter(Boolean).length > 3
         if (!anti_spam_mode){ 
           let words = to_words(payload.message.text)
@@ -76,7 +76,7 @@ export default {
   },
 };
 
-function get_trigger_history(env) {
+function async get_trigger_history(env) {
   let last_messages = await env.KV_STORE.get("message_triggers")
   if (!last_messages) {
     last_messages = ""
