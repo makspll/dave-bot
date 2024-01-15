@@ -230,7 +230,7 @@ async function keywords(words, chatId, apiKey, openAI_key) {
         if(trigger.gpt_prompt && (Math.random() < KEYWORD_GPT_CHANCE)) {
             // TODO: get few messages before this one as well
             console.log("Calling chat gpt for this one. :)")
-            let response = await call_gpt(SYSTEM_PROMPT + "." + sample(trigger.gpt_prompt), [words.join(" ")], openAI_key);
+            let response = await call_gpt(SYSTEM_PROMPT + "." + sample(trigger.gpt_prompt), ["user message redacted"], openAI_key);
             if (response) {
                 await sendMessage(response, chatId, apiKey)
             } else {
