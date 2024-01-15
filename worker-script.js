@@ -130,13 +130,9 @@ async function call_gpt(system_prompt, message_history, openAI_key) {
             "model": "gpt-3.5-turbo",
             "messages": messages
         })
-    }).then(res => {
-        if (res.ok) {
-            return res.choices[0].message.content
-        } else {
-            return null
-        }
-    }).catch(err => console.log("error from open API call: " + err))
+    }).then(res => res.json())
+        .then(json => json.choices[0].message.content)
+        .catch(err => console.log("error from open API call: " + err))
 
     return response
 }
