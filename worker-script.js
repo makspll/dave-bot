@@ -1,7 +1,28 @@
-import data from './AFINN.json'
+import AFINN from './AFINN.json'
 const HARDLYKNOWER_PROBABILITY=0.05;
 const SICKOMODE_PROBABILITY=0.001;
-const KEYWORD_PROBABILITY=1;
+const KEYWORDS = {
+    "ai" : {
+      "chance": 0.5,
+      "pos_sent_variations": ["A.I. is bad and you should feel bad", "A.I.?? Fucking buncha if statements"],
+      "neg_sent_variations": ["yeah, fuck A.I.", "Isn't it?"]
+    },
+    "gpt" : {
+      "chance": 0.5,
+      "pos_sent_variations": ["Are you fuckin dumb?", "Numbnuts..", "Fucking hell, not this again.."],
+      "neg_sent_variations": ["Yeah jesus christ", "God I hate LLM's"]
+    },
+    "gadwick" : {
+      "chance": 1,
+      "pos_sent_variations": ["GADWICK THE GREAT!!"],
+      "neg_sent_variations": ["GADWICK THE GREAT!!"]
+    },
+    "job": {
+      "chance": 0.5,
+      "pos_sent_variations": ["get a job.."],
+      "neg_sent_variations": ["get a new job.."]
+    }
+}
 
 
 export default {
@@ -96,6 +117,17 @@ function to_words(message) {
   return message.split(' ').map(word => word.replace(/\W/g, '').trim().toLowerCase())
 }
 
+// returns integer corresponding to the sentiment in the given word list using the AFINN list of sentiment keyword pairs
+// words must be normalised to lower case
+function sentiment(words) {
+  if (words) {
+    let sentiment_carriers = words.map(w => AFINN[w]).filter(Boolean)
+    return sentiment_carriers.reduce(Math.sum) / sentiment_carriers.length
+  } else {
+    return 0
+  }
+}
+
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
 async function hardlyfier(words, chatId, apiKey) {
   let hers = words.filter(word => {
@@ -115,26 +147,22 @@ async function hardlyfier(words, chatId, apiKey) {
 
 // very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
 async function keywords(words, chatId, apiKey) {
-  const keyword_insults = {
-    "ai" : "A.I. is bad and you should feel bad",
-    "gpt" : "I hate it",
-    "gadwick" : "GADWICK THE GREAT!!",
-    "job": "get a job.."
-  }
-
   let triggers = words.map(word => {
-      let match = keyword_insults[word];
+      let match = KEYWORDS[word];
       if (match) {console.log("match triggered: " + match)}
       return match
   }).filter(a => a);
 
-  // 1 - P(no triggers
-  // P(no triggers) = (1 - KEYWORD_PROBABILITY)^n
-  let prob = 1 - ((1 - KEYWORD_PROBABILITY) ** triggers.length);
-  console.log("keyword probability for message: " + prob);
-  if (Math.random() < prob) {
-    const text = sample(triggers)
-    await sendMessage(text, chatId, apiKey)
+
+  if (triggers.length > 0) {
+    const trigger = sample(triggers)
+    console.log("keyword probability for random keyword in message: " + trigger.chance);
+    if (Math.random() < trigger.chance) {
+      // analyse sentiment and pick appropriate variation from the sentiment variations
+      let sentiment = sentiment(words)
+      const text = sentiment >= 0 ? sample(trigger.pos_sent_variants) : sample(trigger.neg_sent_variants)
+      await sendMessage(text, chatId, apiKey)
+    }
   }
   return triggers.length > 0
 }
