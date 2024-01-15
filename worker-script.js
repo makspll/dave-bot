@@ -148,9 +148,7 @@ async function hardlyfier(words, chatId, apiKey) {
 // very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
 async function keywords(words, chatId, apiKey) {
   let triggers = words.map(word => {
-      let match = KEYWORDS[word];
-      if (match) {console.log("match triggered: " + match)}
-      return match
+      return KEYWORDS[word]
   }).filter(a => a);
 
 
@@ -159,9 +157,12 @@ async function keywords(words, chatId, apiKey) {
     console.log("keyword probability for random keyword in message: " + trigger.chance);
     if (Math.random() < trigger.chance) {
       // analyse sentiment and pick appropriate variation from the sentiment variations
-      let sentiment = calculate_sentiment(words)
-      const text = sentiment >= 0 ? sample(trigger.pos_sent_variants) : sample(trigger.neg_sent_variants)
-      await sendMessage(text, chatId, apiKey)
+        console.log("Triggered");
+        let sentiment = calculate_sentiment(words)
+        console.log("Sentiment: " + sentiment);
+        const text = sentiment >= 0 ? sample(trigger.pos_sent_variants) : sample(trigger.neg_sent_variants)
+        console.log("variant: " + text)
+        await sendMessage(text, chatId, apiKey)
     }
   }
   return triggers.length > 0
