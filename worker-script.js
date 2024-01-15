@@ -113,14 +113,18 @@ async function call_gpt(system_prompt, message_history, openAI_key) {
         "role": "system",
         "content": system_prompt
     }];
-    messages.push(...message_history.map(m => {"role": "user", "content": m}))
+    let history = message_history.map(m => {
+        "role": "user", 
+        "content": m
+    });
+    messages.push(...history)
     
     let response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer "+openAI_key
+            "Authorization": "Bearer " + openAI_key
         },
         body: JSON.stringify({
             "model": "gpt-3.5-turbo",
