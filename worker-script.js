@@ -123,6 +123,7 @@ function calculate_sentiment(words) {
   if (words.length > 0) {
     console.log("Calculating sentiment for: " + words)
     let sentiment_carriers = words.map(w => AFINN[w]).filter(Boolean)
+    if (sentiment_carriers.length == 0) {return 0}
     return sentiment_carriers.reduce((a, b) => a + b, 0) / sentiment_carriers.length
   } else {
     return 0
@@ -161,6 +162,8 @@ async function keywords(words, chatId, apiKey) {
         console.log("Triggered");
         let sentiment = calculate_sentiment(words)
         console.log("Sentiment: " + sentiment);
+        console.log("positive variants: " + trigger.pos_sent_variants)
+        console.log("negative variants: " + trigger.neg_sent_variants)
         const text = sentiment >= 0 ? sample(trigger.pos_sent_variants) : sample(trigger.neg_sent_variants)
         console.log("variant: " + text)
         await sendMessage(text, chatId, apiKey)
