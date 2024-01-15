@@ -121,7 +121,7 @@ function sample(arr) {
 }
 
 function to_words(message) {
-  return message.split(' ').map(word => word.replace(/\W/g, '').trim().toLowerCase())
+  return message.split(' ').map(word => word.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase())
 }
 
 // returns integer corresponding to the sentiment in the given word list using the AFINN list of sentiment keyword pairs
