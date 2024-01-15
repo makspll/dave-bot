@@ -152,6 +152,7 @@ async function call_gpt(system_prompt, message_history, openAI_key) {
         },
         body: JSON.stringify({
             "model": "gpt-3.5-turbo",
+            "max_tokens": 40,
             "messages": messages
         })
     }).then(res => res.json())
