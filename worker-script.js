@@ -113,10 +113,10 @@ async function call_gpt(system_prompt, message_history, openAI_key) {
         "role": "system",
         "content": system_prompt
     }];
-    let history = message_history.map(m => {
+    let history = message_history.map(m => ({
         "role": "user", 
         "content": m
-    });
+    }));
     messages.push(...history)
     
     let response = await fetch("https://api.openai.com/v1/chat/completions", {
