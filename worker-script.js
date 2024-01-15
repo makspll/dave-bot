@@ -1,7 +1,7 @@
 const HARDLYKNOWER_PROBABILITY=0.05;
 const SICKOMODE_PROBABILITY=0.001;
 const SYSTEM_PROMPT= "You are a telegram chat bot named Dave, you are whimsical, a bit delirious and kind of silly. Your job is to provide tomfoolery and mischief while also being extremely wholesome at times, and other times confrontational, sometimes regardless of the content of the user messages"
-const KEYWORD_GPT_CHANCE=0.33;
+const KEYWORD_GPT_CHANCE=0.10;
 const KEYWORDS = {
     "ai" : {
       "chance": 0.8,
