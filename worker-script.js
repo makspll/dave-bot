@@ -110,7 +110,11 @@ async function get_trigger_history(env) {
 }
 // pick random element in array
 function sample(arr) {
-  return arr[Math.floor(Math.random() * arr.length)]
+  if (arr.length) {
+      return arr[Math.floor(Math.random() * arr.length)]
+  } else {
+      return null
+  }
 }
 
 function to_words(message) {
@@ -162,9 +166,9 @@ async function keywords(words, chatId, apiKey) {
         console.log("Triggered");
         let sentiment = calculate_sentiment(words)
         console.log("Sentiment: " + sentiment);
-        console.log("positive variants: " + trigger.pos_sent_variants)
-        console.log("negative variants: " + trigger.neg_sent_variants)
-        const text = sentiment >= 0 ? sample(trigger.pos_sent_variants) : sample(trigger.neg_sent_variants)
+        console.log("positive variants: " + trigger.pos_sent_variations)
+        console.log("negative variants: " + trigger.neg_sent_variations)
+        const text = sentiment >= 0 ? sample(trigger.pos_sent_variations) : sample(trigger.neg_sent_variations)
         console.log("variant: " + text)
         await sendMessage(text, chatId, apiKey)
     }
