@@ -126,7 +126,11 @@ function to_words(message) {
 function calculate_sentiment(words) {
   if (words.length > 0) {
     console.log("Calculating sentiment for: " + words)
-    let sentiment_carriers = words.map(w => AFINN[w]).filter(Boolean)
+    let sentiment_carriers = words.map(w => {
+        let match = AFINN[w];
+        console.log("word: " + w + ", match: " + match)
+        return match
+    }).filter(Boolean)
     if (sentiment_carriers.length == 0) {return 0}
     return sentiment_carriers.reduce((a, b) => a + b, 0) / sentiment_carriers.length
   } else {
