@@ -126,6 +126,7 @@ function to_words(message) {
 function calculate_sentiment(words) {
   if (words.length > 0) {
     console.log("Calculating sentiment for: " + words)
+    console.log(JSON.stringify(AFINN))
     let sentiment_carriers = words.map(w => {
         let match = AFINN[w];
         console.log("word: " + w + ", match: " + match)
