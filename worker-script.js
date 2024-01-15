@@ -119,7 +119,7 @@ function to_words(message) {
 
 // returns integer corresponding to the sentiment in the given word list using the AFINN list of sentiment keyword pairs
 // words must be normalised to lower case
-function sentiment(words) {
+function calculate_sentiment(words) {
   if (words) {
     let sentiment_carriers = words.map(w => AFINN[w]).filter(Boolean)
     return sentiment_carriers.reduce(Math.sum) / sentiment_carriers.length
@@ -159,7 +159,7 @@ async function keywords(words, chatId, apiKey) {
     console.log("keyword probability for random keyword in message: " + trigger.chance);
     if (Math.random() < trigger.chance) {
       // analyse sentiment and pick appropriate variation from the sentiment variations
-      let sentiment = sentiment(words)
+      let sentiment = calculate_sentiment(words)
       const text = sentiment >= 0 ? sample(trigger.pos_sent_variants) : sample(trigger.neg_sent_variants)
       await sendMessage(text, chatId, apiKey)
     }
