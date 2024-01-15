@@ -68,7 +68,7 @@ export default {
         console.log("message is: " + payload.message.text)
 
         let last_messages = await get_trigger_history(env)
-        const MAX_TRIGGER_MSG = 4
+        const MAX_TRIGGER_MSG = 13
         let anti_spam_mode = last_messages.filter(Boolean).length >= MAX_TRIGGER_MSG
         let anyTriggered = false;
         if (!anti_spam_mode){ 
@@ -84,7 +84,7 @@ export default {
         
         // keep last n messages trigger data stored
         last_messages.push(Boolean(anyTriggered)) // don't know why this is needed
-        if (last_messages.length > 8) {
+        if (last_messages.length > 15) {
           last_messages.shift()
         }
         console.log("last n messages: " + last_messages)
