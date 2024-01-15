@@ -120,8 +120,7 @@ function to_words(message) {
 // returns integer corresponding to the sentiment in the given word list using the AFINN list of sentiment keyword pairs
 // words must be normalised to lower case
 function calculate_sentiment(words) {
-  if (words) {
-    console.log(words)
+  if (words.length > 0) {
     let sentiment_carriers = words.map(w => AFINN[w]).filter(Boolean)
     console.log(sentiment_carriers)
     return sentiment_carriers.reduce(Math.sum) / sentiment_carriers.length
