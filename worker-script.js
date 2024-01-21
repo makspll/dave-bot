@@ -200,7 +200,7 @@ async function get_affection_data() {
 }
 
 async function store_affection_data(data) {
-    let data = JSON.stringify(data);
+    data = JSON.stringify(data);
     console.log("Storing affection data: " + data)
     const KEY="affection_data"
     await ENV.KV_STORE.put(KEY, data)
