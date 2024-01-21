@@ -297,7 +297,7 @@ async function keywords(words, chatId, senderId) {
             console.log("Triggered");
             let sentiment = calculate_sentiment(words)
             if (affection_data[senderId] == null) {
-                affection_data = sentiment
+                affection_data[senderId] = sentiment
             } else {
                 affection_data[senderId] += sentiment
             }
