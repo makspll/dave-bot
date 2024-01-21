@@ -191,7 +191,7 @@ async function get_affection_data() {
   let data = await ENV.KV_STORE.get(KEY)
   if (!data) {
     data = "{}"
-    await env.KV_STORE.put(KEY, data)
+    await ENV.KV_STORE.put(KEY, data)
   }
   data = JSON.parse(data)
   return data
