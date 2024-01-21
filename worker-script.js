@@ -143,6 +143,9 @@ export default {
         console.log("message is: " + payload.message.text)
 
         let words = to_words(payload.message.text)
+        if (words.length > 10) {
+            return new Response("Ok")
+        }
         await hardlyfier(words, payload.message.chat.id);
         await sickomode(sender, payload.message.chat.id);
         await keywords(words,  payload.message.chat.id, payload.message.from.id);
@@ -244,7 +247,7 @@ async function hardlyfier(words, chatId) {
 
 // very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
 async function keywords(words, chatId, senderId) {
-  let triggers = TRIGGERS.find(list => {
+  let trigger = TRIGGERS.find(list => {
       let phrase = list.trigger;
       // find the phrase in sequence in the words
       // if the phrase is just one word it will still work
@@ -261,8 +264,7 @@ async function keywords(words, chatId, senderId) {
       }
   })
 
-  if (triggers.length > 0) {
-    const trigger = sample(triggers)
+  if (trigger != null) {
     console.log("keyword probability for random keyword in message: " + trigger.chance);
     if (Math.random() < trigger.chance) {
         let gpt_chance = trigger.gpt_chance ? trigger.gpt_chance : KEYWORD_GPT_CHANCE 
@@ -305,7 +307,7 @@ async function keywords(words, chatId, senderId) {
         }
     }
   }
-  return triggers.length > 0
+  return trigger != null
 }
 
 // very funi roasts aimed at sender
