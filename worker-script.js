@@ -284,7 +284,7 @@ async function keywords(words, chatId, senderId) {
             }
             let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt), []);
             if (response) {
-                await sendMessage(response, chatId, apiKey)
+                await sendMessage(response, chatId)
             } else {
                 console.error("Error in calling chat gpt")
             }
