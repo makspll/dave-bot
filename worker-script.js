@@ -276,7 +276,7 @@ async function keywords(words, chatId, senderId) {
             let affection_value = affection_data[senderId]
             let affection_level = Math.min(Math.floor(Math.abs(affection_value) / SENTIMENT_PER_AFFECTION_LEVEL), MAX_AFFECTION_LEVEL)
             if (affection_value != null) {
-                if affection_value > 0 {
+                if (affection_value > 0) {
                     relationship_prompt = POSITIVE_AFFECTION_PROMPTS[affection_level - 1]    
                 } else {
                     relationship_prompt = NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
