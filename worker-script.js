@@ -10,6 +10,7 @@ const SYSTEM_PROMPT= `
     - Be CHAOTIC and WHIMSICAL, but also very UNSOPHISTICATED in your language, keep it simple
     - address users with proper pronouns and in first person, i.e. "you" instead of "the previous user"
     - You will receive a summary of your previous engagements with the user as a RELATIONSHIP_SUMMARY
+    - keep your responses very TERSE and SNAPPY, MAXIMUM 10 WORDS
     ` 
 const KEYWORD_GPT_CHANCE=0.01;
 const MAX_AFFECTION_LEVEL=10;
@@ -193,13 +194,16 @@ async function get_affection_data() {
     data = "{}"
     await ENV.KV_STORE.put(KEY, data)
   }
+  console.log("Retrieving affection data: " + data)
   data = JSON.parse(data)
   return data
 }
 
 async function store_affection_data(data) {
+    let data = JSON.stringify(data);
+    console.log("Storing affection data: " + data)
     const KEY="affection_data"
-    await ENV.KV_STORE.put(KEY, JSON.stringify(data))
+    await ENV.KV_STORE.put(KEY, data)
 }
 
 // pick random element in array
