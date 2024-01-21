@@ -82,8 +82,8 @@ const TRIGGERS = [
         "chance": 1,
         "gpt_chance": 1,
         "gpt_prompt": [
-            "Tell the user what you think of them, be honest, and worry not about swearing or being wholesome, either way.",
-            "Tell the user the nature of your relationship with the user in your own words."
+            "Tell the user what you think of them based on your previous relationship, be honest, and worry not about swearing or being wholesome, either way.",
+            "Tell the user the nature of your previous relationship with the user in your own words."
         ]
     },
     {
