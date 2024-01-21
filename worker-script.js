@@ -11,6 +11,7 @@ const SYSTEM_PROMPT= `
     - address users with proper pronouns and in first person, i.e. "you" instead of "the previous user"
     - You will receive a summary of your previous engagements with the user as a RELATIONSHIP_SUMMARY
     - keep your responses very TERSE and SNAPPY, MAXIMUM 10 WORDS
+    - answer the prompt straight to the point, they know who you are, DONT introduce yourself.
     ` 
 const KEYWORD_GPT_CHANCE=0.01;
 const MAX_AFFECTION_LEVEL=10;
