@@ -54,6 +54,24 @@ const COMMANDS = {
 }
 const TRIGGERS = [
     {
+      "trigger": ["google", "en", "passant"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["holy hell"],
+      "neg_sent_variations": ["holy hell"],
+    },
+    {
+      "trigger": ["holy","hell"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["new response just dropped"],
+      "neg_sent_variations": ["new response just dropped"],
+    },
+    {
+      "trigger": ["new", "response", "just", "dropped"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["actual zombie"],
+      "neg_sent_variations": ["actual zombie"],
+    },
+    {
       "trigger": ["weed", "wassim"],
       "chance" : 0.3,
       "pos_sent_variations": ["Weed Wassim"],
