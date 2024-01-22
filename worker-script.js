@@ -217,7 +217,7 @@ export default {
     console.log("jobs: " + JSON.stringify(jobs))
 
     
-    jobs = jobs.filter(j => {
+    jobs = jobs.filter(async j => {
         if (j.type && j.type === "reminder30") {
             let timeUntil = j.time - Math.floor(Date.now() / 1000) 
             if (timeUntil > 0) {
