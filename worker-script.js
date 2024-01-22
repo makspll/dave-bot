@@ -226,6 +226,7 @@ export default {
     console.log("jobs: " + JSON.stringify(jobs))
 
     let msgs = []
+    let origCount = jobs.length
     jobs = jobs.filter(j => {
         if (j.type && j.type === "reminder30") {
             let timeUntil = j.time - Math.floor(Date.now() / 1000) 
@@ -239,12 +240,13 @@ export default {
         } 
         return false
     })
-
+      
     for(let i = 0; i < msgs.length; i++) {
        await msgs[i]()
     }
-
-    await store_job_data(jobs)
+    if(jobs.length != origCount){
+        await store_job_data(jobs)
+    }
   },
 
   // message structure:
