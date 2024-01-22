@@ -80,9 +80,9 @@ const COMMANDS = {
         } catch (err) {
             return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id)
         }
-
-        if(isNaN(time) || time <= (Date.now() / 1000)) {
-            return sendMessage("date is invalid, needs to be in the future and a unix timestamp in seconds", payload.message.chat.id)
+        console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
+        if(isNaN(time) || time < (Date.now() / 1000) || name == null) {
+            return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id)
         }
         
         let jobs = await get_job_data()
