@@ -41,7 +41,7 @@ const POSITIVE_AFFECTION_PROMPTS=[
     "Communication is overwhelmingly positive, marked by continuous expressions of enthusiasm and strong support. Basically married to you at this point",
 ]
 const COMMANDS = {
-    "score" : async (payload) => {
+    "score" : async (payload, args) => {
         let chatId = payload.message.chat.id
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
@@ -168,10 +168,11 @@ export default {
 
         if (payload.message.text.startsWith("/")) {
             console.log("it's a command")
-            let split_cmd = payload.message.text.split(' ')
+            let split_cmd = payload.message.text.split('@')[0].split(' ')
             let cmd = COMMANDS[split_cmd[0].replace("/","")]
+            cmd.shift()
             if (cmd) {
-                await cmd(payload)
+                await cmd(payload, cmd)
             } else {
                 await sendMessage("I don't know this command", payload.message.chat.id)   
             }
