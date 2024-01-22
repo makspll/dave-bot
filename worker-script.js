@@ -69,7 +69,11 @@ const COMMANDS = {
     },
     "info" : async (payload, args) => {
         return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via `/optin`", payload.message.chat.id)
-    }
+    },
+    "broadcast_info": async (payload,args) => {
+        let users = await getUserIdsInChat(payload.message.chat.id)
+        console.log(JSON.stringify(users))
+    },
 }
 const TRIGGERS = [
     {
@@ -512,5 +516,20 @@ async function sendMessage(msg, chatId) {
         console.log("error in sending message")
         console.log(JSON.stringify(await data.json()))
     }
-  }
+}
+
+
+async function getUserIdsInChat(chatId) {
+    console.log("fetching users");
+    // Calling the API endpoint to send a telegram message
+    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/getFullChat?chat_id=${chatId}`
+    const data = await fetch(url);
+    if (data.ok) {
+        console.log("got data ok")
+        return await data.json().users
+    } else {
+        console.log("error in fetching user data from chat")
+        console.log(JSON.stringify(await data.json()))
+    }
+}
 
