@@ -69,11 +69,7 @@ const COMMANDS = {
     },
     "info" : async (payload, args) => {
         return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via `/optin`", payload.message.chat.id)
-    },
-    "broadcast_info": async (payload,args) => {
-        let users = await getUserIdsInChat(payload.message.chat.id)
-        console.log(JSON.stringify(users))
-    },
+    }
 }
 const TRIGGERS = [
     {
