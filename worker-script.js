@@ -77,7 +77,7 @@ const TRIGGERS = [
       "trigger": ["blahaj"],
       "chance" : 0.2,
       "pos_sent_variations": ["All hail blahaj"],
-      "neg_sent_variations": ["Blahaj slander is punishable by death", "Roses are red, violets are blue, your entrails will be extracted and I'll have a barbecue."],
+      "neg_sent_variations": ["Blahaj slander is punishable by death", "Roses are red, violets are blue, your entrails will be safe if you love Blahaj too."],
       "gpt_prompt": [
         "Somebody just mentioned Blahaj are saviour, express your love to blahaj",
       ],
