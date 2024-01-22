@@ -41,7 +41,7 @@ const POSITIVE_AFFECTION_PROMPTS=[
     "Communication is overwhelmingly positive, marked by continuous expressions of enthusiasm and strong support. Basically married to you at this point",
 ]
 const COMMANDS = {
-    "score" : (payload) => {
+    "score" : async (payload) => {
         let chatId = payload.message.chat.id
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
