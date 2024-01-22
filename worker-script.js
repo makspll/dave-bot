@@ -70,7 +70,7 @@ const TRIGGERS = [
       "gpt_prompt": [
         "Tell society what it needs to hear about dehumidifiers",
         "Spit some hard truth about dehumidifiers",
-        "Your hottest take on dehumidifiers".  
+        "Your hottest take on dehumidifiers",
       ],
     },
     {
