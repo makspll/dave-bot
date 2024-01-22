@@ -94,7 +94,7 @@ const COMMANDS = {
         })
         await store_job_data(jobs)
 
-        return sendMessage("Scheduled job: " + name + ", at: " + new Date(time*1000))
+        return sendMessage("Scheduled job: " + name + ", at: " + new Date(time*1000), payload.message.chat.id)
     }
 }
 const TRIGGERS = [
