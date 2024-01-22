@@ -51,22 +51,25 @@ const COMMANDS = {
        return sendMessage("My triggers are: " + text, payload.message.chat.id)
     },
     "optout" : async (payload, args) => {
-        let ids = await get_excluded_ids()
-        ids[payload.message.from.id] = true
-        await store_excluded_ids(ids)
+        let ids = await get_included_ids()
+        delete ids[payload.message.from.id] 
+        await store_included_ids(ids)
         
         let data = get_affection_data()
         delete data[payload.message.from.id]
-        await store_affection_data()
+        await store_affection_data(data)
         
         return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id)
     },
     "optin" : async (payload, args) => {
-        let ids = await get_excluded_ids()
-        ids[payload.message.from.id] = false
-        await store_excluded_ids(ids)
+        let ids = await get_included_ids()
+        ids[payload.message.from.id] = true
+        await store_included_ids(ids)
         return sendMessage("You have been opted out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id)
     },
+    "info" : async (payload, args) => {
+        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via `/optin`", payload.message.chat.id)
+    }
 }
 const TRIGGERS = [
     {
@@ -231,9 +234,9 @@ export default {
             return new Response("OK")
         }
           
-        let excluded_ids = await get_excluded_ids()
-        if (excluded_ids[payload.message.from.id] === true) {
-            console.log("user in exclusion list, ignoring message");
+        let included_ids = await get_included_ids()
+        if (included_ids[payload.message.from.id] !== true) {
+            console.log("user not in inclusion list, ignoring message");
             return new Response("Ok")
         }
           
@@ -282,7 +285,7 @@ async function call_gpt(system_prompt, message_history) {
     return response
 }
 
-async function get_excluded_ids() {
+async function get_included_ids() {
     const KEY = "excluded_users"
     let data = await ENV.KV_STORE.get(KEY, { cacheTtl: 3600 });
     if (!data) {
@@ -293,7 +296,7 @@ async function get_excluded_ids() {
     return JSON.parse(data)
 }
 
-async function store_excluded_ids(ids) {
+async function store_included_ids(ids) {
     let data = JSON.stringify(ids);
     console.log("Storing exclusion data: " + data)
     const KEY="excluded_users"
