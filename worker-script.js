@@ -49,7 +49,7 @@ const COMMANDS = {
     },
     "listtriggers" : async (payload, args) => {
        let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
-       return sendMessage("My triggers are: " + text)
+       return sendMessage("My triggers are: " + text, payload.message.chat.id)
     }
 }
 const TRIGGERS = [
