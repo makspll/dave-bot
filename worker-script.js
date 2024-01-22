@@ -48,7 +48,7 @@ const COMMANDS = {
         return sendMessage("Your total sentiment is: " + score,chatId)
     },
     "listtriggers" : async (payload, args) => {
-       let text = TRIGGERS.map(t => t.trigger.join(" ")).join(",")
+       let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
        return sendMessage("My triggers are: " + text)
     }
 }
