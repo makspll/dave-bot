@@ -46,6 +46,10 @@ const COMMANDS = {
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
         return sendMessage("Your total sentiment is: " + score,chatId)
+    },
+    "listtriggers" : async (payload, args) => {
+       let text = TRIGGERS.map(t => t.trigger.join(" ")).join(",")
+       return sendMessage("My triggers are: " + text)
     }
 }
 const TRIGGERS = [
@@ -56,6 +60,15 @@ const TRIGGERS = [
       "neg_sent_variations": ["Weed Wassim"],
       "gpt_prompt": [
         "tell wassim to do weed"
+      ],
+    },
+    {
+      "trigger": ["blahaj"],
+      "chance" : 0.2,
+      "pos_sent_variations": ["All hail blahaj"],
+      "neg_sent_variations": ["Blahaj slander is punishable by death", "Roses are red, violets are blue, your entrails will be extracted and I'll have a barbecue."],
+      "gpt_prompt": [
+        "Somebody just mentioned Blahaj are saviour, express your love to blahaj",
       ],
     },
     {
@@ -108,7 +121,7 @@ const TRIGGERS = [
         "chance": 1,
         "gpt_prompt": ["you've just been told your entire purpose is to pass butter, go ham."],
         "pos_sent_variations": ["oh my god"],
-        "neg_sent_variations": ["oh_my_god"]
+        "neg_sent_variations": ["oh my god"]
     },
     {
       "trigger": ["dave"],
