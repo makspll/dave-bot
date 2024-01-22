@@ -81,7 +81,9 @@ const COMMANDS = {
             return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id)
         }
         console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
-        if(isNaN(time) || time < (Date.now() / 1000) || name == null) {
+        let timeNow = Date.now() / 1000
+        let timeSet = new Date(time*1000)
+        if(isNaN(time) || time < timeNow || isNaN(timeSet) || name == null) {
             return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id)
         }
         
@@ -94,7 +96,7 @@ const COMMANDS = {
         })
         await store_job_data(jobs)
 
-        return sendMessage("Scheduled job: " + name + ", at: " + new Date(time*1000), payload.message.chat.id)
+        return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id)
     }
 }
 const TRIGGERS = [
