@@ -190,6 +190,15 @@ const AFINN = {"abandon":-2,"abandoned":-2,"abandons":-2,"abducted":-2,"abductio
 let ENV=null;
 
 export default {
+  //handles cron jobs
+  async scheduled(event, env, ctx) {
+    ENV=env
+    ctx.waitUntil(async () => {
+        // check for jobs
+        let jobs = await get_job_data()
+        console.log("jobs: " + JSON.stringify(jobs))
+    });
+  },
 
   // message structure:
   //   { 
@@ -285,40 +294,43 @@ async function call_gpt(system_prompt, message_history) {
     return response
 }
 
-async function get_included_ids() {
-    const KEY = "excluded_users"
-    let data = await ENV.KV_STORE.get(KEY, { cacheTtl: 3600 });
+
+async function get_kv_object(key, cache_seconds) {
+    let data = await ENV.KV_STORE.get(key, { cacheTtl: cache_seconds });
     if (!data) {
         data = "{}"
-        await ENV.KV_STORE.put(KEY, data)
+        await ENV.KV_STORE.put(key, data)
     }
-    console.log("Reading exclusion data: " + data)
     return JSON.parse(data)
 }
 
+async function store_kv_object(key, value) {
+    let data = JSON.stringify(value);
+    await ENV.KV_STORE.put(key, data)
+}
+
+async function get_included_ids() {
+    return get_kv_object("excluded_users", 3600)
+}
+
 async function store_included_ids(ids) {
-    let data = JSON.stringify(ids);
-    console.log("Storing exclusion data: " + data)
-    const KEY="excluded_users"
-    await ENV.KV_STORE.put(KEY, data)
+    return store_kv_object("excluded_users")
 }
 
 async function get_affection_data() {
-  const KEY = "affection_data"
-  let data = await ENV.KV_STORE.get(KEY)
-  if (!data) {
-    data = "{}"
-    await ENV.KV_STORE.put(KEY, data)
-  }
-  console.log("Retrieving affection data: " + data)
-  return JSON.parse(data)
+    return get_kv_object("affection_data", 10)
 }
 
 async function store_affection_data(data) {
-    data = JSON.stringify(data);
-    console.log("Storing affection data: " + data)
-    const KEY="affection_data"
-    await ENV.KV_STORE.put(KEY, data)
+    return store_kv_object("affection_data", data)
+}
+
+async function get_job_data() {
+    return get_kv_object("jobs", 0)
+}
+
+async function store_job_data(data) {
+    return store_kv_object("jobs", data)
 }
 
 // pick random element in array
