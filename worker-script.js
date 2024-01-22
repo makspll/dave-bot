@@ -231,8 +231,8 @@ export default {
             return new Response("OK")
         }
           
-        let get_excluded_ids = await get_excluded_ids()
-        if (get_excluded_ids[payload.message.from.id] === true) {
+        let excluded_ids = await get_excluded_ids()
+        if (excluded_ids[payload.message.from.id] === true) {
             console.log("user in exclusion list, ignoring message");
             return new Response("Ok")
         }
@@ -294,7 +294,7 @@ async function get_excluded_ids() {
 }
 
 async function store_excluded_ids(ids) {
-    data = JSON.stringify(ids);
+    let data = JSON.stringify(ids);
     console.log("Storing exclusion data: " + data)
     const KEY="excluded_users"
     await ENV.KV_STORE.put(KEY, data)
