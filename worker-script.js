@@ -15,7 +15,7 @@ const SYSTEM_PROMPT= `
     ` 
 const KEYWORD_GPT_CHANCE=0.01;
 const MAX_AFFECTION_LEVEL=10;
-const SENTIMENT_PER_AFFECTION_LEVEL=10;
+const SENTIMENT_PER_AFFECTION_LEVEL=5;
 const NEGATIVE_AFFECTION_PROMPTS=[
     "User persistently floods messages with intense and explicit hostility, showing extreme negativity. Deserves pure hatred and slander",
     "Frequent passive-aggressive remarks coupled with a distinct lack of cooperation. Needs to take a walk off a cliff",
@@ -29,8 +29,8 @@ const NEGATIVE_AFFECTION_PROMPTS=[
     "Consistent icy interactions, marked by palpable tension and minimal engagement.",
 ]
 const POSITIVE_AFFECTION_PROMPTS=[
-    "User engages in communication with a neutral tone, expressing neither positivity nor negativity.",
-    "Occasional messages convey mild support, with an overall neutral demeanor.",
+    "User engages in communication with a neutral tone, expressing neutrality which can easilly be mistaken for positivity.",
+    "Occasional messages convey mild support, with an overall positive demeanor.",
     "Consistent expressions of mild approval, though interactions remain largely neutral.",
     "Frequent positive affirmations, but overall communication maintains a moderate tone.",
     "Regularly expresses support and positivity, with occasional neutral responses.",
@@ -40,6 +40,14 @@ const POSITIVE_AFFECTION_PROMPTS=[
     "User consistently engages positively, displaying genuine interest and support. Basically dating you at this point",
     "Communication is overwhelmingly positive, marked by continuous expressions of enthusiasm and strong support. Basically married to you at this point",
 ]
+const COMMANDS = {
+    "score" : (payload) => {
+        let chatId = payload.message.chat.id
+        let score = await get_affection_data();
+        score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
+        sendMessage("Your total sentiment is: " + score,chatId)
+    }
+}
 const TRIGGERS = [
     {
       "trigger": ["weed", "wassim"],
@@ -96,6 +104,13 @@ const TRIGGERS = [
         ]
     },
     {
+        "trigger": ["you", "pass", "butter", "dave"],
+        "chance": 1,
+        "gpt_prompt": ["you've just been told your entire purpose is to pass butter, go ham."],
+        "pos_sent_variations": ["oh my god"],
+        "neg_sent_variations": ["oh_my_god"]
+    },
+    {
       "trigger": ["dave"],
       "chance": 0.3,
       "pos_sent_variations": ["Yeah baby?", "It is I Dave", "I am here for you", "I love you", "I fucking love you", "what's my purpose?"],
@@ -149,9 +164,20 @@ export default {
         
         // Checking if the payload comes from Telegram
         const chatId = payload.message.chat.id
-
-
         console.log("message is: " + payload.message.text)
+
+        if (payload.message.text.startsWith("/")) {
+            console.log("it's a command")
+            let split_cmd = payload.message.text.split(' ')
+            let cmd = COMMANDS[split_cmd[0].replace("/","")]
+            if (cmd) {
+                await cmd(payload)
+            } else {
+                await sendMessage("I don't know this command", payload.message.chat.id)   
+            }
+            return new Response("OK")
+        }
+          
 
         let words = to_words(payload.message.text)
         if (words.length > 10) {
@@ -160,7 +186,6 @@ export default {
         await hardlyfier(words, payload.message.chat.id);
         await sickomode(sender, payload.message.chat.id);
         await keywords(words,  payload.message.chat.id, payload.message.from.id);
-        await youpassbutterdave(words,  payload.message.chat.id);      
       }
     }
     return new Response("OK") // Doesn't really matter
@@ -393,18 +418,6 @@ async function sickomode(sender, chatId) {
   let random = Math.floor(Math.random() * sickomodes.length);
 
   await sendMessage(sender + ", " + sickomodes[random], chatId);
-}
-
-// returns true if the trigger was satsified
-async function youpassbutterdave(words,chatId){
-  const sentence = words.join(' ');
-  const regex = /you pass butter dave/i; // Adding 'i' flag for case-insensitivity
-  const isMatch = regex.test(sentence);
-  if (isMatch){
-    await sendMessage("Oh my God.", chatId);
-    return true
-  }
-  return false;
 }
 
 async function sendMessage(msg, chatId) {
