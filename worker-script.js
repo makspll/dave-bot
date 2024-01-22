@@ -45,7 +45,7 @@ const COMMANDS = {
         let chatId = payload.message.chat.id
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
-        sendMessage("Your total sentiment is: " + score,chatId)
+        return sendMessage("Your total sentiment is: " + score,chatId)
     }
 }
 const TRIGGERS = [
