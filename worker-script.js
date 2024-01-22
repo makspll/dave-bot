@@ -245,7 +245,7 @@ export default {
             return new Response("Ok")
         }
         await hardlyfier(words, payload.message.chat.id);
-        await sickomode(sender, payload.message.chat.id);
+        await sickomode(payload.message.from.first_name, payload.message.chat.id);
         await keywords(words,  payload.message.chat.id, payload.message.from.id);
       } else {
         console.log(JSON.stringify(payload))
