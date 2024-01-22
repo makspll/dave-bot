@@ -223,6 +223,7 @@ export default {
   async fetch(request, env, ctx) {
     // for easy access
     ENV=env;
+    console.log("fetch callback")
     if (request.method === "POST") {
       const payload = await request.json() 
       // Getting the POST request JSON payload
