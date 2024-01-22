@@ -42,6 +42,15 @@ const POSITIVE_AFFECTION_PROMPTS=[
 ]
 const TRIGGERS = [
     {
+      "trigger": ["weed", "wassim"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["Weed Wassim"],
+      "neg_sent_variations": ["Weed Wassim"],
+      "gpt_prompt": [
+        "tell wassim to do weed"
+      ],
+    },
+    {
       "trigger": ["ai"],
       "chance": 0.3,
       "pos_sent_variations": ["A.I. is bad and you should feel bad", "A.I.?? Fucking bunch of if statements"],
