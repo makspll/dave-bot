@@ -447,7 +447,7 @@ async function sendMessage(msg, chatId) {
           return resp.json()
       } else {
           console.log("error in sending message");
-          throw new resp.body();
+          throw resp.body();
       }
     }).catch(e => {
          console.log(e)   
