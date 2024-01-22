@@ -170,9 +170,9 @@ export default {
             console.log("it's a command")
             let split_cmd = payload.message.text.split('@')[0].split(' ')
             let cmd = COMMANDS[split_cmd[0].replace("/","")]
-            cmd.shift()
+            split_cmd.shift()
             if (cmd) {
-                await cmd(payload, cmd)
+                await cmd(payload, split_cmd)
             } else {
                 await sendMessage("I don't know this command", payload.message.chat.id)   
             }
