@@ -63,6 +63,17 @@ const TRIGGERS = [
       ],
     },
     {
+      "trigger": ["dehumidifier"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["My step mom is a dehumidifier", "My best man was a dehumidifier"],
+      "neg_sent_variations": ["I will not tolerate dehumidifier slander", "I am calling the police"],
+      "gpt_prompt": [
+        "Tell society what it needs to hear about dehumidifiers",
+        "Spit some hard truth about dehumidifiers",
+        "Your hottest take on dehumidifiers".  
+      ],
+    },
+    {
       "trigger": ["blahaj"],
       "chance" : 0.2,
       "pos_sent_variations": ["All hail blahaj"],
