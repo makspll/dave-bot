@@ -226,7 +226,7 @@ export default {
         if (j.type && j.type === "reminder30") {
             let timeUntil = j.time - Math.floor(Date.now() / 1000) 
             if (timeUntil > 0) {
-                if (timeUntil < (60 * 60 * 30)) {
+                if (timeUntil < 1800) {
                     msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId))
                     return false
                 }
