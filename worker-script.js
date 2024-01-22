@@ -65,10 +65,10 @@ const COMMANDS = {
         let ids = await get_included_ids()
         ids[payload.message.from.id] = true
         await store_included_ids(ids)
-        return sendMessage("You have been opted in, to opt out use '/optout'.", payload.message.chat.id)
+        return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id)
     },
     "info" : async (payload, args) => {
-        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via `/optin`", payload.message.chat.id)
+        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id)
     }
 }
 const TRIGGERS = [
