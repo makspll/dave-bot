@@ -75,10 +75,14 @@ const COMMANDS = {
         let time
         let name
         try {
-            time = Number(args[0])
+            time = parseInt(args[0])
             name = args[1]
         } catch (err) {
-            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime name`")
+            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id)
+        }
+
+        if(isNaN(time) || time <= (Date.now() / 1000)) {
+            return sendMessage("date is invalid, needs to be in the future and a unix timestamp in seconds", payload.message.chat.id)
         }
         
         let jobs = await get_job_data()
