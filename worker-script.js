@@ -522,11 +522,11 @@ async function sendMessage(msg, chatId) {
 async function getUserIdsInChat(chatId) {
     console.log("fetching users");
     // Calling the API endpoint to send a telegram message
-    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/getFullChat?chat_id=${chatId}`
+    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/getChatMembers?chat_id=${chatId}`
     const data = await fetch(url);
     if (data.ok) {
         console.log("got data ok")
-        return await data.json().users
+        return await data.json().result.map(u => u.user.id)
     } else {
         console.log("error in fetching user data from chat")
         console.log(JSON.stringify(await data.json()))
