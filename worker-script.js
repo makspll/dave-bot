@@ -318,7 +318,7 @@ async function store_included_ids(ids) {
 }
 
 async function get_affection_data() {
-    return get_kv_object("affection_data", 10)
+    return get_kv_object("affection_data", 60)
 }
 
 async function store_affection_data(data) {
@@ -326,7 +326,7 @@ async function store_affection_data(data) {
 }
 
 async function get_job_data() {
-    return get_kv_object("jobs", 0)
+    return get_kv_object("jobs", 60)
 }
 
 async function store_job_data(data) {
