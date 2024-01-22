@@ -193,6 +193,7 @@ export default {
   //handles cron jobs
   async scheduled(event, env, ctx) {
     ENV=env
+    console.log("scheduled callback")
     ctx.waitUntil(async () => {
         // check for jobs
         let jobs = await get_job_data()
