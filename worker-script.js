@@ -42,15 +42,31 @@ const POSITIVE_AFFECTION_PROMPTS=[
 ]
 const COMMANDS = {
     "score" : async (payload, args) => {
-        let chatId = payload.message.chat.id
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
-        return sendMessage("Your total sentiment is: " + score,chatId)
+        return sendMessage("Your total sentiment is: " + score,payload.message.chat.id)
     },
     "listtriggers" : async (payload, args) => {
        let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
        return sendMessage("My triggers are: " + text, payload.message.chat.id)
-    }
+    },
+    "optout" : async (payload, args) => {
+        let ids = await get_excluded_ids()
+        ids[payload.message.from.id] = true
+        await store_excluded_ids(ids)
+        
+        let data = get_affection_data()
+        delete data[payload.message.from.id]
+        await store_affection_data()
+        
+        return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id)
+    },
+    "optin" : async (payload, args) => {
+        let ids = await get_excluded_ids()
+        ids[payload.message.from.id] = false
+        await store_excluded_ids(ids)
+        return sendMessage("You have been opted out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id)
+    },
 }
 const TRIGGERS = [
     {
@@ -199,14 +215,8 @@ export default {
       const payload = await request.json() 
       // Getting the POST request JSON payload
       if ('message' in payload && payload.message.text) { 
-        let sender = payload.message.from.first_name;
-        console.log("Received telegram message from chat: " + (payload.message.chat.title || sender))
 
-        console.log("Sender: " + sender);
-        
-        // Checking if the payload comes from Telegram
-        const chatId = payload.message.chat.id
-        console.log("message is: " + payload.message.text)
+        console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))        
 
         if (payload.message.text.startsWith("/")) {
             console.log("it's a command")
@@ -221,7 +231,12 @@ export default {
             return new Response("OK")
         }
           
-
+        let get_excluded_ids = await get_excluded_ids()
+        if (get_excluded_ids[payload.message.from.id] === true) {
+            console.log("user in exclusion list, ignoring message");
+            return new Response("Ok")
+        }
+          
         let words = to_words(payload.message.text)
         if (words.length > 10) {
             return new Response("Ok")
@@ -267,6 +282,24 @@ async function call_gpt(system_prompt, message_history) {
     return response
 }
 
+async function get_excluded_ids() {
+    const KEY = "excluded_users"
+    let data = await ENV.KV_STORE.get(KEY, { cacheTtl: 3600 });
+    if (!data) {
+        data = "{}"
+        await ENV.KV_STORE.put(KEY, data)
+    }
+    console.log("Reading exclusion data: " + data)
+    return JSON.parse(data)
+}
+
+async function store_excluded_ids(ids) {
+    data = JSON.stringify(ids);
+    console.log("Storing exclusion data: " + data)
+    const KEY="excluded_users"
+    await ENV.KV_STORE.put(KEY, data)
+}
+
 async function get_affection_data() {
   const KEY = "affection_data"
   let data = await ENV.KV_STORE.get(KEY)
@@ -275,8 +308,7 @@ async function get_affection_data() {
     await ENV.KV_STORE.put(KEY, data)
   }
   console.log("Retrieving affection data: " + data)
-  data = JSON.parse(data)
-  return data
+  return JSON.parse(data)
 }
 
 async function store_affection_data(data) {
