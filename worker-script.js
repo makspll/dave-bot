@@ -71,6 +71,7 @@ const COMMANDS = {
         return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id)
     },
     "schedule" : async (payload, args) => {
+        console.log("received schedule command with args: " + args)
         let time
         let name
         try {
