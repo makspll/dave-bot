@@ -69,6 +69,25 @@ const COMMANDS = {
     },
     "info" : async (payload, args) => {
         return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id)
+    },
+    "schedule" : async (payload, args) => {
+        let time
+        let name
+        try {
+            time = Number(args[0])
+            name = args[1]
+        } catch (err) {
+            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime name`")
+        }
+        
+        let jobs = await get_job_data()
+        jobs.push({
+            "chatId": payload.message.chat.id,
+            "time": time,
+            "name": name,
+            "type": "reminder30",
+        })
+        return store_job_data(jobs)
     }
 }
 const TRIGGERS = [
@@ -194,11 +213,25 @@ export default {
   async scheduled(event, env, ctx) {
     ENV=env
     console.log("scheduled callback")
-    ctx.waitUntil(async () => {
-        // check for jobs
-        let jobs = await get_job_data()
-        console.log("jobs: " + JSON.stringify(jobs))
-    });
+    let jobs = await get_job_data()
+    console.log("jobs: " + JSON.stringify(jobs))
+
+    
+    jobs = jobs.filter(j => {
+        if (j.type && j.type === "reminder30") {
+            let timeUntil = j.time - Math.floor(Date.now() / 1000) 
+            if (timeUntil > 0) {
+                if (timeUntil < (60 * 60 * 30)) {
+                    await sendMessage("Your scheduled event is in less than 30 mins: " + j.name, j.chatId)
+                    return false
+                }
+                return true
+            }
+        } 
+        return false
+    })
+
+    await store_job_data(jobs)
   },
 
   // message structure:
@@ -297,10 +330,10 @@ async function call_gpt(system_prompt, message_history) {
 }
 
 
-async function get_kv_object(key, cache_seconds) {
+async function get_kv_object(key, cache_seconds, defaultVal="{}") {
     let data = await ENV.KV_STORE.get(key, { cacheTtl: cache_seconds });
     if (!data) {
-        data = "{}"
+        data = defaultVal
         await ENV.KV_STORE.put(key, data)
     }
     return JSON.parse(data)
@@ -328,7 +361,7 @@ async function store_affection_data(data) {
 }
 
 async function get_job_data() {
-    return get_kv_object("jobs", 60)
+    return get_kv_object("jobs", 60, "[]")
 }
 
 async function store_job_data(data) {
