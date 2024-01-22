@@ -76,7 +76,7 @@ const COMMANDS = {
         let name
         try {
             time = parseInt(args[0])
-            name = args.slice(1).join(" ")
+            name = to_words(args.slice(1).join(" ")).join(" ")
         } catch (err) {
             return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id)
         }
