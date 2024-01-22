@@ -221,13 +221,13 @@ export default {
     let jobs = await get_job_data()
     console.log("jobs: " + JSON.stringify(jobs))
 
-    
-    jobs = jobs.filter(async j => {
+    let msgs = []
+    jobs = jobs.filter(j => {
         if (j.type && j.type === "reminder30") {
             let timeUntil = j.time - Math.floor(Date.now() / 1000) 
             if (timeUntil > 0) {
                 if (timeUntil < (60 * 60 * 30)) {
-                    await sendMessage("Your scheduled event is in less than 30 mins: " + j.name, j.chatId)
+                    msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId))
                     return false
                 }
                 return true
@@ -235,6 +235,10 @@ export default {
         } 
         return false
     })
+
+    for(let i = 0; i < msgs.length; i++) {
+       await msgs[i]()
+    }
 
     await store_job_data(jobs)
   },
