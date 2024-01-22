@@ -443,10 +443,10 @@ async function sendMessage(msg, chatId) {
     const data = await fetch(url);
     if (data.ok) {
         console.log("message went ok")
-        return await resp.json()
+        return await data.json()
     } else {
         console.log("error in sending message")
-        console.log(JSON.stringify(await resp.json()))
+        console.log(JSON.stringify(await data.json()))
     }
   }
 
