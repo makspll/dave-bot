@@ -441,10 +441,18 @@ async function sendMessage(msg, chatId) {
     // Calling the API endpoint to send a telegram message
     const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?chat_id=${chatId}&text=${msg}`
     const data = await fetch(url).then(resp => {
-      console.log("Sending message went ok: " + resp.ok)
-      console.log(JSON.stringify(resp, null, 4))
-      return resp.json()
-    }).catch(e => console.log(e));
+      if (resp.ok) {
+          console.log("Sending message went ok")
+          console.log(JSON.stringify(resp, null, 4))
+          return resp.json()
+      } else {
+          console.log("error in sending message");
+          let body = await resp.body;
+          throw new Error(body);
+      }
+    }).catch(e => {
+         console.log(e)   
+    });
     
   }
 
