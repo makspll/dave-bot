@@ -298,16 +298,19 @@ export default {
             console.log("user not in inclusion list, ignoring message");
             return new Response("Ok")
         }
+        console.log("user in inclusion list")
           
         let words = to_words(payload.message.text)
         if (words.length > 10) {
             return new Response("Ok")
         }
+
+        console.log("processing triggers")
         await hardlyfier(words, payload.message.chat.id);
         await sickomode(payload.message.from.first_name, payload.message.chat.id);
         await keywords(words,  payload.message.chat.id, payload.message.from.id);
       } else {
-        console.log(JSON.stringify(payload))
+        console.log(JSON.stringify(payload || {}))
       }
     }
     return new Response("OK") // Doesn't really matter
