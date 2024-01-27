@@ -355,8 +355,10 @@ async function get_kv_object(key, cache_seconds, defaultVal="{}") {
 }
 
 async function store_kv_object(key, value) {
-    let data = JSON.stringify(value);
-    await ENV.KV_STORE.put(key, data)
+    if(value != null) {
+        let data = JSON.stringify(value);
+        await ENV.KV_STORE.put(key, data)
+    }
 }
 
 async function get_included_ids() {
