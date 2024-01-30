@@ -101,22 +101,32 @@ const COMMANDS = {
 }
 const TRIGGERS = [
     {
-      "trigger": ["google", "en", "passant"],
-      "chance" : 0.3,
-      "pos_sent_variations": ["holy hell"],
-      "neg_sent_variations": ["holy hell"],
+        "trigger": ["what", "do", "you", "think", "of" ,"me" ,"dave"],
+        "chance": 1,
+        "gpt_chance": 1,
+        "gpt_prompt": [
+            "Tell the user what you think of them based on your previous relationship, be honest, and worry not about swearing or being wholesome, either way.",
+            "Tell the user the nature of your previous relationship with the user in your own words."
+        ]
     },
     {
-      "trigger": ["holy","hell"],
-      "chance" : 0.3,
-      "pos_sent_variations": ["new response just dropped"],
-      "neg_sent_variations": ["new response just dropped"],
+        "trigger": ["you", "pass", "butter", "dave"],
+        "chance": 1,
+        "gpt_prompt": ["you've just been told your entire purpose is to pass butter, go ham."],
+        "pos_sent_variations": ["oh my god"],
+        "neg_sent_variations": ["oh my god"]
     },
     {
       "trigger": ["new", "response", "just", "dropped"],
       "chance" : 0.3,
       "pos_sent_variations": ["actual zombie"],
       "neg_sent_variations": ["actual zombie"],
+    },
+    {
+      "trigger": ["google", "en", "passant"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["holy hell"],
+      "neg_sent_variations": ["holy hell"],
     },
     {
       "trigger": ["weed", "wassim"],
@@ -128,6 +138,12 @@ const TRIGGERS = [
       ],
     },
     {
+      "trigger": ["holy","hell"],
+      "chance" : 0.3,
+      "pos_sent_variations": ["new response just dropped"],
+      "neg_sent_variations": ["new response just dropped"],
+    },
+    {
       "trigger": ["dehumidifier"],
       "chance" : 0.3,
       "pos_sent_variations": ["My step mom is a dehumidifier", "My best man was a dehumidifier"],
@@ -137,6 +153,16 @@ const TRIGGERS = [
         "Spit some hard truth about dehumidifiers",
         "Your hottest take on dehumidifiers",
       ],
+    },
+    {
+        "trigger": ["single"],
+        "chance": 0.3,
+        "gpt_chance" : 0.3,
+        "pos_sent_variations": ["have you tried polyamory?"],
+        "neg_sent_variations": ["have you tried polyamory?"]
+        "gpt_prompt":[
+            "Ask the user if they tried polyamory, and explain it's very economical in TWO SENTENCES"
+        ]
     },
     {
       "trigger": ["blahaj"],
@@ -182,22 +208,6 @@ const TRIGGERS = [
           "Tell the previous user that they seriously need to get a job in a very condescending way while being very alloof and in extremely simple language",
           "Somebody needs to GET A JOB.. SNAP AT THEM", 
       ]
-    },
-    {
-        "trigger": ["what", "do", "you", "think", "of" ,"me" ,"dave"],
-        "chance": 1,
-        "gpt_chance": 1,
-        "gpt_prompt": [
-            "Tell the user what you think of them based on your previous relationship, be honest, and worry not about swearing or being wholesome, either way.",
-            "Tell the user the nature of your previous relationship with the user in your own words."
-        ]
-    },
-    {
-        "trigger": ["you", "pass", "butter", "dave"],
-        "chance": 1,
-        "gpt_prompt": ["you've just been told your entire purpose is to pass butter, go ham."],
-        "pos_sent_variations": ["oh my god"],
-        "neg_sent_variations": ["oh my god"]
     },
     {
       "trigger": ["dave"],
