@@ -159,7 +159,7 @@ const TRIGGERS = [
         "chance": 0.3,
         "gpt_chance" : 0.3,
         "pos_sent_variations": ["have you tried polyamory?"],
-        "neg_sent_variations": ["have you tried polyamory?"]
+        "neg_sent_variations": ["have you tried polyamory?"],
         "gpt_prompt":[
             "Ask the user if they tried polyamory, and explain it's very economical in TWO SENTENCES"
         ]
