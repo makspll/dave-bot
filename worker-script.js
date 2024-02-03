@@ -384,7 +384,7 @@ async function get_included_ids() {
 }
 
 async function store_included_ids(ids) {
-    return store_kv_object("excluded_users")
+    return store_kv_object("excluded_users", ids)
 }
 
 async function get_affection_data() {
