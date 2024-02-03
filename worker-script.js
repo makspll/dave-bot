@@ -364,6 +364,7 @@ async function get_kv_object(key, cache_seconds, defaultVal="{}") {
         data = defaultVal
         await ENV.KV_STORE.put(key, data)
     }
+    console.log("Retrieved data: " + data + " at key: " + key)
     return JSON.parse(data)
 }
 
