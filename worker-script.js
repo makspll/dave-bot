@@ -378,7 +378,7 @@ async function store_kv_object(key, value) {
 }
 
 async function get_included_ids() {
-    return get_kv_object("excluded_users", 60)
+    return await get_kv_object("excluded_users", 60)
 }
 
 async function store_included_ids(ids) {
