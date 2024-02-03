@@ -369,8 +369,11 @@ async function get_kv_object(key, cache_seconds, defaultVal="{}") {
 
 async function store_kv_object(key, value) {
     if(value != null) {
+        console.log("storing: " + value + " at key: " + key)
         let data = JSON.stringify(value);
         await ENV.KV_STORE.put(key, data)
+    } else {
+        console.log("Could not store KV object as it was null")
     }
 }
 
