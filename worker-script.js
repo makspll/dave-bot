@@ -156,7 +156,7 @@ const TRIGGERS = [
       ],
     },
     {
-        "trigger": ["USA"],
+        "trigger": ["usa"],
         "chance": 1,
         "gpt_chance" : 0,
         "pos_sent_variations": ["USA"],
