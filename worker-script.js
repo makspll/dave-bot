@@ -439,7 +439,7 @@ function calculate_sentiment(words) {
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
 async function hardlyfier(words, chatId) {
   let hers = words.filter(word => {
-    return word.length > 2 && (word.endsWith('er') || word.endsWith('ers'));
+    return word.length > 2 && word.endsWith('er');
   }) 
 
   // 1 - P(no triggers
