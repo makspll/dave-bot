@@ -44,11 +44,11 @@ const COMMANDS = {
     "score" : async (payload, args) => {
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
-        return sendMessage("Your total sentiment is: " + score,payload.message.chat.id)
+        return sendMessage("Your total sentiment is: " + score,payload.message.chat.id, delay=0)
     },
     "listtriggers" : async (payload, args) => {
        let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
-       return sendMessage("My triggers are: " + text, payload.message.chat.id)
+       return sendMessage("My triggers are: " + text, payload.message.chat.id, delay=0)
     },
     "optout" : async (payload, args) => {
         let ids = await get_included_ids()
@@ -59,17 +59,17 @@ const COMMANDS = {
         delete data[payload.message.from.id]
         await store_affection_data(data)
         
-        return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id)
+        return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, delay=0)
     },
     "optin" : async (payload, args) => {
         let ids = await get_included_ids()
         console.log("ids: " + ids)
         ids[payload.message.from.id] = true
         await store_included_ids(ids)
-        return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id)
+        return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id, delay=0)
     },
     "info" : async (payload, args) => {
-        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id)
+        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id, delay=0)
     },
     "schedule" : async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -79,13 +79,13 @@ const COMMANDS = {
             time = parseInt(args[0])
             name = to_words(args.slice(1).join(" ")).join(" ")
         } catch (err) {
-            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id)
+            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id, delay=0)
         }
         console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
         let timeNow = Date.now() / 1000
         let timeSet = new Date(time*1000)
         if(isNaN(time) || time < timeNow || isNaN(timeSet) || name == null) {
-            return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id)
+            return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id, delay=0)
         }
         
         let jobs = await get_job_data()
@@ -97,7 +97,7 @@ const COMMANDS = {
         })
         await store_job_data(jobs)
 
-        return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id)
+        return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id, delay=0)
     }
 }
 const TRIGGERS = [
@@ -250,7 +250,7 @@ export default {
             let timeUntil = j.time - Math.floor(Date.now() / 1000) 
             if (timeUntil > 0) {
                 if (timeUntil < 1800) {
-                    msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId))
+                    msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId, delay=0))
                     return false
                 }
                 return true
@@ -306,7 +306,7 @@ export default {
             if (cmd) {
                 await cmd(payload, split_cmd)
             } else {
-                await sendMessage("I don't know this command", payload.message.chat.id)   
+                await sendMessage("I don't know this command", payload.message.chat.id, delay=0)   
             }
             return new Response("OK")
         }
@@ -324,9 +324,9 @@ export default {
         }
 
         console.log("processing triggers")
-        await hardlyfier(words, payload.message.chat.id);
-        await sickomode(payload.message.from.first_name, payload.message.chat.id);
-        await keywords(words,  payload.message.chat.id, payload.message.from.id);
+        await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
+        await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
+        await keywords(words,  payload.message.chat.id, payload.message.from.id, payload.message.message_id);
       } else {
         console.log(JSON.stringify(payload || {}))
       }
@@ -437,7 +437,7 @@ function calculate_sentiment(words) {
 }
 
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
-async function hardlyfier(words, chatId) {
+async function hardlyfier(words, chatId, message_id) {
   let hers = words.filter(word => {
     return word.length > 2 && word.endsWith('er');
   }) 
@@ -448,13 +448,13 @@ async function hardlyfier(words, chatId) {
   console.log("hardly know er probability for message: " + prob);
   if (Math.random() < prob) {
     const text = sample(hers) + "? I hardly know er!!";
-    await sendMessage(text, chatId)
+    await sendMessage(text, chatId, reply_to_message_id=message_id)
   }
   return hers.length > 0
 }
 
 // very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
-async function keywords(words, chatId, senderId) {
+async function keywords(words, chatId, senderId, message_id) {
   let trigger = TRIGGERS.find(list => {
       let phrase = list.trigger;
       // find the phrase in sequence in the words
@@ -493,7 +493,7 @@ async function keywords(words, chatId, senderId) {
             }
             let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt), []);
             if (response) {
-                await sendMessage(response, chatId)
+                await sendMessage(response, chatId, reply_to_message_id=message_id)
             } else {
                 console.error("Error in calling chat gpt")
             }
@@ -512,7 +512,7 @@ async function keywords(words, chatId, senderId) {
             console.log("negative variants: " + trigger.neg_sent_variations)
             const text = sentiment >= 0 ? sample(trigger.pos_sent_variations) : sample(trigger.neg_sent_variations)
             console.log("variant: " + text)
-            await sendMessage(text, chatId)
+            await sendMessage(text, chatId, reply_to_message_id=message_id)
         }
     }
   }
@@ -520,7 +520,7 @@ async function keywords(words, chatId, senderId) {
 }
 
 // very funi roasts aimed at sender
-async function sickomode(sender, chatId) {
+async function sickomode(sender, chatId, message_id) {
   let firing = Math.random() < SICKOMODE_PROBABILITY;
   if (!firing) {
     return
@@ -586,13 +586,19 @@ async function sickomode(sender, chatId) {
 
   let random = Math.floor(Math.random() * sickomodes.length);
 
-  await sendMessage(sender + ", " + sickomodes[random], chatId);
+  await sendMessage(sender + ", " + sickomodes[random], chatId, reply_to_message_id=message_id);
 }
 
-async function sendMessage(msg, chatId) {
+async function sendMessage(msg, chatId, delay=5,reply_to_message_id=null) {
     console.log("sending message: " + msg);
     // Calling the API endpoint to send a telegram message
-    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?chat_id=${chatId}&text=${msg}`
+    if (delay > 0) {
+        // delay by provided amount of seconds + random seconds between 0 and 10
+        const variance = Math.floor(Math.random() * 10);
+        await new Promise((resolve) => setTimeout(resolve, (delay + variance)*1000));
+    }
+    const reply_param = reply_to_message_id ? `&reply_to_message_id=${reply_to_message_id}` : ''
+    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?chat_id=${chatId}&text=${msg}${reply_param}`
     const data = await fetch(url);
     if (data.ok) {
         console.log("message went ok")
