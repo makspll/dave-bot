@@ -220,7 +220,7 @@ const TRIGGERS = [
     {
       "trigger": ["dave"],
       "chance": 0.3,
-      "pos_sent_variations": ["Yeah baby?", "It is I Dave", "I am here for you", "I love you", "I fucking love you", "what's my purpose?"],
+      "pos_sent_variations": ["Yeah baby?", "It is I, Dave", "I am here for you", "I love you", "I fucking love you", "what's my purpose?"],
       "neg_sent_variations": ["fuck you", "how dare you", "idiot", "cunt", "I hate you"],
       "gpt_prompt": [
           "Tell the previous user what you think about them, let loose.",
