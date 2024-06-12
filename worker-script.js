@@ -44,11 +44,11 @@ const COMMANDS = {
     "score" : async (payload, args) => {
         let score = await get_affection_data();
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0 
-        return sendMessage("Your total sentiment is: " + score,payload.message.chat.id, delay=0)
+        return sendMessage("Your total sentiment is: " + score,payload.message.chat.id, 0, null)
     },
     "listtriggers" : async (payload, args) => {
        let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
-       return sendMessage("My triggers are: " + text, payload.message.chat.id, delay=0)
+       return sendMessage("My triggers are: " + text, payload.message.chat.id, 0, null)
     },
     "optout" : async (payload, args) => {
         let ids = await get_included_ids()
@@ -59,17 +59,17 @@ const COMMANDS = {
         delete data[payload.message.from.id]
         await store_affection_data(data)
         
-        return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, delay=0)
+        return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, 0, null)
     },
     "optin" : async (payload, args) => {
         let ids = await get_included_ids()
         console.log("ids: " + ids)
         ids[payload.message.from.id] = true
         await store_included_ids(ids)
-        return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id, delay=0)
+        return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id, 0, null)
     },
     "info" : async (payload, args) => {
-        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id, delay=0)
+        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id, 0, null)
     },
     "schedule" : async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -79,13 +79,13 @@ const COMMANDS = {
             time = parseInt(args[0])
             name = to_words(args.slice(1).join(" ")).join(" ")
         } catch (err) {
-            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id, delay=0)
+            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id, 0, null)
         }
         console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
         let timeNow = Date.now() / 1000
         let timeSet = new Date(time*1000)
         if(isNaN(time) || time < timeNow || isNaN(timeSet) || name == null) {
-            return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id, delay=0)
+            return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id, 0, null)
         }
         
         let jobs = await get_job_data()
@@ -97,7 +97,7 @@ const COMMANDS = {
         })
         await store_job_data(jobs)
 
-        return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id, delay=0)
+        return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id, 0, null)
     }
 }
 const TRIGGERS = [
@@ -250,7 +250,7 @@ export default {
             let timeUntil = j.time - Math.floor(Date.now() / 1000) 
             if (timeUntil > 0) {
                 if (timeUntil < 1800) {
-                    msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId, delay=0))
+                    msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId, 0, null))
                     return false
                 }
                 return true
@@ -291,45 +291,50 @@ export default {
     // for easy access
     ENV=env;
     console.log("fetch callback")
-    if (request.method === "POST") {
-      const payload = await request.json() 
-      // Getting the POST request JSON payload
-      if ('message' in payload && payload.message.text) { 
-
-        console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))        
-
-        if (payload.message.text.startsWith("/")) {
-            console.log("it's a command")
-            let split_cmd = payload.message.text.split('@')[0].split(' ')
-            let cmd = COMMANDS[split_cmd[0].replace("/","")]
-            split_cmd.shift()
-            if (cmd) {
-                await cmd(payload, split_cmd)
-            } else {
-                await sendMessage("I don't know this command", payload.message.chat.id, delay=0)   
+    try {
+        if (request.method === "POST") {
+          const payload = await request.json() 
+          // Getting the POST request JSON payload
+          if ('message' in payload && payload.message.text) { 
+    
+            console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))        
+    
+            if (payload.message.text.startsWith("/")) {
+                console.log("it's a command")
+                let split_cmd = payload.message.text.split('@')[0].split(' ')
+                let cmd = COMMANDS[split_cmd[0].replace("/","")]
+                split_cmd.shift()
+                if (cmd) {
+                    await cmd(payload, split_cmd)
+                } else {
+                    await sendMessage("I don't know this command", payload.message.chat.id, 0, null)   
+                }
+                return new Response("OK")
             }
-            return new Response("OK")
+              
+            let included_ids = await get_included_ids()
+            if (included_ids[payload.message.from.id] !== true) {
+                console.log("user not in inclusion list, ignoring message");
+                return new Response("Ok")
+            }
+            console.log("user in inclusion list")
+              
+            let words = to_words(payload.message.text)
+            if (words.length > 10) {
+                return new Response("Ok")
+            }
+    
+            console.log("processing triggers")
+            await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
+            await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
+            await keywords(words,  payload.message.chat.id, payload.message.from.id, payload.message.message_id);
+          } else {
+            console.log(JSON.stringify(payload || {}))
+          }
         }
-          
-        let included_ids = await get_included_ids()
-        if (included_ids[payload.message.from.id] !== true) {
-            console.log("user not in inclusion list, ignoring message");
-            return new Response("Ok")
-        }
-        console.log("user in inclusion list")
-          
-        let words = to_words(payload.message.text)
-        if (words.length > 10) {
-            return new Response("Ok")
-        }
-
-        console.log("processing triggers")
-        await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
-        await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
-        await keywords(words,  payload.message.chat.id, payload.message.from.id, payload.message.message_id);
-      } else {
-        console.log(JSON.stringify(payload || {}))
-      }
+    } catch (error){
+        await sendMessage(`Error: ${error}`, -4123628343, 0, null)
+        throw error;
     }
     return new Response("OK") // Doesn't really matter
   },
@@ -448,7 +453,7 @@ async function hardlyfier(words, chatId, message_id) {
   console.log("hardly know er probability for message: " + prob);
   if (Math.random() < prob) {
     const text = sample(hers) + "? I hardly know er!!";
-    await sendMessage(text, chatId, reply_to_message_id=message_id)
+    await sendMessage(text, chatId, 5, message_id)
   }
   return hers.length > 0
 }
@@ -493,7 +498,7 @@ async function keywords(words, chatId, senderId, message_id) {
             }
             let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt), []);
             if (response) {
-                await sendMessage(response, chatId, reply_to_message_id=message_id)
+                await sendMessage(response, chatId, 5, message_id)
             } else {
                 console.error("Error in calling chat gpt")
             }
@@ -512,7 +517,7 @@ async function keywords(words, chatId, senderId, message_id) {
             console.log("negative variants: " + trigger.neg_sent_variations)
             const text = sentiment >= 0 ? sample(trigger.pos_sent_variations) : sample(trigger.neg_sent_variations)
             console.log("variant: " + text)
-            await sendMessage(text, chatId, reply_to_message_id=message_id)
+            await sendMessage(text, chatId, 5, message_id)
         }
     }
   }
@@ -586,10 +591,10 @@ async function sickomode(sender, chatId, message_id) {
 
   let random = Math.floor(Math.random() * sickomodes.length);
 
-  await sendMessage(sender + ", " + sickomodes[random], chatId, reply_to_message_id=message_id);
+  await sendMessage(sender + ", " + sickomodes[random], chatId, 5, message_id);
 }
 
-async function sendMessage(msg, chatId, delay=5,reply_to_message_id=null) {
+async function sendMessage(msg, chatId, delay, reply_to_message_id) {
     console.log("sending message: " + msg);
     // Calling the API endpoint to send a telegram message
     if (delay > 0) {
