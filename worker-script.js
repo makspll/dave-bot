@@ -74,7 +74,7 @@ const COMMANDS = {
     "attack": async (payload, args) => {
         if (payload.message.from.id == ENV.GOD_ID) {
             await sendMessage("Yes sir", payload.message.chat.id, 0, null)
-            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "no previous relationship" + ". PROMPT: " + "Absolutely destroy them in one sentence (in a friendly way of course)", [])
+            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them in one sentence (in a friendly way of course)", [])
             return sendMessage(gpt_answer, parseInt(args[0]), 5, null)
         } else {
             return sendMessage("Fuck you", payload.message.chat.id, 0, null)
