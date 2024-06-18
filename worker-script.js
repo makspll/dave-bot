@@ -232,8 +232,8 @@ const TRIGGERS = [
         ]
     },
     {
-       "trigger": "denmark",
-       "chance": 0.9
+       "trigger": ["denmark"],
+       "chance": 0.9,
        "pos_sent_variations": ["Fuck denmark, you and then your mom"],
        "neg_sent_variations": ["Fucking denmark"]
     }
