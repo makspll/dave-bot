@@ -77,6 +77,9 @@ const COMMANDS = {
             console.log("attacks: "+ attacks)
             attacks.push(parseInt(args[0]))
             await store_attack_data(attacks)
+            return sendMessage("Yes sir", payload.message.chat.id, 0, null)
+        } else {
+            return sendMessage("Fuck you", payload.message.chat.id, 0, null)
         }
     },
     "schedule" : async (payload, args) => {
