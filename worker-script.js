@@ -72,7 +72,7 @@ const COMMANDS = {
         return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id, 0, null)
     },
     "attack": async (payload, args) => {
-        if (payload.message.from.id) == ENV.GOD_ID {
+        if (payload.message.from.id == ENV.GOD_ID) {
             let attacks = await get_attack_data()
             console.log("attacks: "+ attacks)
             attacks.push(parseInt(args[0]))
