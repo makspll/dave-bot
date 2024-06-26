@@ -26,7 +26,7 @@ const NEGATIVE_AFFECTION_PROMPTS=[
     "Some dissatisfaction evident, occasional subtle irritation.",
     "Frequent disagreements, noticeable strain in communication.",
     "User often responds curtly, displaying disinterest.",
-    "Consistent icy interactions, marked by palpable tension and minimal engagement.",
+    "User is basically the spawn of satan to you, you hate them, they might have equally killed your entire family instead of talking to you with same effect.",
 ]
 const POSITIVE_AFFECTION_PROMPTS=[
     "User engages in communication with a neutral tone, expressing neutrality which can easilly be mistaken for positivity.",
