@@ -469,7 +469,7 @@ function calculate_sentiment(words) {
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
 async function hardlyfier(words, chatId, message_id) {
   let hers = words.filter(word => {
-    return word.length > 2 && word.endsWith('er');
+    return word.length > 2 && (word.endsWith('er') || word.endsWith('im'));
   }) 
 
   // 1 - P(no triggers
@@ -477,7 +477,9 @@ async function hardlyfier(words, chatId, message_id) {
   let prob = 1 - ((1 - HARDLYKNOWER_PROBABILITY) ** hers.length);
   console.log("hardly know er probability for message: " + prob);
   if (Math.random() < prob) {
-    const text = sample(hers) + "? I hardly know er!!";
+    const target_word = sample(hers);
+    const postfix_trigger = target_word.slice(-2);
+    const text = target_word + `? I hardly know ${postfix_trigger}!`;
     await sendMessage(text, chatId, DEFAULT_MSG_DELAY, message_id)
   }
   return hers.length > 0
