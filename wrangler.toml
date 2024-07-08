@@ -8,3 +8,7 @@ kv_namespaces = [
 
 [triggers]
 crons = ["*/1 * * * *"]
+
+rules = [
+  { type = "CommonJS", globs = ["**/*.js"], fallthrough = true }
+]
