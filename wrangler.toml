@@ -1,5 +1,5 @@
 name = "hardly-know-her-telegram-bot"
-main = "worker-script.js"
+main = "main.js"
 compatibility_date = "2024-01-01"
 
 kv_namespaces = [
