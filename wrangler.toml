@@ -6,9 +6,9 @@ kv_namespaces = [
     { binding = "KV_STORE", id = "5f1b958a44be4df5b768ddb5e420da1e" }
 ]
 
-[triggers]
-crons = ["*/1 * * * *"]
-
 rules = [
   { type = "CommonJS", globs = ["**/*.js"], fallthrough = true }
 ]
+
+[triggers]
+crons = ["*/1 * * * *"]
