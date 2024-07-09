@@ -241,7 +241,7 @@ async function call_tts(text) {
     } else {
         console.log("error in tts call: " + response.status)
         console.log(JSON.stringify(await response.json()))
-        return null
+        throw new Error("Error in tts call")
     }
 }
 
