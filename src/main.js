@@ -220,7 +220,7 @@ async function call_gpt(system_prompt, message_history) {
 }
 
 async function call_tts(text) {
-    let response = await fetch("https://api.openai.com/v1/tts", {
+    let response = await fetch("https://api.openai.com/audio/speech", {
         method: "POST",
         headers: {
             "Accept": "application/json",
@@ -231,9 +231,8 @@ async function call_tts(text) {
             "model": "tts-1",
             "input": text,
             "voice": "onyx",
-            "speed": 1
         })
-    }).then(res => res.arrayBuffer())
+    }).then(res => res.blob())
         .catch(err => console.log("error from open API call: " + err))
 
     return response
