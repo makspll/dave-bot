@@ -219,7 +219,7 @@ async function call_gpt(system_prompt, message_history) {
 }
 
 async function call_tts(text) {
-    let response = await fetch("https://api.openai.com/audio/speech", {
+    let response = await fetch("https://api.openai.com/v1/audio/speech", {
         method: "POST",
         headers: {
             "Accept": "application/json",
@@ -238,8 +238,6 @@ async function call_tts(text) {
         const blob = await response.blob()
         return blob
     } else {
-        console.log("tts status: " + response.status)
-        console.log("tts body: " + JSON.stringify(await response.json()))
         throw new Error("Error in tts call: " + JSON.stringify(await response.json()))
     }
 }
@@ -513,7 +511,7 @@ async function sendAudio(audio, chatId, delay, reply_to_message_id) {
     if (response.ok) {
         return await response.json()
     } else {
-        throw new Error("Error in sending audio: ", JSON.stringify(await response.json()))
+        throw new Error("Error in sending audio: " + JSON.stringify(await response.json()))
     }
 }
 
