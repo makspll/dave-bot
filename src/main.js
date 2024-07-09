@@ -8,7 +8,8 @@ const { TRIGGERS,
     SENTIMENT_PER_AFFECTION_LEVEL,
     NEGATIVE_AFFECTION_PROMPTS,
     POSITIVE_AFFECTION_PROMPTS,
-    DEFAULT_MSG_DELAY
+    DEFAULT_MSG_DELAY,
+    AUDIO_MESSAGE_CHANCE,
 } = require("./data");
 
 let ENV = null;
@@ -49,9 +50,9 @@ const COMMANDS = {
             await sendMessage("Yes sir", payload.message.chat.id, 0, null)
             let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "), [])
             sendMessage("sent: " + gpt_answer, ENV.GOD_ID, 0, null)
-            return generateAndSendAudio(gpt_answer, parseInt(args[0]), 5, null)
+            return sendMessage(gpt_answer, parseInt(args[0]), 5, null, 1.0)
         } else {
-            return sendMessage("Fuck you", payload.message.chat.id, 0, null)
+            return sendMessage("Fuck you", payload.message.chat.id, 0, 1.0)
         }
     },
     "schedule": async (payload, args) => {
@@ -335,7 +336,7 @@ async function hardlyfier(words, chatId, message_id) {
         const target_word = sample(hers);
         const postfix_trigger = target_word.slice(-2);
         const text = target_word + `? I hardly know ${postfix_trigger}!`;
-        await sendMessage(text, chatId, DEFAULT_MSG_DELAY, message_id)
+        await sendMessage(text, chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE)
     }
     return hers.length > 0
 }
@@ -380,7 +381,7 @@ async function keywords(words, chatId, senderId, message_id) {
                 }
                 let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt), []);
                 if (response) {
-                    await sendMessage(response, chatId, DEFAULT_MSG_DELAY, message_id)
+                    await sendMessage(response, chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE)
                 } else {
                     console.error("Error in calling chat gpt")
                 }
@@ -399,7 +400,7 @@ async function keywords(words, chatId, senderId, message_id) {
                 console.log("negative variants: " + trigger.neg_sent_variations)
                 const text = sentiment >= 0 ? sample(trigger.pos_sent_variations) : sample(trigger.neg_sent_variations)
                 console.log("variant: " + text)
-                await sendMessage(text, chatId, DEFAULT_MSG_DELAY, message_id)
+                await sendMessage(text, chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE)
             }
         }
     }
@@ -473,10 +474,15 @@ async function sickomode(sender, chatId, message_id) {
 
     let random = Math.floor(Math.random() * sickomodes.length);
 
-    await sendMessage(sender + ", " + sickomodes[random], chatId, DEFAULT_MSG_DELAY, message_id);
+    await sendMessage(sender + ", " + sickomodes[random], chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE);
 }
 
-async function sendMessage(msg, chatId, delay, reply_to_message_id) {
+async function sendMessage(msg, chatId, delay, reply_to_message_id, audio_chance = 0) {
+    if (audio_chance > 0 && Math.random() < audio_chance) {
+        console.log("sending audio message: " + msg);
+        return await generateAndSendAudio(msg, chatId, delay, reply_to_message_id)
+    }
+
     console.log("sending message: " + msg);
     // Calling the API endpoint to send a telegram message
     if (delay > 0) {
@@ -511,7 +517,8 @@ async function sendAudio(audio, chatId, delay, reply_to_message_id) {
     if (response.ok) {
         return await response.json()
     } else {
-        throw new Error("Error in sending audio: " + JSON.stringify(await response.json()))
+        console.log("Error in sending audio: " + JSON.stringify(await response.json()))
+        return null
     }
 }
 
