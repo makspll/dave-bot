@@ -238,9 +238,7 @@ async function call_tts(text) {
         const blob = await response.blob()
         return blob
     } else {
-        console.log("error in tts call: " + response.status)
-        console.log(JSON.stringify(await response.json()))
-        throw new Error("Error in tts call")
+        throw new Error("Error in tts call: ", JSON.stringify(await response.json()))
     }
 }
 
@@ -513,8 +511,7 @@ async function sendAudio(audio, chatId, delay, reply_to_message_id) {
     if (response.ok) {
         return await response.json()
     } else {
-        console.log("error in sending audio: ", response.status)
-        console.log(JSON.stringify(await response.json()))
+        throw new Error("Error in sending audio: ", JSON.stringify(await response.json()))
     }
 }
 
