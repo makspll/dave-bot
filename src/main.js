@@ -238,7 +238,9 @@ async function call_tts(text) {
         const blob = await response.blob()
         return blob
     } else {
-        throw new Error("Error in tts call: ", JSON.stringify(await response.json()))
+        console.log("tts status: " + response.status)
+        console.log("tts body: " + JSON.stringify(await response.json()))
+        throw new Error("Error in tts call: " + JSON.stringify(await response.json()))
     }
 }
 
