@@ -506,8 +506,8 @@ async function sendAudio(audio, chatId, delay, reply_to_message_id) {
     if (response.ok) {
         return await response.json()
     } else {
-        console.log("error in sending audio")
-        console.log(response)
+        console.log("error in sending audio: ", response.status)
+        console.log(JSON.stringify(await response.json()))
     }
 }
 
