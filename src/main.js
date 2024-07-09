@@ -496,8 +496,10 @@ async function sendMessage(msg, chatId, delay, reply_to_message_id) {
 async function sendAudio(audio, chatId, delay, reply_to_message_id) {
     let form = new FormData();
     form.append('voice', audio, 'voice.mp3');
-    form.append('chat', chatId);
-    // form.append('caption', "Dave has spoken");
+    form.append('chat_id', chatId);
+    if (reply_to_message_id) {
+        form.append('reply_to_message_id', reply_to_message_id);
+    }
     let response = await fetch(`https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendVoice`, {
         method: "POST",
         body: form
