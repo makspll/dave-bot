@@ -1,5 +1,4 @@
 const { AFINN } = require("./sem");
-
 const { TRIGGERS,
     HARDLYKNOWER_PROBABILITY,
     SICKOMODE_PROBABILITY,
@@ -14,6 +13,77 @@ const { TRIGGERS,
 } = require("./data");
 
 let ENV = null;
+
+const COMMANDS = {
+    "score": async (payload, args) => {
+        let score = await get_affection_data();
+        score = score[payload.message.from.id] ? score[payload.message.from.id] : 0
+        return sendMessage("Your total sentiment is: " + score, payload.message.chat.id, 0, null)
+    },
+    "listtriggers": async (payload, args) => {
+        let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
+        return sendMessage("My triggers are: " + text, payload.message.chat.id, 0, null)
+    },
+    "optout": async (payload, args) => {
+        let ids = await get_included_ids()
+        delete ids[payload.message.from.id]
+        await store_included_ids(ids)
+
+        let data = get_affection_data()
+        delete data[payload.message.from.id]
+        await store_affection_data(data)
+
+        return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, 0, null)
+    },
+    "optin": async (payload, args) => {
+        let ids = await get_included_ids()
+        console.log("ids: " + ids)
+        ids[payload.message.from.id] = true
+        await store_included_ids(ids)
+        return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id, 0, null)
+    },
+    "info": async (payload, args) => {
+        return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id, 0, null)
+    },
+    "attack": async (payload, args) => {
+        if (payload.message.from.id == ENV.GOD_ID) {
+            await sendMessage("Yes sir", payload.message.chat.id, 0, null)
+            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "), [])
+            sendMessage("sent: " + gpt_answer, ENV.GOD_ID, 0, null)
+            return generateAndSendAudio(gpt_answer, parseInt(args[0]), 5, null)
+        } else {
+            return sendMessage("Fuck you", payload.message.chat.id, 0, null)
+        }
+    },
+    "schedule": async (payload, args) => {
+        console.log("received schedule command with args: " + args)
+        let time
+        let name
+        try {
+            time = parseInt(args[0])
+            name = to_words(args.slice(1).join(" ")).join(" ")
+        } catch (err) {
+            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id, 0, null)
+        }
+        console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
+        let timeNow = Date.now() / 1000
+        let timeSet = new Date(time * 1000)
+        if (isNaN(time) || time < timeNow || isNaN(timeSet) || name == null) {
+            return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id, 0, null)
+        }
+
+        let jobs = await get_job_data()
+        jobs.push({
+            "chatId": payload.message.chat.id,
+            "time": time,
+            "name": name,
+            "type": "reminder30",
+        })
+        await store_job_data(jobs)
+
+        return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id, 0, null)
+    }
+}
 
 export default {
     //handles cron jobs
@@ -113,7 +183,7 @@ export default {
                 }
             }
         } catch (error) {
-            await sendMessage(`Error: ${error}`, -4123628343, 0, null)
+            await sendMessage(`Error: ${error}`, ENV.GOD_ID, 0, null)
             throw error;
         }
         return new Response("OK") // Doesn't really matter
@@ -145,6 +215,26 @@ async function call_gpt(system_prompt, message_history) {
         })
     }).then(res => res.json())
         .then(json => json.choices[0].message.content)
+        .catch(err => console.log("error from open API call: " + err))
+
+    return response
+}
+
+async function call_tts(text) {
+    let response = await fetch("https://api.openai.com/v1/tts", {
+        method: "POST",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + ENV.OPEN_AI_KEY
+        },
+        body: JSON.stringify({
+            "model": "tts-1",
+            "input": text,
+            "voice": "onyx",
+            "speed": 1
+        })
+    }).then(res => res.buffer())
         .catch(err => console.log("error from open API call: " + err))
 
     return response
@@ -402,4 +492,27 @@ async function sendMessage(msg, chatId, delay, reply_to_message_id) {
         console.log("error in sending message")
         console.log(JSON.stringify(await data.json()))
     }
+}
+
+async function sendAudio(audio, chatId, delay, reply_to_message_id) {
+    let form = new FormData();
+    form.append('voice', audio, 'voice.mp3');
+    form.append('chat', chatId);
+    // form.append('caption', "Dave has spoken");
+    let response = await fetch(`https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendVoice`, {
+        method: "POST",
+        body: form
+    });
+
+    if (response.ok) {
+        return await response.json()
+    } else {
+        console.log("error in sending audio")
+        console.log(response)
+    }
+}
+
+async function generateAndSendAudio(text, chatId, delay, reply_to_message_id) {
+    let audio = await call_tts(text);
+    return await sendAudio(audio, chatId, delay, reply_to_message_id);
 }

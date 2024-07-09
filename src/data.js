@@ -178,76 +178,7 @@ const POSITIVE_AFFECTION_PROMPTS = [
   "User consistently engages positively, displaying genuine interest and support. Basically dating you at this point",
   "Communication is overwhelmingly positive, marked by continuous expressions of enthusiasm and strong support. Basically married to you at this point",
 ]
-const COMMANDS = {
-  "score": async (payload, args) => {
-    let score = await get_affection_data();
-    score = score[payload.message.from.id] ? score[payload.message.from.id] : 0
-    return sendMessage("Your total sentiment is: " + score, payload.message.chat.id, 0, null)
-  },
-  "listtriggers": async (payload, args) => {
-    let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
-    return sendMessage("My triggers are: " + text, payload.message.chat.id, 0, null)
-  },
-  "optout": async (payload, args) => {
-    let ids = await get_included_ids()
-    delete ids[payload.message.from.id]
-    await store_included_ids(ids)
 
-    let data = get_affection_data()
-    delete data[payload.message.from.id]
-    await store_affection_data(data)
-
-    return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, 0, null)
-  },
-  "optin": async (payload, args) => {
-    let ids = await get_included_ids()
-    console.log("ids: " + ids)
-    ids[payload.message.from.id] = true
-    await store_included_ids(ids)
-    return sendMessage("You have been opted in, to opt out use /optout.", payload.message.chat.id, 0, null)
-  },
-  "info": async (payload, args) => {
-    return sendMessage("Hi I am Dave, allow me to scan your messages by opting in via /optin", payload.message.chat.id, 0, null)
-  },
-  "attack": async (payload, args) => {
-    if (payload.message.from.id == ENV.GOD_ID) {
-      await sendMessage("Yes sir", payload.message.chat.id, 0, null)
-      let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "), [])
-      sendMessage("sent: " + gpt_answer, ENV.GOD_ID, 0, null)
-      return sendMessage(gpt_answer, parseInt(args[0]), 5, null)
-    } else {
-      return sendMessage("Fuck you", payload.message.chat.id, 0, null)
-    }
-  },
-  "schedule": async (payload, args) => {
-    console.log("received schedule command with args: " + args)
-    let time
-    let name
-    try {
-      time = parseInt(args[0])
-      name = to_words(args.slice(1).join(" ")).join(" ")
-    } catch (err) {
-      return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id, 0, null)
-    }
-    console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
-    let timeNow = Date.now() / 1000
-    let timeSet = new Date(time * 1000)
-    if (isNaN(time) || time < timeNow || isNaN(timeSet) || name == null) {
-      return sendMessage("date or name is invalid, needs to be in the future and a unix timestamp in seconds and name needs not be empty", payload.message.chat.id, 0, null)
-    }
-
-    let jobs = await get_job_data()
-    jobs.push({
-      "chatId": payload.message.chat.id,
-      "time": time,
-      "name": name,
-      "type": "reminder30",
-    })
-    await store_job_data(jobs)
-
-    return sendMessage("Scheduled job: " + name + ", at: " + timeSet, payload.message.chat.id, 0, null)
-  }
-}
 
 const DEFAULT_MSG_DELAY = 8;
 
@@ -261,6 +192,5 @@ module.exports = {
   SENTIMENT_PER_AFFECTION_LEVEL,
   NEGATIVE_AFFECTION_PROMPTS,
   POSITIVE_AFFECTION_PROMPTS,
-  COMMANDS,
   DEFAULT_MSG_DELAY,
 }
