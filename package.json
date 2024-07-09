@@ -1,0 +1,12 @@
+{
+  "name": "dave-bot",
+  "version": "0.0.0",
+  "devDependencies": {
+    "wrangler": "3.63.2"
+  },
+  "private": true,
+  "scripts": {
+    "start": "wrangler dev src/main.js",
+    "deploy": "wrangler deploy src/main.js"
+  }
+}
