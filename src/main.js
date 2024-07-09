@@ -231,7 +231,7 @@ async function call_tts(text) {
             "model": "tts-1",
             "input": text,
             "voice": "onyx",
-            "response_format": "mp3"
+            "response_format": "opus"
         })
     }).then(res => res.blob())
         .catch(err => console.log("error from open API call: " + err))
