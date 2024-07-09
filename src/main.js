@@ -231,6 +231,7 @@ async function call_tts(text) {
             "model": "tts-1",
             "input": text,
             "voice": "onyx",
+            "response_format": "mp3"
         })
     }).then(res => res.blob())
         .catch(err => console.log("error from open API call: " + err))
@@ -494,7 +495,7 @@ async function sendMessage(msg, chatId, delay, reply_to_message_id) {
 
 async function sendAudio(audio, chatId, delay, reply_to_message_id) {
     let form = new FormData();
-    form.append('voice', audio, 'voice.mp3');
+    form.append('voice', audio);
     form.append('chat_id', chatId);
     if (reply_to_message_id) {
         form.append('reply_to_message_id', reply_to_message_id);
