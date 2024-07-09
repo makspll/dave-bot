@@ -515,5 +515,7 @@ async function sendAudio(audio, chatId, delay, reply_to_message_id) {
 
 async function generateAndSendAudio(text, chatId, delay, reply_to_message_id) {
     let audio = await call_tts(text);
+    console.log("audio type: " + audio.type);
+    console.log("audio size: " + audio.size);
     return await sendAudio(audio, chatId, delay, reply_to_message_id);
 }
