@@ -183,7 +183,6 @@ export default {
             }
         } catch (error) {
             await sendMessage(`Error: ${error}`, ENV.GOD_ID, 0, null)
-            throw error;
         }
         return new Response("OK") // Doesn't really matter
     },
