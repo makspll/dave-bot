@@ -233,10 +233,16 @@ async function call_tts(text) {
             "voice": "onyx",
             "response_format": "opus"
         })
-    }).then(res => res.blob())
-        .catch(err => console.log("error from open API call: " + err))
+    })
 
-    return response
+    if (response.ok) {
+        const blob = await response.blob()
+        return blob
+    } else {
+        console.log("error in tts call: " + response.status)
+        console.log(JSON.stringify(await response.json()))
+        return null
+    }
 }
 
 
