@@ -233,7 +233,7 @@ async function call_tts(text) {
             "voice": "onyx",
             "speed": 1
         })
-    }).then(res => res.buffer())
+    }).then(res => response.arrayBuffer())
         .catch(err => console.log("error from open API call: " + err))
 
     return response
