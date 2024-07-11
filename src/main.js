@@ -178,6 +178,7 @@ export default {
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
                     await keywords(words, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
+                    await screamo(payload.message.chat.id, payload.message.from.id)
                 } else {
                     console.log(JSON.stringify(payload || {}))
                 }
@@ -320,6 +321,15 @@ function calculate_sentiment(words) {
     } else {
         return 0
     }
+}
+
+async function screamo(chatId, message_id) {
+    if (Math.random() < 0.001) {
+        await sendMessage("AAAAAAAaaaaaaa", chatId, DEFAULT_MSG_DELAY, message_id, 1)
+        await sendMessage("aaaa AAaa Aaaa AAAAA aaaa a a a a a a a a a", chatId, DEFAULT_MSG_DELAY, message_id, 1)
+        return true;
+    }
+    return false;
 }
 
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
