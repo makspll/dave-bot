@@ -148,7 +148,7 @@ export default {
                 if ('message' in payload && payload.message.text) {
 
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
-
+                    console.log("Chat type: " + payload.message.chat.type)
                     if (payload.message.text.startsWith("/")) {
                         console.log("it's a command")
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
