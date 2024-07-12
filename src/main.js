@@ -335,7 +335,7 @@ async function screamo(chatId, message_id) {
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
 async function hardlyfier(words, chatId, message_id) {
     let hers = words.filter(word => {
-        return word.length > 3 && (word.endsWith('er') || word.endsWith('im'));
+        return word.length > 3 && (word.endsWith('er') || word.endsWith('im') || word.endsWith('it') || word.endsWith('ye'));
     })
 
     // 1 - P(no triggers
