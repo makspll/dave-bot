@@ -65,6 +65,12 @@ export function pruneWords(availableWords, locations, guess = null) {
                 return false;
             }
         }
+        
+        for (const letter in locations) {
+             if (locations[letter].length < 5 && !word.includes(letter)) {
+                 return false;
+             }
+        }
 
         return guess != word;
     });
