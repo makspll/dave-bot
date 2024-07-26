@@ -12,7 +12,7 @@ import {
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
-import { solveWordle, getWordleList, getWordleForDay } from "./wordle";
+import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable } from "./wordle";
 
 let ENV = null;
 
@@ -59,19 +59,19 @@ const COMMANDS = {
     },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
-        console.log("words: ", words.length)
+        console.log("words count: ", words.length)
         const wordle = await getWordleForDay(new Date());
         console.log("solution: ", wordle)
-        const solution = solveWordle(wordle, words);
+        const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
-        if (solution != null) {
-            await sendMessage(`Solved it in ${solution.guesses_count} steps :). My guesses were:`, payload.message.chat.id, 0, null, 0.0);
-            for (const guess of solution.guesses) {
-                await sendMessage(`||${guess}||`, payload.message.chat.id, 0, null, 0.0)
-            }
-        } else {
-            await sendMessage("AHAJHSHJAHHAHAJHJASHDJHASHDASJHD", payload.message.chat.id, 0, null, 1.0)
+        let message = generateWordleShareable(wordle, solution.guesses) + '\n';
+
+        for (const guess of solution.guesses) {
+            message += `||${guess}||\n`
         }
+
+        await sendMessage(message, payload.message.chat.id, 0, null, 0.0);
+
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -81,7 +81,7 @@ const COMMANDS = {
             time = parseInt(args[0])
             name = to_words(args.slice(1).join(" ")).join(" ")
         } catch (err) {
-            return sendMessage("Something went wrong in scheduling, remember the format is: `/schedule unixtime(seconds) name`", payload.message.chat.id, 0, null)
+            return sendMessage("Something went wrong in scheduling, remember the format is: `/ schedule unixtime(seconds) name`", payload.message.chat.id, 0, null)
         }
         console.log("time: " + time + ", name: " + name, "now: " + (Date.now() / 1000))
         let timeNow = Date.now() / 1000
@@ -518,7 +518,7 @@ async function sendMessage(msg, chatId, delay, reply_to_message_id, audio_chance
         const variance = Math.floor(Math.random() * 10);
         await new Promise((resolve) => setTimeout(resolve, (delay + variance) * 1000));
     }
-    const reply_param = reply_to_message_id ? `&reply_to_message_id=${reply_to_message_id}` : ''
+    const reply_param = reply_to_message_id ? `& reply_to_message_id=${reply_to_message_id}` : ''
     const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?chat_id=${chatId}&text=${msg}${reply_param}`
     const data = await fetch(url);
     if (data.ok) {

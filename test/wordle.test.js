@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateLocations, ALL_LETTERS, pruneWords, solveWordle } from '../src/wordle.js';
+import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateLocations, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable } from '../src/wordle.js';
 
 describe('Wordle tests', () => {
     it('should retrieve at least 100 words including horse', async () => {
@@ -11,7 +11,7 @@ describe('Wordle tests', () => {
     it('gets correct wordle for day 2023-03-07', async () => {
         const wordle = await getWordleForDay(new Date('2023-03-07'));
         console.log(wordle)
-        expect(wordle).to.equal('horse');
+        expect(wordle.wordle).to.equal('horse');
     });
 
     it('gets correct letter probabilities', async () => {
@@ -90,7 +90,7 @@ describe('Wordle tests', () => {
         expect(locations['o'], 'o').to.deep.equal([]);
         expect(locations['r'], 'r').to.have.members([0, 1, 3, 4]);
         expect(locations['s'], 's').to.deep.equal([]);
-        expect(locations['e'], 'e').to.deep.equal([4]);
+        expect(locations['e'], 'e').to.have.members([0, 1, 2, 3, 4]);
 
         // rest should be unchanged
         for (const letter of ALL_LETTERS) {
@@ -110,12 +110,12 @@ describe('Wordle tests', () => {
 
     it('solves todays wordle', async () => {
         const words = await getWordleList();
-        console.log("words: ", words)
         const wordle = await getWordleForDay(new Date());
         console.log("solution: ", wordle)
-        const solution = solveWordle(wordle, words);
+        const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
 
-        console.log("solution: ", wordle, "guess: ", solution.guess, "guesses: ", solution.guesses_count)
+        console.log(generateWordleShareable(wordle, solution.guesses))
+        console.log("solution: ", wordle.wordle, "guess: ", solution.guess, "guesses: ", solution.guesses_count)
     })
 });

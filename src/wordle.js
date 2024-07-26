@@ -30,7 +30,11 @@ export async function getWordleForDay(day) {
         if (wordle == null || wordle.solution == null) {
             throw `No wordle for day ${day}`;
         }
-        return wordle.solution;
+        const wordle_no = wordle.days_since_launch;
+        return {
+            "wordle": wordle.solution,
+            "wordle_no": wordle_no
+        };
     } catch (error) {
         console.error(`Error retrieving wordle for day ${day}:`, error);
         return null;
@@ -92,18 +96,23 @@ export function calculateLetterProbabilities(availableWords) {
 // given a list of previous guesses and a list of available words, return the best guess.
 // locations is a dictionary from letter to possible positions given our guesses
 // i.e. { 'h': [0, 1], 'o': [2, 3], 'r': [4], 's': [] }
-export function makeNextGuess(availableWords) {
+export function makeNextGuess(availableWords, current_guess = '.....') {
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
     let bestGuess = 'horse';
     let bestScore = 0;
 
     for (const word of availableWords) {
         let score = 0;
+        let letter_scores = []
         for (const i of [0, 1, 2, 3, 4]) {
             const letter = word[i];
             // we can calculate the best word by looking at the a priori probabilities of their letters.
-            // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters 
-            score += letter_position_probabilities[letter][i]
+            // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters
+            // we boost letters that are in the correct position by setting their probability to 1
+            const current_letter_score = current_guess[i] == letter ? 1 : 0;
+            const total_current_letter_score = letter_position_probabilities[letter][i] + current_letter_score;
+            score += total_current_letter_score;
+            letter_scores.push(total_current_letter_score);
         }
 
         if (score > bestScore) {
@@ -116,28 +125,35 @@ export function makeNextGuess(availableWords) {
 }
 
 // given a list of available words, a guess, and the solution, update the locations dictionary to generate hints
+// returns a guess in the form of '..a..' i.e. the word with the correct letter in the correct position and dots for the rest
 export function updateLocations(locations, guess, solution) {
+    let guess_word = ''
     for (const i of [0, 1, 2, 3, 4]) {
         const letter = guess[i];
+        console.log("previous: ", locations[letter])
         if (solution[i] == letter) {
-            console.log("correct letter in correct position: ", letter, " at ", i);
+            guess_word += letter;
             // correct letter in correct position
-            locations[letter] = [i]
+            // locations[letter] = [i]
+            console.log("correct letter in correct position: ", letter, " at ", i, "new locations: ", locations[letter]);
         } else if (solution.includes(letter)) {
-            console.log("correct letter in wrong position: ", letter, " at ", i);
+            guess_word += '.';
             // correct letter in wrong position
             // eliminate current position as valid
             locations[letter] = locations[letter].filter(pos => pos !== i);
+            console.log("correct letter in wrong position: ", letter, " at ", i, "new locations: ", locations[letter]);
         } else {
-            console.log("incorrect letter: ", letter, " at ", i);
+            guess_word += '.';
             // incorrect letter, eliminate from possible positions
             locations[letter] = []
+            console.log("incorrect letter: ", letter, " at ", i, "new locations: ", locations[letter]);
         }
     }
+    return guess_word;
 }
 
 export function solveWordle(solution, availableWords) {
-    const locations = {}
+    let locations = {}
     for (const letter of ALL_LETTERS) {
         locations[letter] = [0, 1, 2, 3, 4];
     }
@@ -145,36 +161,54 @@ export function solveWordle(solution, availableWords) {
     let guesses = 0;
     let all_guesses = [];
     let guess = null;
+    let guess_word = '.....';
     while (guess != solution && guesses < 6) {
         console.log("guess no: ", guesses);
         console.log("available words: ", availableWords.length);
 
         // no need to prune if we have no information yet
-        guess = makeNextGuess(availableWords);
+        guess = makeNextGuess(availableWords, guess_word);
         console.log("guess: ", guess);
-        for (const i of [0, 1, 2, 3, 4]) {
-            const letter = guess[i];
-            if (!locations.hasOwnProperty(letter)) {
-                locations[letter] = [];
-            }
-            locations[letter].push(i);
-        }
 
         all_guesses.push(guess);
         guesses++;
-        updateLocations(locations, guess, solution);
+        guess_word = updateLocations(locations, guess, solution);
         availableWords = pruneWords(availableWords, locations, guess);
     }
 
-    if (guesses > 6 || guess != solution) {
-        console.log("Failed to solve wordle in 6 guesses");
-        return null;
-    } else {
-        console.log(`Solved in ${guesses} guesses!`);
-        return {
-            'guess': guess,
-            'guesses_count': guesses,
-            'guesses': all_guesses
-        };
+
+    console.log(`Took ${guesses} guesses!`);
+    return {
+        'guess': guess,
+        'guesses_count': guesses,
+        'guesses': all_guesses
+    };
+}
+
+// generate emoji based wordle shareable
+// of the form:
+// Wordle 1,133 6/6*
+
+// ⬛🟨⬛⬛⬛
+// ⬛⬛🟩⬛⬛
+// 🟨⬛🟩⬛⬛
+// ⬛⬛🟩🟩⬛
+// 🟩⬛🟩🟩⬛
+// 🟩🟩🟩🟩🟩
+export function generateWordleShareable(solution, guesses) {
+    let shareable = `Wordle ${solution.wordle_no} ${guesses.length}/6*\n\n`;
+    for (const guess of guesses) {
+        for (const letter of guess) {
+            if (!solution.wordle.includes(letter)) {
+                shareable += '⬛';
+            } else if (letter == solution.wordle[guess.indexOf(letter)]) {
+                shareable += '🟩';
+            } else {
+                shareable += '🟨';
+            }
+        }
+        shareable += '\n';
     }
+
+    return shareable;
 }
