@@ -60,7 +60,9 @@ const COMMANDS = {
     "wordle": async (payload, args) => {
         const words = await getWordleList();
         console.log("words count: ", words.length)
-        const wordle = await getWordleForDay(new Date());
+        let date_today = new Date();
+        date_today.setHours(date_today.getHours() + 1)
+        const wordle = await getWordleForDay(date_today);
         console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
