@@ -59,8 +59,11 @@ const COMMANDS = {
     },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
-        const solution = solveWordle(await getWordleForDay(new Date()), words);
-
+        console.log("words: ", words.length)
+        const wordle = await getWordleForDay(new Date());
+        console.log("solution: ", wordle)
+        const solution = solveWordle(wordle, words);
+        console.log("solved: ", solution)
         if (solution != null) {
             await sendMessage(`Solved it in ${solution.guesses_count} steps :). My guesses were:`, payload.message.chat.id, 0, null, 0.0);
             for (const guess of solution.guesses) {
