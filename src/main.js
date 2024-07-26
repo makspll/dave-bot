@@ -519,7 +519,7 @@ async function sendMessage(msg, chatId, delay, reply_to_message_id, audio_chance
         await new Promise((resolve) => setTimeout(resolve, (delay + variance) * 1000));
     }
     const reply_param = reply_to_message_id ? `& reply_to_message_id=${reply_to_message_id}` : ''
-    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?chat_id=${chatId}&text=${msg}${reply_param}`
+    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?parse_mode=MarkdownV2&chat_id=${chatId}&text=${msg}${reply_param}`
     const data = await fetch(url);
     if (data.ok) {
         console.log("message went ok")
