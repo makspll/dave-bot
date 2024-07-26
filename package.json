@@ -2,11 +2,18 @@
   "name": "dave-bot",
   "version": "0.0.0",
   "devDependencies": {
+    "chai": "^5.1.1",
+    "mocha": "^10.7.0",
     "wrangler": "3.63.2"
   },
   "private": true,
   "scripts": {
     "start": "wrangler dev src/main.js",
-    "deploy": "wrangler deploy src/main.js"
+    "deploy": "wrangler deploy src/main.js",
+    "test": "mocha"
+  },
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.7.2"
   }
 }

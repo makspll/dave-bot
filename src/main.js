@@ -11,6 +11,7 @@ const { TRIGGERS,
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
 } = require("./data");
+const { solveWordle, getWordleList } = require("./wordle")
 
 let ENV = null;
 
@@ -53,6 +54,19 @@ const COMMANDS = {
             return sendMessage(gpt_answer, parseInt(args[0]), 5, null, 1.0)
         } else {
             return sendMessage("Fuck you", payload.message.chat.id, 0, 1.0)
+        }
+    },
+    "wordle": async (payload, args) => {
+        const words = await getWordleList();
+        const solution = solveWordle();
+
+        if (solution != null) {
+            await sendMessage(`Solved it in ${solution.guesses_count} steps :). My guesses were:`, payload.message.chat.id, 0, null, 0.0);
+            for (const guess of solution.guesses) {
+                await sendMessage(guess, payload.message.chat.id, 0, null, 0.0)
+            }
+        } else {
+            await sendMessage("AHAJHSHJAHHAHAJHJASHDJHASHDASJHD", payload.message.chat.id, 0, null, 1.0)
         }
     },
     "schedule": async (payload, args) => {
