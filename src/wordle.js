@@ -94,7 +94,7 @@ export function calculateLetterProbabilities(availableWords) {
 // i.e. { 'h': [0, 1], 'o': [2, 3], 'r': [4], 's': [] }
 export function makeNextGuess(availableWords) {
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
-
+    console.log(letter_position_probabilities);
     let bestGuess = 'horse';
     let bestScore = 0;
 
@@ -104,6 +104,7 @@ export function makeNextGuess(availableWords) {
             const letter = word[i];
             // we can calculate the best word by looking at the a priori probabilities of their letters.
             // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters 
+            console.log("letter: ", letter, " at ", i, " has probability: ", letter_position_probabilities[letter][i]);
             score += letter_position_probabilities[letter][i]
         }
 
