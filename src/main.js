@@ -202,8 +202,7 @@ export default {
                 }
             }
         } catch (error) {
-            console.loh("Error in fetch: " + console.trace())
-            await sendMessage(`Error: ${error}`, ENV.GOD_ID, 0, null)
+            await sendMessage(`Error: ${error}, stack trace: ${console.trace()}`, ENV.GOD_ID, 0, null)
         }
         return new Response("OK") // Doesn't really matter
     },
