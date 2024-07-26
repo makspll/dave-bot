@@ -11,7 +11,7 @@ import {
     POSITIVE_AFFECTION_PROMPTS,
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
-} from ("./data.js");
+} from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay } from "./wordle";
 
 let ENV = null;
@@ -64,7 +64,7 @@ const COMMANDS = {
         if (solution != null) {
             await sendMessage(`Solved it in ${solution.guesses_count} steps :). My guesses were:`, payload.message.chat.id, 0, null, 0.0);
             for (const guess of solution.guesses) {
-                await sendMessage(guess, payload.message.chat.id, 0, null, 0.0)
+                await sendMessage(`||${guess}||`, payload.message.chat.id, 0, null, 0.0)
             }
         } else {
             await sendMessage("AHAJHSHJAHHAHAJHJASHDJHASHDASJHD", payload.message.chat.id, 0, null, 1.0)
