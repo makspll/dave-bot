@@ -7,8 +7,8 @@ export const ALL_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k
 export async function getWordleList() {
     try {
         const response = await axios.get('https://raw.githubusercontent.com/tabatkins/wordle-list/main/words');
-        const wordleList = response.data;
-        return wordleList;
+        const wordleList = response.data.split('\n');
+        return wordleList
     } catch (error) {
         console.error('Error retrieving wordle list:', error);
         return null;
@@ -74,7 +74,7 @@ export function calculateLetterProbabilities(availableWords) {
         letterProbabilities[letter] = [0, 0, 0, 0, 0];
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (const i of [0, 1, 2, 3, 4]) {
         for (const word of availableWords) {
             const letter = word[i];
             letterProbabilities[letter][i]++;
@@ -94,7 +94,6 @@ export function calculateLetterProbabilities(availableWords) {
 // i.e. { 'h': [0, 1], 'o': [2, 3], 'r': [4], 's': [] }
 export function makeNextGuess(availableWords) {
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
-    console.log(letter_position_probabilities);
     let bestGuess = 'horse';
     let bestScore = 0;
 
@@ -104,7 +103,6 @@ export function makeNextGuess(availableWords) {
             const letter = word[i];
             // we can calculate the best word by looking at the a priori probabilities of their letters.
             // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters 
-            console.log("letter: ", letter, " at ", i, " has probability: ", letter_position_probabilities[letter][i]);
             score += letter_position_probabilities[letter][i]
         }
 

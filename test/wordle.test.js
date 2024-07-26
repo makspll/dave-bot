@@ -107,4 +107,15 @@ describe('Wordle tests', () => {
         expect(guesses_count).to.be.lessThan(6);
         expect(guess).to.equal(solution);
     })
+
+    it('solves todays wordle', async () => {
+        const words = await getWordleList();
+        console.log("words: ", words)
+        const wordle = await getWordleForDay(new Date());
+        console.log("solution: ", wordle)
+        const solution = solveWordle(wordle, words);
+        console.log("solved: ", solution)
+
+        console.log("solution: ", wordle, "guess: ", solution.guess, "guesses: ", solution.guesses_count)
+    })
 });
