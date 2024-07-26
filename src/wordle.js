@@ -67,7 +67,7 @@ export function pruneWords(availableWords, locations, guess = null) {
         }
         
         for (const letter in locations) {
-             if (locations[letter].length < 5 && !word.includes(letter)) {
+             if (locations[letter].length < 5 && locations[letter].length > 1 && !word.includes(letter)) {
                  return false;
              }
         }
