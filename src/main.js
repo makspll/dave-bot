@@ -162,7 +162,7 @@ export default {
                 if ('message' in payload && payload.message.text) {
 
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
-
+                    console.log("Chat type: " + payload.message.chat.type)
                     if (payload.message.text.startsWith("/")) {
                         console.log("it's a command")
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
@@ -192,6 +192,7 @@ export default {
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
                     await keywords(words, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
+                    await screamo(payload.message.chat.id, payload.message.from.id)
                 } else {
                     console.log(JSON.stringify(payload || {}))
                 }
@@ -336,10 +337,19 @@ function calculate_sentiment(words) {
     }
 }
 
+async function screamo(chatId, message_id) {
+    if (Math.random() < 0.001) {
+        await sendMessage("AAAAAAAaaaaaaa", chatId, DEFAULT_MSG_DELAY, message_id, 1)
+        await sendMessage("aaaa AAaa Aaaa AAAAA aaaa a a a a a a a a a", chatId, DEFAULT_MSG_DELAY, message_id, 1)
+        return true;
+    }
+    return false;
+}
+
 // very funi hardly know er joke generator, returns true if the trigger was satisfied, regardless of if the action actually fired
 async function hardlyfier(words, chatId, message_id) {
     let hers = words.filter(word => {
-        return word.length > 3 && (word.endsWith('er') || word.endsWith('im'));
+        return word.length > 3 && (word.endsWith('er') || word.endsWith('im') || word.endsWith('it') || word.endsWith('ye'));
     })
 
     // 1 - P(no triggers
