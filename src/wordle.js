@@ -109,7 +109,7 @@ export function calculateLetterProbabilities(availableWords) {
 export function makeNextGuess(availableWords, current_guess = '.....') {
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
     let bestGuess = 'horse';
-    let bestScore = 0;
+    let bestScore = -99999999;
 
     for (const word of availableWords) {
         let score = 0;
