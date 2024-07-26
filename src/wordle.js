@@ -196,7 +196,7 @@ export function solveWordle(solution, availableWords) {
 // 🟩⬛🟩🟩⬛
 // 🟩🟩🟩🟩🟩
 export function generateWordleShareable(solution, guesses) {
-    let shareable = `Wordle ${solution.wordle_no} ${guesses.length}/6*\n\n`;
+    let shareable = `Wordle ${solution.wordle_no} ${guesses.length}/6\\*\n\n`;
     for (const guess of guesses) {
         for (const letter of guess) {
             if (!solution.wordle.includes(letter)) {

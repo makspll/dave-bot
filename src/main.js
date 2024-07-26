@@ -70,7 +70,7 @@ const COMMANDS = {
             message += `||${guess}||\n`
         }
 
-        await sendMessage(message, payload.message.chat.id, 0, null, 0.0);
+        await sendMessage(message, payload.message.chat.id, 0, null, 0.0, "MarkdownV2");
 
     },
     "schedule": async (payload, args) => {
@@ -505,7 +505,7 @@ async function sickomode(sender, chatId, message_id) {
     await sendMessage(sender + ", " + sickomodes[random], chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE);
 }
 
-async function sendMessage(msg, chatId, delay, reply_to_message_id, audio_chance = 0) {
+async function sendMessage(msg, chatId, delay, reply_to_message_id, audio_chance = 0, parse_mode = null) {
     if (audio_chance > 0 && Math.random() < audio_chance) {
         console.log("sending audio message: " + msg);
         return await generateAndSendAudio(msg, chatId, delay, reply_to_message_id)
@@ -519,7 +519,8 @@ async function sendMessage(msg, chatId, delay, reply_to_message_id, audio_chance
         await new Promise((resolve) => setTimeout(resolve, (delay + variance) * 1000));
     }
     const reply_param = reply_to_message_id ? `& reply_to_message_id=${reply_to_message_id}` : ''
-    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?parse_mode=MarkdownV2&chat_id=${chatId}&text=${msg}${reply_param}`
+    const parse_arg = parse_mode ? `parse_mode=${parse_mode}&` : ''
+    const url = `https://api.telegram.org/bot${ENV.TELEGRAM_API_KEY}/sendMessage?${parse_arg}chat_id=${chatId}&text=${msg}${reply_param}`
     const data = await fetch(url);
     if (data.ok) {
         console.log("message went ok")
