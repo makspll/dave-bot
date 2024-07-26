@@ -1,4 +1,4 @@
-const TRIGGERS = [
+export const TRIGGERS = [
   {
     "trigger": ["what", "do", "you", "think", "of", "me", "dave"],
     "chance": 1,
@@ -137,9 +137,9 @@ const TRIGGERS = [
   }
 ]
 
-const HARDLYKNOWER_PROBABILITY = 0.05;
-const SICKOMODE_PROBABILITY = 0.001;
-const SYSTEM_PROMPT = `
+export const HARDLYKNOWER_PROBABILITY = 0.05;
+export const SICKOMODE_PROBABILITY = 0.001;
+export const SYSTEM_PROMPT = `
     - You are a telegram chat bot named Dave, you are whimsical, a bit delirious and kind of silly. 
         Your job is to provide tomfoolery and mischief while also being extremely wholesome at times, 
         and other times confrontational, sometimes regardless of the content of the user messages.
@@ -151,10 +151,10 @@ const SYSTEM_PROMPT = `
     - keep your responses very TERSE and SNAPPY
     - answer the prompt straight to the point, they know who you are, DONT introduce yourself.
     `
-const KEYWORD_GPT_CHANCE = 0.01;
-const MAX_AFFECTION_LEVEL = 10;
-const SENTIMENT_PER_AFFECTION_LEVEL = 5;
-const NEGATIVE_AFFECTION_PROMPTS = [
+export const KEYWORD_GPT_CHANCE = 0.01;
+export const MAX_AFFECTION_LEVEL = 10;
+export const SENTIMENT_PER_AFFECTION_LEVEL = 5;
+export const NEGATIVE_AFFECTION_PROMPTS = [
   "User persistently floods messages with intense and explicit hostility, showing extreme negativity. Deserves pure hatred and slander",
   "Frequent passive-aggressive remarks coupled with a distinct lack of cooperation. Needs to take a walk off a cliff",
   "Consistently conveys dissatisfaction and disapproval, engaging minimally. Not worth the engagement.",
@@ -166,7 +166,7 @@ const NEGATIVE_AFFECTION_PROMPTS = [
   "User often responds curtly, displaying disinterest.",
   "User is basically the spawn of satan to you, you hate them, they might have equally killed your entire family instead of talking to you with same effect.",
 ]
-const POSITIVE_AFFECTION_PROMPTS = [
+export const POSITIVE_AFFECTION_PROMPTS = [
   "User engages in communication with a neutral tone, expressing neutrality which can easilly be mistaken for positivity.",
   "Occasional messages convey mild support, with an overall positive demeanor.",
   "Consistent expressions of mild approval, though interactions remain largely neutral.",
@@ -180,19 +180,5 @@ const POSITIVE_AFFECTION_PROMPTS = [
 ]
 
 
-const DEFAULT_MSG_DELAY = 8;
-const AUDIO_MESSAGE_CHANCE = 1.0;
-
-module.exports = {
-  TRIGGERS,
-  HARDLYKNOWER_PROBABILITY,
-  SICKOMODE_PROBABILITY,
-  SYSTEM_PROMPT,
-  KEYWORD_GPT_CHANCE,
-  MAX_AFFECTION_LEVEL,
-  SENTIMENT_PER_AFFECTION_LEVEL,
-  NEGATIVE_AFFECTION_PROMPTS,
-  POSITIVE_AFFECTION_PROMPTS,
-  DEFAULT_MSG_DELAY,
-  AUDIO_MESSAGE_CHANCE,
-}
+export const DEFAULT_MSG_DELAY = 8;
+export const AUDIO_MESSAGE_CHANCE = 1.0;

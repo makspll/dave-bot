@@ -1,5 +1,6 @@
-const { AFINN } = require("./sem");
-const { TRIGGERS,
+import { AFINN } from "./sem.js";
+import {
+    TRIGGERS,
     HARDLYKNOWER_PROBABILITY,
     SICKOMODE_PROBABILITY,
     SYSTEM_PROMPT,
@@ -10,8 +11,8 @@ const { TRIGGERS,
     POSITIVE_AFFECTION_PROMPTS,
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
-} = require("./data");
-const { solveWordle, getWordleList } = require("./wordle")
+} from ("./data.js");
+import { solveWordle, getWordleList, getWordleForDay } from "./wordle";
 
 let ENV = null;
 
@@ -58,7 +59,7 @@ const COMMANDS = {
     },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
-        const solution = solveWordle();
+        const solution = solveWordle(await getWordleForDay(new Date()), words);
 
         if (solution != null) {
             await sendMessage(`Solved it in ${solution.guesses_count} steps :). My guesses were:`, payload.message.chat.id, 0, null, 0.0);
