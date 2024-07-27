@@ -89,9 +89,9 @@ const COMMANDS = {
         const done = await get_connections_done();
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
-        const connections_ = getConnectionsForDay(date_today)
+        const connections_ = await getConnectionsForDay(date_today)
         console.log("connections today", connections_, "done: ", done)
-        if (String(connections_.id) in done) {
+        if (connections_.id in done) {
             return sendMessage("Already did this one chief..", payload.message.chat.id, 0, null)
         }
 
