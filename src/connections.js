@@ -79,7 +79,7 @@ export async function solveConnections(date, playerCallback) {
         words = words.split(',')
         let categories = []
         for (const word of words) {
-            const category = connections.categories.find(x => x.cards.some(y => y.content === word));
+            const category = connections.categories.find(x => x.cards.some(y => y.content === word.trim()));
             categories.push(category.title);
         }
         // find unique title counts and find the title with most occurences
