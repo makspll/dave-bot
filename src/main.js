@@ -212,10 +212,12 @@ export default {
                     if (words.length > 10) {
                         return new Response("Ok")
                     }
+                    const senderName = payload.message.from.first_name ? payload.message.from.first_name :
+                        payload.message.from.username ? payload.message.from.username : undefined
 
                     console.log("processing triggers")
                     console.log("Message is from: " + JSON.stringify(payload.message.from))
-                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, payload.message.from.first_name, payload.message.message_id);
+                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, senderName, payload.message.message_id);
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
                     await keywords(words, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
