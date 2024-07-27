@@ -85,7 +85,7 @@ const COMMANDS = {
         return { "solution": solution, "wordle_no": wordle.wordle_no }
     },
     "connections": async (payload, args) => {
-        const date = new Date();
+        const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
 
         const playerCallback = (state) => {
