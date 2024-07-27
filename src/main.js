@@ -90,7 +90,8 @@ const COMMANDS = {
 
         const playerCallback = async (state) => {
             console.log("state: ", state);
-            const response = await call_gpt(generateInitialPrompt() + '\n' + convertStateToPrompt(state) + `\n Your previous guesses were: ${state.guesses}`, [])
+            const message = `${generateInitialPrompt()}\n${convertStateToPrompt(state)}\n Your previous guesses were: '${state.guesses}'`
+            const response = await call_gpt(message, [])
             console.log("chat gpt response: ", response);
             return response
         }
@@ -348,7 +349,7 @@ export async function call_tts(text) {
     }).then(res => res.json())
         .then(json => json.choices[0].message.content)
         .catch(err => console.log("error from open API call: " + err));
-
+    console.log("response from gpt: " + response)
     return response;
 }
 
