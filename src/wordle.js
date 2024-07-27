@@ -57,16 +57,30 @@ export async function getAllWordlesBetweenInclusive(start, end) {
 
 
 // removes words which are not possible given the current guess and state of the game
-export function pruneWords(availableWords, locations, guess = null) {
+export function pruneWords(availableWords, knowledgeState) {
     return availableWords.filter((word) => {
         for (const i of [0, 1, 2, 3, 4]) {
             const letter = word[i];
-            if (!locations[letter].includes(i)) {
+
+            if (letter in knowledgeState.not_in_puzzle) {
+                return false;
+            } else if (knowledgeState.correct[i] != null && knowledgeState.correct[i] != letter) {
+                return false;
+            } else if (letter in knowledgeState.known_letters_positions
+                && !(knowledgeState.known_letters_positions[letter].includes(i))
+            ) {
+                return false
+            }
+        }
+
+        // if the word does not include the misplaced letters in the puzzle prune it
+        for (const letter in knowledgeState.known_letters_positions) {
+            if (!word.includes(letter)) {
                 return false;
             }
         }
 
-        return guess != word;
+        return knowledgeState.guesses.at(-1) != word;
     });
 }
 
@@ -94,9 +108,7 @@ export function calculateLetterProbabilities(availableWords) {
 }
 
 // given a list of previous guesses and a list of available words, return the best guess.
-// locations is a dictionary from letter to possible positions given our guesses
-// i.e. { 'h': [0, 1], 'o': [2, 3], 'r': [4], 's': [] }
-export function makeNextGuess(availableWords, current_guess = '.....') {
+export function makeNextGuess(availableWords, knowledgeState) {
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
     let bestGuess = 'horse';
     let bestScore = 0;
@@ -109,13 +121,14 @@ export function makeNextGuess(availableWords, current_guess = '.....') {
             // we can calculate the best word by looking at the a priori probabilities of their letters.
             // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters
             // we boost letters that are in the correct position by setting their probability to 1
-            const current_letter_score = current_guess[i] == letter ? 1 : 0;
+            const current_letter_score = knowledgeState.correct[i] == letter ? 1 : 0;
             const total_current_letter_score = letter_position_probabilities[letter][i] + current_letter_score;
             score += total_current_letter_score;
             letter_scores.push(total_current_letter_score);
         }
 
         if (score > bestScore) {
+            console.log(`new best guess: ${word} with score ${score} and letter scores: ${letter_scores}`);
             bestScore = score;
             bestGuess = word;
         }
@@ -124,32 +137,41 @@ export function makeNextGuess(availableWords, current_guess = '.....') {
     return bestGuess
 }
 
+export function initialKnowledgeState() {
+    return {
+        'correct': {}, // position to letter mapping of correct letters
+        'not_in_puzzle': {}, // set of letters which are not in the puzzle
+        'known_letters_positions': {}, // letter to set of possible positions mapping if the letter is in the puzzle but not in the correct position
+        'guesses': [], // list of guesses so far
+        'available_words': [] // list of available words before each guess
+    };
+}
+
 // given a list of available words, a guess, and the solution, update the locations dictionary to generate hints
 // returns a guess in the form of '..a..' i.e. the word with the correct letter in the correct position and dots for the rest
-export function updateLocations(locations, guess, solution) {
-    let guess_word = ''
+export function updateKnowledgeState(previous_state, guess, solution) {
+    previous_state.guesses.push(guess);
     for (const i of [0, 1, 2, 3, 4]) {
         const letter = guess[i];
-        console.log("previous: ", locations[letter])
         if (solution[i] == letter) {
-            guess_word += letter;
-            // correct letter in correct position
-            // locations[letter] = [i]
-            console.log("correct letter in correct position: ", letter, " at ", i, "new locations: ", locations[letter]);
+            console.log(`correct letter ${letter} at position ${i}`);
+            previous_state.correct[i] = letter
+            if (previous_state.known_letters_positions[letter] == null) {
+                previous_state.known_letters_positions[letter] = [0, 1, 2, 3, 4];
+            }
         } else if (solution.includes(letter)) {
-            guess_word += '.';
-            // correct letter in wrong position
-            // eliminate current position as valid
-            locations[letter] = locations[letter].filter(pos => pos !== i);
-            console.log("correct letter in wrong position: ", letter, " at ", i, "new locations: ", locations[letter]);
+            console.log(`incorrect letter ${letter} at position ${i}`);
+            // keep track of letters which are in the puzzle but not in the correct position by storing their possible positions
+            if (previous_state.known_letters_positions[letter] == null) {
+                previous_state.known_letters_positions[letter] = [0, 1, 2, 3, 4];
+            }
+            previous_state.known_letters_positions[letter] = previous_state.known_letters_positions[letter].filter(pos => pos !== i);
         } else {
-            guess_word += '.';
+            console.log(`letter ${letter} not in puzzle`);
             // incorrect letter, eliminate from possible positions
-            locations[letter] = []
-            console.log("incorrect letter: ", letter, " at ", i, "new locations: ", locations[letter]);
+            previous_state.not_in_puzzle[letter] = true
         }
     }
-    return guess_word;
 }
 
 export function solveWordle(solution, availableWords) {
@@ -158,30 +180,25 @@ export function solveWordle(solution, availableWords) {
         locations[letter] = [0, 1, 2, 3, 4];
     }
 
-    let guesses = 0;
-    let all_guesses = [];
-    let guess = null;
-    let guess_word = '.....';
-    while (guess != solution && guesses < 6) {
-        console.log("guess no: ", guesses);
-        console.log("available words: ", availableWords.length);
-
+    let knowledgeState = initialKnowledgeState();
+    while (knowledgeState.guesses.at(-1) != solution && knowledgeState.guesses.length < 6) {
         // no need to prune if we have no information yet
-        guess = makeNextGuess(availableWords, guess_word);
-        console.log("guess: ", guess);
+        knowledgeState.available_words.push(availableWords.length)
+        const guess = makeNextGuess(availableWords, knowledgeState);
+        console.log(`#${knowledgeState.guesses.length}: guess: '${guess}'. with ${availableWords.length} words left`);
 
-        all_guesses.push(guess);
-        guesses++;
-        guess_word = updateLocations(locations, guess, solution);
-        availableWords = pruneWords(availableWords, locations, guess);
+        updateKnowledgeState(knowledgeState, guess, solution);
+        console.log(`new knowledge state:` + JSON.stringify(knowledgeState, null, 2));
+        availableWords = pruneWords(availableWords, knowledgeState);
     }
 
 
-    console.log(`Took ${guesses} guesses!`);
+    console.log(`Took ${knowledgeState.guesses} guesses!`);
     return {
-        'guess': guess,
-        'guesses_count': guesses,
-        'guesses': all_guesses
+        'guess': knowledgeState.guesses.at(-1),
+        'guesses_count': knowledgeState.guesses.length,
+        'guesses': knowledgeState.guesses,
+        'available_words': knowledgeState.available_words
     };
 }
 
@@ -195,19 +212,23 @@ export function solveWordle(solution, availableWords) {
 // ⬛⬛🟩🟩⬛
 // 🟩⬛🟩🟩⬛
 // 🟩🟩🟩🟩🟩
-export function generateWordleShareable(solution, guesses) {
-    let shareable = `Wordle ${solution.wordle_no} ${guesses.length}/6\\*\n\n`;
-    for (const guess of guesses) {
-        for (const letter of guess) {
-            if (!solution.wordle.includes(letter)) {
-                shareable += '⬛';
-            } else if (letter == solution.wordle[guess.indexOf(letter)]) {
+export function generateWordleShareable(solution, solve_output) {
+    let shareable = `Wordle ${solution.wordle_no} ${solve_output.guesses.length}/6\\*\n\n`;
+    for (const guess of solve_output.guesses) {
+        for (const i of [0, 1, 2, 3, 4]) {
+            const letter = guess[i]
+            if (letter == solution.wordle[i]) {
                 shareable += '🟩';
-            } else {
+            } else if (solution.wordle.includes(letter)) {
                 shareable += '🟨';
+            } else {
+                shareable += '⬛';
             }
         }
-        shareable += '\n';
+        const words_before = solve_output.available_words[solve_output.guesses.indexOf(guess) - 1] || 0;
+        const words_now = solve_output.available_words[solve_output.guesses.indexOf(guess)];
+        const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
+        shareable += ` Words: ${String(words_now).padEnd(7, ' ')}${change}\n`;
     }
 
     return shareable;

@@ -64,7 +64,7 @@ const COMMANDS = {
         console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
-        let message = generateWordleShareable(wordle, solution.guesses) + '\n';
+        let message = generateWordleShareable(wordle, solution) + '\n';
 
         for (const guess of solution.guesses) {
             message += `||${guess}||\n`
