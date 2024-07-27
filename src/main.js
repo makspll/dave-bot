@@ -210,6 +210,7 @@ export default {
                     }
 
                     console.log("processing triggers")
+                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
                     await keywords(words, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
@@ -224,6 +225,39 @@ export default {
         return new Response("OK") // Doesn't really matter
     },
 };
+
+// waits for messages of the form: Wordle 1,134 5/6* ...
+// and parses them to determine a response and possibly store the score
+async function wordle_slur(raw_message, chatId, senderId, message_id) {
+    const wordle_regex = /Wordle ([\d,]+) (\d+\/\d+)\*.*/
+    const match = raw_message.match(wordle_regex)
+    if (match) {
+        console.log("Wordle match: " + raw_message)
+        const wordle_no = parseInt(match[1].replace(",", ""))
+        const guesses = match[2].split("/")
+        const count = parseInt(guesses[0])
+
+        const scores = await get_wordle_scores()
+        if (!(wordle_no in scores)) {
+            scores[wordle_no] = {}
+        }
+        const bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 0
+        scores[wordle_no][senderId] = count
+        await store_wordle_scores(scores)
+
+        if (bot_score != 0 && bot_score < count) {
+            const messages = [
+                "I beat your ass :#",
+                "Loser",
+                "pfft",
+                "amateur",
+                "hah",
+                "cute"
+            ]
+            return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
+        }
+    }
+}
 
 async function call_gpt(system_prompt, message_history) {
     let messages = [{
