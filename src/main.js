@@ -90,7 +90,7 @@ const COMMANDS = {
 
         const playerCallback = async (state) => {
             console.log("state: ", state);
-            const response = await call_gpt(convertStateToPrompt(state), [generateInitialPrompt(), `Your previous guesses: ${state.guesses}`])
+            const response = await call_gpt(generateInitialPrompt() + '\n' + convertStateToPrompt(state) + `\n Your previous guesses were: ${state.guesses}`)
             console.log("chat gpt response: ", response);
             return response
         }
@@ -332,7 +332,7 @@ export async function call_tts(text) {
         "content": m
     }));
     messages.push(...history);
-
+    console.log("requesting gpt with messages: " + JSON.stringify(messages))
     let response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
