@@ -73,8 +73,9 @@ export async function solveConnections(date, playerCallback) {
     let state = await initializeConnectionsKnowledgeState(all_tiles);
 
     while (state.attempts > 0) {
-        const words = await playerCallback(state).split(',');
+        let words = await playerCallback(state);
         console.log(`#Attempts: ${state.attempts + 1}, Guessing: `, words);
+        words = words.split(',')
         let categories = []
         for (const word of words) {
             const category = connections.categories.find(x => x.cards.some(y => y.content === word));
