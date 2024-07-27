@@ -90,7 +90,9 @@ const COMMANDS = {
 
         const playerCallback = async (state) => {
             console.log("state: ", state);
-            return call_gpt(convertStateToPrompt(state), [generateInitialPrompt(), `Your previous guesses: ${state.guesses}`])
+            const response = await call_gpt(convertStateToPrompt(state), [generateInitialPrompt(), `Your previous guesses: ${state.guesses}`])
+            console.log("chat gpt response: ", response);
+            return response
         }
         const [state, connections] = await solveConnections(date_today, playerCallback);
         const shareable = generateConnectionsShareable(state, connections)
