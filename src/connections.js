@@ -74,14 +74,34 @@ export async function solveConnections(date, playerCallback) {
     let state = await initializeConnectionsKnowledgeState(all_tiles);
 
     while (state.attempts > 0) {
-        let words = await playerCallback(state);
-        console.log(`#Attempts: ${state.attempts}, Guessing: `, words);
-        words = words.split(',').map(x => x.replace(/\W/g, '').trim());
-        let categories = []
-        for (const word of words) {
-            const category = connections.categories.find(x => x.cards.some(y => y.content === word));
-            categories.push(category.title);
+        async function getValidInput(warning) {
+            let words = await playerCallback(state, warning);
+            console.log(`#Attempts: ${state.attempts}, Guessing: `, words, "warning: ", warning);
+            words = words.split(',').map(x => x.replace(/\W/g, '').trim());
+            let cats = []
+            for (const word of words) {
+                const category = connections.categories.find(x => x.cards.some(y => y.content === word));
+                cats.push(category.title);
+            }
+            return cats
         }
+
+        // attempt to get valid input twice before failing
+        let input_attempts = 0;
+        let warning = ""
+        let categories = []
+        while (input_attempts < 2) {
+            try {
+                categories = await getValidInput(warning);
+            } catch {
+                warning = "Invalid input, YOU MUST RESPOND WITH ONLY A COMMA SEPARATED LIST OF 4 TILES EACH TIME AND NOTHING ELSE. for example: APPLE,ORANGE,BANANA,PEAR. NOTE NO SPECIAL CHARACTERS MUST BE PRESENT, try again"
+            }
+            if (categories.length === 4) {
+                break;
+            }
+            input_attempts++;
+        }
+
         // find unique title counts and find the title with most occurences
         const uniqueCategories = [...new Set(categories)];
         let maxCategory = '';
