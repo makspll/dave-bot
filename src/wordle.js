@@ -139,8 +139,9 @@ export function makeNextGuess(availableWords, knowledgeState) {
 
             // slightly penalize words with duplicate letters
             // as they are less likely to be the solution
-            if (used_letters.has(letter)) {
-                total_current_letter_score -= 1;
+            const any_multiples_exist = Object.keys(knowledgeState.multiples).length > 0;
+            if (!any_multiples_exist && used_letters.has(letter)) {
+                total_current_letter_score -= 2;
             }
 
             used_letters.add(letter);
