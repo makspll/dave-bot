@@ -67,7 +67,10 @@ export function convertStateToPrompt(state) {
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
 export async function solveConnections(date, playerCallback) {
     let connections = await getConnectionsForDay(date);
-    let state = await initializeConnectionsKnowledgeState(connections.categories.flatMap(x => x.cards.map(y => y.content)));
+    let all_tiles = connections.categories.flatMap(x => x.cards.map(y => y.content))
+    // shuffle tiles
+    all_tiles = all_tiles.sort(() => Math.random() - 0.5);
+    let state = await initializeConnectionsKnowledgeState(all_tiles);
 
     while (state.attempts > 0) {
         const words = await playerCallback(state).split(',');
