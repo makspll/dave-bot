@@ -77,7 +77,7 @@ const COMMANDS = {
         await store_wordle_scores(scores);
 
         await sendMessage(message, payload.message.chat.id, 0, null, 0.0, "MarkdownV2");
-
+        return solution.guesses_count
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -246,10 +246,8 @@ async function wordle_slur(raw_message, chatId, senderId, message_id) {
         await store_wordle_scores(scores)
 
         if (bot_score == 0) {
-            await COMMANDS.wordle({ message: { chat: { id: chatId } } }, [])
+            bot_score = await COMMANDS.wordle({ message: { chat: { id: chatId } } }, [])
         }
-        scores = await get_wordle_scores()
-        bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 0
 
         if (bot_score != 0 && bot_score < count) {
             const messages = [
