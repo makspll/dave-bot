@@ -74,7 +74,6 @@ export function pruneWords(availableWords, knowledgeState) {
             }
             // remove words which don't have enough multiple letters
             if (knowledgeState.multiples[letter] > 1 && (word.split(letter).length - 1 < knowledgeState.multiples[letter])) {
-                console.log(`pruning ${word} because it doesn't have enough ${letter}s`);
                 return false;
             }
         }
@@ -148,7 +147,6 @@ export function makeNextGuess(availableWords, knowledgeState) {
             score += total_current_letter_score;
             letter_scores.push(total_current_letter_score);
         }
-
         if (score > bestScore) {
             console.log(`new best guess: ${word} with score ${score} and letter scores: ${letter_scores}`);
             bestScore = score;
@@ -215,12 +213,18 @@ export function solveWordle(solution, availableWords) {
     let knowledgeState = initialKnowledgeState();
     while (knowledgeState.guesses.at(-1) != solution && knowledgeState.guesses.length < 6) {
         // no need to prune if we have no information yet
-        knowledgeState.available_words.push(availableWords.length)
+        knowledgeState.available_words.push([...availableWords])
         const guess = makeNextGuess(availableWords, knowledgeState);
         console.log(`#${knowledgeState.guesses.length}: guess: '${guess}'. with ${availableWords.length} words left`);
 
         updateKnowledgeState(knowledgeState, guess, solution);
-        console.log(`new knowledge state:` + JSON.stringify(knowledgeState, null, 2));
+        console.log(`new knowledge state:` + JSON.stringify({
+            'correct': knowledgeState.correct,
+            'not_in_puzzle': knowledgeState.not_in_puzzle,
+            'known_letters_positions': knowledgeState.known_letters_positions,
+            'guesses': knowledgeState.guesses,
+            'multiples': knowledgeState.multiples
+        }, null, 2));
         availableWords = pruneWords(availableWords, knowledgeState);
     }
 
@@ -247,21 +251,33 @@ export function solveWordle(solution, availableWords) {
 export function generateWordleShareable(solution, solve_output) {
     let shareable = escapeMarkdown(`Wordle ${solution.wordle_no} ${solve_output.guesses.length}/6*\n\n`);
     for (const guess of solve_output.guesses) {
-        for (const i of [0, 1, 2, 3, 4]) {
-            const letter = guess[i]
-            if (letter == solution.wordle[i]) {
-                shareable += '🟩';
-            } else if (solution.wordle.includes(letter)) {
-                shareable += '🟨';
-            } else {
-                shareable += '⬛';
+        const guess_idx = solve_output.guesses.indexOf(guess);
+        shareable += emojify_guess(guess, solution.wordle);
+        const words_before = (solve_output.available_words[guess_idx - 1] || []).length || 0;
+        const words_now = solve_output.available_words[guess_idx].length;
+        const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
+        shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}`);
+        if (solve_output.available_words[guess_idx].length < 3) {
+            for (const word of solve_output.available_words[guess_idx]) {
+                shareable += emojify_guess(word, solution.wordle) + word + ',';
             }
         }
-        const words_before = solve_output.available_words[solve_output.guesses.indexOf(guess) - 1] || 0;
-        const words_now = solve_output.available_words[solve_output.guesses.indexOf(guess)];
-        const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
-        shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}\n`);
+        shareable += '\n';
     }
-
     return shareable;
+}
+
+function emojify_guess(guess, solution) {
+    let emojified = '';
+    for (const i of [0, 1, 2, 3, 4]) {
+        const letter = guess[i]
+        if (letter == solution[i]) {
+            emojified += '🟩';
+        } else if (solution.includes(letter)) {
+            emojified += '🟨';
+        } else {
+            emojified += '⬛';
+        }
+    }
+    return emojified;
 }

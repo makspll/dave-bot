@@ -125,7 +125,7 @@ describe('Wordle tests', () => {
         const wordle = await getWordleForDay(new Date('2024-07-26'));
         console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
-        console.log("solved: ", solution)
+        console.log("solved: ", solution.guesses)
 
         console.log(generateWordleShareable(wordle, solution))
     })
@@ -156,7 +156,7 @@ describe('Wordle performance tests', () => {
         console.log = originalConsoleLog;
         console.log("Average Guesses: ", (guesses / wordles).toFixed(2))
         console.log("Wordles Count: ", wordles)
-        console.log("Time per wordle: ", ((new Date() - startTime) / wordles).toFixed(2), " seconds")
+        console.log("Time per wordle: ", (((new Date() - startTime) / wordles).toFixed(2)) / 1000, "seconds")
         const emojiBarChart = (stats) => {
             let chart = '';
             for (const count in stats) {
