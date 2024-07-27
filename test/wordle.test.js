@@ -74,7 +74,9 @@ describe('Wordle tests', () => {
         // most likely is 'crate' since most words start with cra and end with e, and slightly more have a t just before
         // this guess eliminates a lot of words
         const words = ['crane', 'crate', 'crabs', 'crack', 'horse', 'plate'];
-        const guess = makeNextGuess(words, initialKnowledgeState());
+        const knowledgeState = initialKnowledgeState();
+        knowledgeState.guesses = ['asdasd'];
+        const guess = makeNextGuess(words, knowledgeState);
         expect(guess).to.equal('crate');
     })
 
