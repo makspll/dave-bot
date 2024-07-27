@@ -72,7 +72,13 @@ export function pruneWords(availableWords, knowledgeState) {
             ) {
                 return false
             }
+            // remove words which don't have enough multiple letters
+            if (knowledgeState.multiples[letter] > 1 && (word.split(letter).length - 1 < knowledgeState.multiples[letter])) {
+                console.log(`pruning ${word} because it doesn't have enough ${letter}s`);
+                return false;
+            }
         }
+
 
         // if the word does not include the misplaced letters in the puzzle prune it
         for (const letter in knowledgeState.known_letters_positions) {
@@ -149,7 +155,8 @@ export function initialKnowledgeState() {
         'not_in_puzzle': {}, // set of letters which are not in the puzzle
         'known_letters_positions': {}, // letter to set of possible positions mapping if the letter is in the puzzle but not in the correct position
         'guesses': [], // list of guesses so far
-        'available_words': [] // list of available words before each guess
+        'available_words': [], // list of available words before each guess
+        'multiples': {} // set of letters which appear more than once
     };
 }
 
@@ -157,6 +164,7 @@ export function initialKnowledgeState() {
 // returns a guess in the form of '..a..' i.e. the word with the correct letter in the correct position and dots for the rest
 export function updateKnowledgeState(previous_state, guess, solution) {
     previous_state.guesses.push(guess);
+    let incorrect_positions = [];
     for (const i of [0, 1, 2, 3, 4]) {
         const letter = guess[i];
         if (solution[i] == letter) {
@@ -165,13 +173,29 @@ export function updateKnowledgeState(previous_state, guess, solution) {
             if (previous_state.known_letters_positions[letter] == null) {
                 previous_state.known_letters_positions[letter] = [0, 1, 2, 3, 4];
             }
-        } else if (solution.includes(letter)) {
+        } else {
+            incorrect_positions.push(i)
+        }
+    }
+
+    for (const i of incorrect_positions) {
+        const letter = guess[i];
+        if (solution.includes(letter)) {
             console.log(`incorrect letter ${letter} at position ${i}`);
             // keep track of letters which are in the puzzle but not in the correct position by storing their possible positions
             if (previous_state.known_letters_positions[letter] == null) {
                 previous_state.known_letters_positions[letter] = [0, 1, 2, 3, 4];
             }
             previous_state.known_letters_positions[letter] = previous_state.known_letters_positions[letter].filter(pos => pos !== i);
+
+            // keep track of letters which appear more than once
+            previous_state.multiples[letter] = 1;
+            for (const j of [0, 1, 2, 3, 4]) {
+                // if the letter is somewhere else in the puzzle correctly it is a multiple
+                if (previous_state.correct[j] == letter && letter != previous_state.correct[j]) {
+                    previous_state.multiples[letter]++;
+                }
+            }
         } else {
             console.log(`letter ${letter} not in puzzle`);
             // incorrect letter, eliminate from possible positions
