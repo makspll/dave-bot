@@ -75,11 +75,11 @@ export async function solveConnections(date, playerCallback) {
 
     while (state.attempts > 0) {
         let words = await playerCallback(state);
-        console.log(`#Attempts: ${state.attempts + 1}, Guessing: `, words);
-        words = words.split(',')
+        console.log(`#Attempts: ${state.attempts}, Guessing: `, words);
+        words = words.split(',').map(x => x.trim());
         let categories = []
         for (const word of words) {
-            const category = connections.categories.find(x => x.cards.some(y => y.content === word.trim()));
+            const category = connections.categories.find(x => x.cards.some(y => y.content === word));
             categories.push(category.title);
         }
         // find unique title counts and find the title with most occurences
