@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { escapeMarkdown } from './markdown.js';
+import { formatDateToYYYYMMDD } from './utils.js';
 
 export const ALL_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
     'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
@@ -14,13 +15,6 @@ export async function getWordleList() {
         console.error('Error retrieving wordle list:', error);
         return null;
     }
-}
-
-function formatDateToYYYYMMDD(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
 }
 
 
