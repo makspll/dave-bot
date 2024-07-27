@@ -90,7 +90,7 @@ const COMMANDS = {
 
         const playerCallback = async (state) => {
             console.log("state: ", state);
-            const response = await call_gpt(generateInitialPrompt() + '\n' + convertStateToPrompt(state) + `\n Your previous guesses were: ${state.guesses}`)
+            const response = await call_gpt(generateInitialPrompt() + '\n' + convertStateToPrompt(state) + `\n Your previous guesses were: ${state.guesses}`, [])
             console.log("chat gpt response: ", response);
             return response
         }
