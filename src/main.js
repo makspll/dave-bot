@@ -12,7 +12,7 @@ import {
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
-import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable } from "./wordle";
+import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable } from "./wordle.js";
 
 let ENV = null;
 
