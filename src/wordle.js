@@ -257,7 +257,7 @@ export function generateWordleShareable(solution, solve_output) {
         const words_now = solve_output.available_words[guess_idx].length;
         const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
         shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}`);
-        if (solve_output.available_words[guess_idx].length < 3) {
+        if (solve_output.available_words[guess_idx].length < 0) {
             for (const word of solve_output.available_words[guess_idx]) {
                 shareable += emojify_guess(word, solution.wordle) + `||${word}||` + ',';
             }
