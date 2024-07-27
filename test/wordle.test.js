@@ -125,26 +125,42 @@ describe('Wordle tests', () => {
         console.log("solved: ", solution)
 
         console.log(generateWordleShareable(wordle, solution))
-        console.log("solution: ", wordle.wordle, "guess: ", solution.guess, "guesses: ", solution.guesses_count)
     })
 });
 
+// yeah this shouldn't be a unit test IDGAF, it's nice and easy to run though
 describe('Wordle performance tests', () => {
     it('solve wordles average is below 5', async () => {
         const originalConsoleLog = console.log;
         console.log = () => { };
 
+        let stats = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
         let guesses = 0;
         let wordles = 0;
-        for (const wordle of await getAllWordlesBetweenInclusive(new Date('2024-06-01'), new Date('2024-06-30'))) {
-            const words = await getWordleList();
+        let startTime = new Date();
+        const words = await getWordleList();
+        for (const wordle of await getAllWordlesBetweenInclusive(new Date('2024-01-01'), new Date('2024-06-30'))) {
             const solution = solveWordle(wordle.wordle, words);
+            stats[solution.guesses_count]++;
             guesses += solution.guesses_count;
             wordles += 1;
         }
         console.log = originalConsoleLog;
-        console.log("Average Guesses: ", guesses / wordles)
+        console.log("Average Guesses: ", (guesses / wordles).toFixed(2))
+        console.log("Wordles Count: ", wordles)
+        console.log("Time per wordle: ", ((new Date() - startTime) / wordles).toFixed(2), " seconds")
+        const emojiBarChart = (stats) => {
+            let chart = '';
+            for (const count in stats) {
+                const emoji = '🟦';
+                const bar = emoji.repeat(stats[count]);
+                chart += `${count}: ${bar}\n`;
+            }
+            return chart;
+        };
+
+        console.log(emojiBarChart(stats));
         expect(guesses / wordles).to.be.below(5);
-    }).timeout(10000);
+    }).timeout(999999);
 })
