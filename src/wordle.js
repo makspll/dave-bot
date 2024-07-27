@@ -80,16 +80,6 @@ export function pruneWords(availableWords, knowledgeState) {
             }
         }
 
-        for (const letter in locations) {
-            if (locations[letter].length < 5 && locations[letter].length > 1 && !word.includes(letter)) {
-                return false;
-            }
-
-            if (locations[letter].length == 1 && word.indexOf(letter) != locations[letter][0]) {
-                return false;
-            }
-        }
-
         return knowledgeState.guesses.at(-1) != word;
     });
 }
