@@ -237,13 +237,19 @@ async function wordle_slur(raw_message, chatId, senderId, message_id) {
         const guesses = match[2].split("/")
         const count = parseInt(guesses[0])
 
-        const scores = await get_wordle_scores()
+        let scores = await get_wordle_scores()
         if (!(wordle_no in scores)) {
             scores[wordle_no] = {}
         }
-        const bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 0
+        let bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 0
         scores[wordle_no][senderId] = count
         await store_wordle_scores(scores)
+
+        if (bot_score == 0) {
+            await COMMANDS.wordle({ message: { chat: { id: chatId } } }, [])
+        }
+        scores = await get_wordle_scores()
+        bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 0
 
         if (bot_score != 0 && bot_score < count) {
             const messages = [
