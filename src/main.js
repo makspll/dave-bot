@@ -13,7 +13,7 @@ import {
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
-import { convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, solveConnections } from "./connections.js";
+import { convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, solveConnections } from "./connections.js";
 
 export let ENV = null;
 
@@ -85,8 +85,14 @@ const COMMANDS = {
         return { "solution": solution, "wordle_no": wordle.wordle_no }
     },
     "connections": async (payload, args) => {
+
+        const done = await get_connections_done();
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
+        const connections_ = getConnectionsForDay(date_today)
+        if (connections_.id in done) {
+            return sendMessage("Already did this one chief..", payload.message.chat.id, 0, null)
+        }
 
         const playerCallback = async (state, warning) => {
             const message = `${generateInitialPrompt()}\n STATE:\n${convertStateToPrompt(state)}\n Your previous guesses were: '${state.guesses}'${warning}`
@@ -96,7 +102,9 @@ const COMMANDS = {
         }
         const [state, connections] = await solveConnections(date_today, playerCallback);
         const shareable = generateConnectionsShareable(state, connections)
-        return sendMessage(shareable, payload.message.chat.id, 0, null, 0, "MarkdownV2")
+        await sendMessage(shareable, payload.message.chat.id, 0, null, 0, "MarkdownV2")
+        done[connections.id] = true
+        return store_connections_done(done)
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -368,6 +376,14 @@ async function store_kv_object(key, value) {
     } else {
         console.log("Could not store KV object as it was null")
     }
+}
+
+async function get_connections_done() {
+    return await get_kv_object("connections_done", 60)
+}
+
+async function store_connections_done(scores) {
+    return store_kv_object("connections_done", scores)
 }
 
 async function get_wordle_scores() {
