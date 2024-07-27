@@ -214,7 +214,8 @@ export default {
                     }
 
                     console.log("processing triggers")
-                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, payload.message.from.username, payload.message.message_id);
+                    console.log("Message is from: " + JSON.stringify(payload.message.from))
+                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, payload.message.from.first_name, payload.message.message_id);
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
                     await keywords(words, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
