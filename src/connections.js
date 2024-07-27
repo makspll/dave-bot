@@ -83,16 +83,17 @@ export async function solveConnections(date, playerCallback) {
                 const category = connections.categories.find(x => x.cards.some(y => y.content === word));
                 cats.push(category.title);
             }
-            return cats
+            return [words, cats]
         }
 
         // attempt to get valid input twice before failing
         let input_attempts = 0;
         let warning = ""
         let categories = []
+        let words = []
         while (input_attempts < 2) {
             try {
-                categories = await getValidInput(warning);
+                [words, categories] = await getValidInput(warning);
             } catch {
                 warning = "Invalid input, YOU MUST RESPOND WITH ONLY A COMMA SEPARATED LIST OF 4 TILES EACH TIME AND NOTHING ELSE. for example: APPLE,ORANGE,BANANA,PEAR. NOTE NO SPECIAL CHARACTERS MUST BE PRESENT, try again"
             }
