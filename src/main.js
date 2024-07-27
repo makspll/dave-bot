@@ -89,7 +89,7 @@ const COMMANDS = {
         date_today.setHours(date_today.getHours() + 1)
 
         const playerCallback = async (state, warning) => {
-            const message = `${generateInitialPrompt()}\n${convertStateToPrompt(state)}\n Your previous guesses were: '${state.guesses}'${warning}`
+            const message = `${generateInitialPrompt()}\n STATE:\n${convertStateToPrompt(state)}\n Your previous guesses were: '${state.guesses}'${warning}`
             const response = await call_gpt(message, [])
             console.log("chat gpt response: ", response);
             return response

@@ -46,7 +46,7 @@ export async function initializeConnectionsKnowledgeState(tiles) {
 }
 
 export function generateInitialPrompt() {
-    return 'I will have you play the game of connections, I will present you with 16 items, each one belongs to one of 4 groups with a certain theme, the theme could be for example "items that you put in an oven". Your goal is to figure out which groups those are one guess at a time. Each time you guess you can choose 4 cards, you get to make 4 mistakes, I will let you know if your guess is only one tile away from correct. You must respond with only a comma separated list of 4 tiles each time AND NOTHING ELSE. I will present you with the state of the game and you must continue the game from that point regardless if its the first turn, DO NOT ANSWER WITH ANYTHING OTHER THAN 4 COMMA SEPARATED WORDS, for example: APPLE,ORANGE,BANANA,PEAR. NOTE NO SPECIAL CHARACTERS MUST BE PRESENT ';
+    return 'You are acting as a player in the game of connections. There are 16 items, each one belongs to one of 4 groups with a certain theme, the theme could be for example "items that you put in an oven". Your goal is to figure out which groups those are one guess at a time. Each time you guess you can choose 4 cards, you get to make 4 mistakes, I will let you know if your guess is only one tile away from correct. You must respond with only a comma separated list of 4 tiles each time AND NOTHING ELSE. I will present you with the state of the game and you must continue the game from that point regardless if its the first turn, DO NOT ANSWER WITH ANYTHING OTHER THAN 4 COMMA SEPARATED WORDS, for example: "APPLE,ORANGE,BANANA,PEAR". NOTE NO SPECIAL CHARACTERS MUST BE PRESENT IN YOUR RESPONSE. ';
 }
 
 export function convertStateToPrompt(state) {
@@ -92,16 +92,19 @@ export async function solveConnections(date, playerCallback) {
         let warning = ""
         let categories = []
         let words = []
-        while (input_attempts < 2) {
+        while (input_attempts < 3) {
             try {
                 [words, categories] = await getValidInput(warning);
             } catch {
-                warning = "Invalid input, YOU MUST RESPOND WITH ONLY A COMMA SEPARATED LIST OF 4 TILES EACH TIME AND NOTHING ELSE. for example: APPLE,ORANGE,BANANA,PEAR. NOTE NO SPECIAL CHARACTERS MUST BE PRESENT, try again"
+                warning = "Your last guess: `" + words + "` WAS INVALID INPUT. YOU MUST RESPOND WITH ONLY A COMMA SEPARATED LIST OF 4 TILES EACH TIME AND NOTHING ELSE. for example: APPLE,ORANGE,BANANA,PEAR. NOTE NO SPECIAL CHARACTERS MUST BE PRESENT, try again"
             }
-            if (categories.length === 4) {
+            if (categories.length === 4 && words.length === 4) {
                 break;
             }
             input_attempts++;
+        }
+        if (categories.length !== 4 || words.length !== 4) {
+            throw new Error('Failed to get valid input');
         }
 
         // find unique title counts and find the title with most occurences
