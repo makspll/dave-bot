@@ -96,7 +96,7 @@ const COMMANDS = {
         }
         const [state, connections] = await solveConnections(date_today, playerCallback);
         const shareable = generateConnectionsShareable(state, connections)
-        return sendMessage(shareable, payload.message.chat.id, 0, null, 0)
+        return sendMessage(shareable, payload.message.chat.id, 0, null, 0, parse_mode = "MarkdownV2")
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)

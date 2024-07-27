@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { formatDateToYYYYMMDD } from './utils.js';
+import { escapeMarkdown } from './markdown.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
@@ -143,7 +144,7 @@ export async function solveConnections(date, playerCallback) {
 //🟪🟪🟪🟪
 export function generateConnectionsShareable(state, connections) {
     let shareable = 'Connections\n';
-    shareable += `Puzzle #${connections.id}\n`;
+    shareable += escapeMarkdown(`Puzzle #${connections.id}\n`);
     // give each category a color in order from green,orange through blue and purple:
     const colors = ['🟩', '🟨', '🟦', '🟪'];
     let category_to_color = {};
