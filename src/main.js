@@ -13,7 +13,6 @@ import {
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
-import { call_gpt, call_tts } from "./chatGpt.js";
 
 export let ENV = null;
 
