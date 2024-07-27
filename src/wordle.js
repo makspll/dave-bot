@@ -259,7 +259,7 @@ export function generateWordleShareable(solution, solve_output) {
         shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}`);
         if (solve_output.available_words[guess_idx].length < 3) {
             for (const word of solve_output.available_words[guess_idx]) {
-                shareable += emojify_guess(word, solution.wordle) + word + ',';
+                shareable += emojify_guess(word, solution.wordle) + `||${word}||` + ',';
             }
         }
         shareable += '\n';
