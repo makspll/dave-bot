@@ -145,11 +145,10 @@ export function makeNextGuess(availableWords, knowledgeState) {
 
         // calculate the hint score if we were to guess this word
         const hint_score = calculateHintScore(word, known_letters);
-        console.log(`word: ${word} hint_score: ${hint_score * 5}`);
         score += hint_score * 5;
 
         if (score > bestScore) {
-            console.log(`new best guess: ${word} with score ${score}`);
+            console.log(`new best guess: ${word} with score ${score} and hint score ${hint_score}`);
             bestScore = score;
             bestGuess = word;
         }
