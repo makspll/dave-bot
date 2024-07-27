@@ -1,5 +1,5 @@
-const axios = require('axios');
-const { formatDateToYYYYMMDD } = require('./utils');
+import axios from 'axios';
+import { formatDateToYYYYMMDD } from './utils.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
@@ -67,6 +67,7 @@ export function convertStateToPrompt(state) {
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
 export async function solveConnections(date, playerCallback) {
     let connections = await getConnectionsForDay(date);
+    console.log("connections: ", connections);
     let all_tiles = connections.categories.flatMap(x => x.cards.map(y => y.content))
     // shuffle tiles
     all_tiles = all_tiles.sort(() => Math.random() - 0.5);
