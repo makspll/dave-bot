@@ -139,15 +139,15 @@ export async function solveConnections(date, playerCallback) {
 }
 
 // generates shareable of the format:
-//Connections 
-//Puzzle #412
-//🟩🟩🟩🟩
-//🟨🟨🟨🟨
-//🟦🟦🟦🟦
-//🟪🟪🟪🟪
+// Connections 
+// Puzzle #412
+// 🟩🟩🟩🟩
+// 🟨🟨🟨🟨
+// 🟦🟦🟦🟦
+// 🟪🟪🟪🟪
 export function generateConnectionsShareable(state, connections) {
     let shareable = 'Connections\n';
-    shareable += escapeMarkdown(`Puzzle #${connections.id}\n`);
+    shareable += `Puzzle \\#${connections.id}\n`;
     // give each category a color in order from green,orange through blue and purple:
     const colors = ['🟩', '🟨', '🟦', '🟪'];
     let category_to_color = {};
