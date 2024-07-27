@@ -68,10 +68,6 @@ const COMMANDS = {
         console.log("solved: ", solution)
         let message = generateWordleShareable(wordle, solution) + '\n';
 
-        for (const guess of solution.guesses) {
-            message += `||${guess}||\n`
-        }
-
         await sendMessage(message, payload.message.chat.id, 0, null, 0.0, "MarkdownV2");
 
     },
