@@ -13,6 +13,7 @@ import {
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
+import { generateConnectionsShareable, generateInitialPrompt, solveConnections } from "./connections.js";
 
 export let ENV = null;
 
@@ -82,6 +83,18 @@ const COMMANDS = {
 
         await sendMessage(message, payload.message.chat.id, 0, null, 0.0, "MarkdownV2");
         return { "solution": solution, "wordle_no": wordle.wordle_no }
+    },
+    "connections": async (payload, args) => {
+        const date = new Date();
+        date_today.setHours(date_today.getHours() + 1)
+
+        const playerCallback = (state) => {
+            console.log("state: ", state);
+            call_gpt(convertStateToPrompt(state), [generateInitialPrompt(), `Your previous guesses: ${state.guesses}`])
+        }
+        const [state, connections] = await solveConnections(date, playerCallback);
+        const shareable = generateConnectionsShareable(state, connections)
+        return sendMessage(shareable, payload.message.chat.id, 0, null, 0)
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)
