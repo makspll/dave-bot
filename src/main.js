@@ -333,7 +333,6 @@ export async function call_tts(text) {
         "content": m
     }));
     messages.push(...history);
-    console.log("requesting gpt with messages: " + JSON.stringify(messages))
     let response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -349,7 +348,6 @@ export async function call_tts(text) {
     }).then(res => res.json())
         .then(json => json.choices[0].message.content)
         .catch(err => console.log("error from open API call: " + err));
-    console.log("response from gpt: " + response)
     return response;
 }
 
