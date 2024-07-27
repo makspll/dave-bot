@@ -245,6 +245,7 @@ async function wordle_slur(raw_message, chatId, senderId, senderName, message_id
         if (!("names" in scores)) {
             scores["names"] = {}
         }
+        console.log("storing sender name: ", senderId)
         scores["names"][senderId] = senderName
 
         if (!(wordle_no in scores)) {
