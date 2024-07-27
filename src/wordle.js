@@ -338,13 +338,14 @@ export function emojifyWordleScores(wordleScores) {
         id_to_guesses[id] = average.toFixed(2);
     }
     // generate emoji bar chart ordered by average guess number
-    const sorted = Object.entries(id_to_guesses).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(id_to_guesses).sort((a, b) => a[1] - b[1]);
     let chart = 'Wordle leaderboard\n';
+    let place = 0;
     for (const [id, avg] of sorted) {
-        const name = String(wordleScores.names[id] ? wordleScores.names[id] : id).padEnd(15, ' ');
-        const emoji = '🟦';
-        const bar = emoji.repeat(avg);
-        chart += `${name}: ${bar.padEnd(11, ' ')} - ${avg}\n`;
+        const name = String(wordleScores.names[id] ? wordleScores.names[id] : id).padEnd(9, ' ');
+        const emoji = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+        chart += `${name + emoji[place]}: Average Guesses: ${avg}, Wordles: ${id_to_guesses[id].length}\n`;
+        place++;
     }
     return chart
 }
