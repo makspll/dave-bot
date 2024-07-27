@@ -133,7 +133,7 @@ export function makeNextGuess(availableWords, knowledgeState) {
             // we can calculate the best word by looking at the a priori probabilities of their letters.
             // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters
             // we boost letters that are in the correct position by setting their probability to 1
-            const current_letter_score = knowledgeState.correct[i] == letter ? 1 : 0;
+            const current_letter_score = knowledgeState.correct[i] == letter ? 1 : -5;
             const total_current_letter_score = letter_position_probabilities[letter][i] + current_letter_score;
             score += total_current_letter_score;
             letter_scores.push(total_current_letter_score);
