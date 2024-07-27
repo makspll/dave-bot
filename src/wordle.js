@@ -213,7 +213,7 @@ export function solveWordle(solution, availableWords) {
 // 🟩⬛🟩🟩⬛
 // 🟩🟩🟩🟩🟩
 export function generateWordleShareable(solution, solve_output) {
-    let shareable = `Wordle ${solution.wordle_no} ${solve_output.guesses.length}/6\\*\n\n`;
+    let shareable = `Wordle ${solution.wordle_no} ${solve_output.guesses.length}/6*\n\n`;
     for (const guess of solve_output.guesses) {
         for (const i of [0, 1, 2, 3, 4]) {
             const letter = guess[i]
@@ -227,9 +227,9 @@ export function generateWordleShareable(solution, solve_output) {
         }
         const words_before = solve_output.available_words[solve_output.guesses.indexOf(guess) - 1] || 0;
         const words_now = solve_output.available_words[solve_output.guesses.indexOf(guess)];
-        const change = words_before == 0 ? "" : `\\(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%\\)`;
+        const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
         shareable += ` Words: ${String(words_now).padEnd(7, ' ')}${change}\n`;
     }
 
-    return shareable;
+    return shareable.replace('.', '\\.').replace('(', '\\(').replace(')', '\\)').replace('*', '\\*');
 }
