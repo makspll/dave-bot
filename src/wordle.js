@@ -164,7 +164,6 @@ export function initialKnowledgeState() {
 // returns a guess in the form of '..a..' i.e. the word with the correct letter in the correct position and dots for the rest
 export function updateKnowledgeState(previous_state, guess, solution) {
     previous_state.guesses.push(guess);
-    let incorrect_positions = [];
     for (const i of [0, 1, 2, 3, 4]) {
         const letter = guess[i];
         if (solution[i] == letter) {
@@ -173,33 +172,26 @@ export function updateKnowledgeState(previous_state, guess, solution) {
             if (previous_state.known_letters_positions[letter] == null) {
                 previous_state.known_letters_positions[letter] = [0, 1, 2, 3, 4];
             }
-        } else {
-            incorrect_positions.push(i)
-        }
-    }
-
-    for (const i of incorrect_positions) {
-        const letter = guess[i];
-        if (solution.includes(letter)) {
+        } else if (solution.includes(letter)) {
             console.log(`incorrect letter ${letter} at position ${i}`);
             // keep track of letters which are in the puzzle but not in the correct position by storing their possible positions
             if (previous_state.known_letters_positions[letter] == null) {
                 previous_state.known_letters_positions[letter] = [0, 1, 2, 3, 4];
             }
             previous_state.known_letters_positions[letter] = previous_state.known_letters_positions[letter].filter(pos => pos !== i);
-
-            // keep track of letters which appear more than once
-            previous_state.multiples[letter] = 1;
-            for (const j of [0, 1, 2, 3, 4]) {
-                // if the letter is somewhere else in the puzzle correctly it is a multiple
-                if (previous_state.correct[j] == letter && letter != previous_state.correct[j]) {
-                    previous_state.multiples[letter]++;
-                }
-            }
         } else {
             console.log(`letter ${letter} not in puzzle`);
             // incorrect letter, eliminate from possible positions
             previous_state.not_in_puzzle[letter] = true
+        }
+        // keep track of letters which appear more than once
+        // if the guess contains multiple instances of the letter and so does the solution, we reveal that information
+        // like in the normal wordle
+        const count_in_solution = solution.split(letter).length - 1;
+        const count_in_guess = guess.split(letter).length - 1;
+        const revealed_count = Math.min(count_in_solution, count_in_guess);
+        if (revealed_count > 1) {
+            previous_state.multiples[letter] = revealed_count;
         }
     }
 }

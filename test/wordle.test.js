@@ -107,7 +107,8 @@ describe('Wordle tests', () => {
             },
             not_in_puzzle: { 'h': true, 'o': true, 's': true },
             guesses: ['horse'],
-            available_words: []
+            available_words: [],
+            multiples: {},
         });
     })
 
@@ -121,7 +122,7 @@ describe('Wordle tests', () => {
 
     it('solves wordle from 2024-07-27', async () => {
         const words = await getWordleList();
-        const wordle = await getWordleForDay(new Date('2024-07-27'));
+        const wordle = await getWordleForDay(new Date('2024-07-26'));
         console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
