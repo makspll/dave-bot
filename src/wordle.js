@@ -250,7 +250,7 @@ export function generateWordleShareable(solution, solve_output) {
         const words_before = solve_output.available_words[solve_output.guesses.indexOf(guess) - 1] || 0;
         const words_now = solve_output.available_words[solve_output.guesses.indexOf(guess)];
         const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
-        shareable += escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}\n`);
+        shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}\n`);
     }
 
     return shareable;
