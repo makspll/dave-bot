@@ -12,7 +12,7 @@ import {
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
-import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable } from "./wordle.js";
+import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
 
 let ENV = null;
 
@@ -56,6 +56,11 @@ const COMMANDS = {
         } else {
             return sendMessage("Fuck you", payload.message.chat.id, 0, 1.0)
         }
+    },
+    "wordleboard": async (payload, args) => {
+        const stats = await get_wordle_scores()
+        const scores = emojifyWordleScores(stats)
+        return sendMessage(scores, payload.message.chat.id, 0, null, 0)
     },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
@@ -209,7 +214,7 @@ export default {
                     }
 
                     console.log("processing triggers")
-                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
+                    await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, payload, message.from.username, payload.message.message_id);
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
                     await keywords(words, payload.message.chat.id, payload.message.from.id, payload.message.message_id);
@@ -227,7 +232,7 @@ export default {
 
 // waits for messages of the form: Wordle 1,134 5/6* ...
 // and parses them to determine a response and possibly store the score
-async function wordle_slur(raw_message, chatId, senderId, message_id) {
+async function wordle_slur(raw_message, chatId, senderId, senderName, message_id) {
     const wordle_regex = /Wordle ([\d,]+) (\d+\/\d+)\*.*/
     const match = raw_message.match(wordle_regex)
     if (match) {
@@ -237,6 +242,11 @@ async function wordle_slur(raw_message, chatId, senderId, message_id) {
         const count = parseInt(guesses[0])
 
         let scores = await get_wordle_scores()
+        if (!("names" in scores)) {
+            scores["names"] = {}
+        }
+        scores[names][senderId] = senderName
+
         if (!(wordle_no in scores)) {
             scores[wordle_no] = {}
         }

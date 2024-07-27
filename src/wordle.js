@@ -312,3 +312,39 @@ function emojify_guess(guess, solution) {
     }
     return emojified;
 }
+
+export function emojifyWordleScores(wordleScores) {
+    let id_to_guesses = {};
+    for (const wordleId in wordleScores) {
+        if (wordleId == "names") {
+            continue;
+        }
+        for (const id in wordleScores[wordleId]) {
+            if (id_to_guesses[id] == null) {
+                id_to_guesses[id] = [];
+            }
+            id_to_guesses[id].push(wordleScores[wordleId][id]);
+        }
+    }
+
+    if (!("names" in wordleScores)) {
+        wordleScores["names"] = {};
+    }
+
+    // average out guess counts
+    for (const id in id_to_guesses) {
+        const guesses = id_to_guesses[id];
+        const average = guesses.reduce((a, b) => a + b, 0) / guesses.length;
+        id_to_guesses[id] = average.toFixed(2);
+    }
+    // generate emoji bar chart ordered by average guess number
+    const sorted = Object.entries(id_to_guesses).sort((a, b) => b[1] - a[1]);
+    let chart = 'Wordle leaderboard\n';
+    for (const [id, avg] of sorted) {
+        const name = String(wordleScores.names[id] ? wordleScores.names[id] : id).padEnd(15, ' ');
+        const emoji = '🟦';
+        const bar = emoji.repeat(avg);
+        chart += `${name}: ${bar.padEnd(11, ' ')} - ${avg}\n`;
+    }
+    return chart
+}
