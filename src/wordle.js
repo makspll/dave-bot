@@ -80,6 +80,16 @@ export function pruneWords(availableWords, knowledgeState) {
             }
         }
 
+        for (const letter in locations) {
+            if (locations[letter].length < 5 && locations[letter].length > 1 && !word.includes(letter)) {
+                return false;
+            }
+
+            if (locations[letter].length == 1 && word.indexOf(letter) != locations[letter][0]) {
+                return false;
+            }
+        }
+
         return knowledgeState.guesses.at(-1) != word;
     });
 }
@@ -111,7 +121,7 @@ export function calculateLetterProbabilities(availableWords) {
 export function makeNextGuess(availableWords, knowledgeState) {
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
     let bestGuess = 'horse';
-    let bestScore = 0;
+    let bestScore = -99999999;
 
     for (const word of availableWords) {
         let score = 0;
@@ -121,7 +131,7 @@ export function makeNextGuess(availableWords, knowledgeState) {
             // we can calculate the best word by looking at the a priori probabilities of their letters.
             // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters
             // we boost letters that are in the correct position by setting their probability to 1
-            const current_letter_score = knowledgeState.correct[i] == letter ? 1 : 0;
+            const current_letter_score = knowledgeState.correct[i] == letter ? 5 : -5;
             const total_current_letter_score = letter_position_probabilities[letter][i] + current_letter_score;
             score += total_current_letter_score;
             letter_scores.push(total_current_letter_score);
