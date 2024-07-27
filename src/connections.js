@@ -127,6 +127,7 @@ export async function solveConnections(date, playerCallback) {
             state.attempts--;
         }
         state.guesses.push(words);
+        console.log("new state: ", state);
     }
 
     return [state, connections];
