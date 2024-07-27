@@ -137,6 +137,7 @@ export default {
                 break;
             case "0 8 * * *": // every morning
                 console.log("Firing off wordle")
+                await sendMessage("Mornin' babes', it's wordlin time", ENV.MAIN_CHAT_ID, 0, null, 0.0)
                 await COMMANDS.wordle({ message: { chat: { id: ENV.MAIN_CHAT_ID } } }, [])
                 break;
 
