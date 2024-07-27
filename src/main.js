@@ -88,9 +88,9 @@ const COMMANDS = {
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
 
-        const playerCallback = (state) => {
+        const playerCallback = async (state) => {
             console.log("state: ", state);
-            call_gpt(convertStateToPrompt(state), [generateInitialPrompt(), `Your previous guesses: ${state.guesses}`])
+            return call_gpt(convertStateToPrompt(state), [generateInitialPrompt(), `Your previous guesses: ${state.guesses}`])
         }
         const [state, connections] = await solveConnections(date_today, playerCallback);
         const shareable = generateConnectionsShareable(state, connections)

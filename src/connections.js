@@ -70,7 +70,7 @@ export async function solveConnections(date, playerCallback) {
     let state = await initializeConnectionsKnowledgeState(connections.categories.flatMap(x => x.cards.map(y => y.content)));
 
     while (state.attempts > 0) {
-        const words = playerCallback(state).split(',');
+        const words = await playerCallback(state).split(',');
         console.log(`#Attempts: ${state.attempts + 1}, Guessing: `, words);
         let categories = []
         for (const word of words) {
