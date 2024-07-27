@@ -265,7 +265,7 @@ export function solveWordle(solution, availableWords) {
         'guess': knowledgeState.guesses.at(-1),
         'guesses_count': knowledgeState.guesses.length,
         'guesses': knowledgeState.guesses,
-        'available_words': knowledgeState.available_words
+        'available_words': knowledgeState.available_words,
     };
 }
 

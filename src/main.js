@@ -67,7 +67,6 @@ const COMMANDS = {
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
         let message = generateWordleShareable(wordle, solution) + '\n';
-
         let scores = await get_wordle_scores();
         if (!(wordle.wordle_no in scores)) {
             scores[wordle.wordle_no] = {}
@@ -77,7 +76,7 @@ const COMMANDS = {
         await store_wordle_scores(scores);
 
         await sendMessage(message, payload.message.chat.id, 0, null, 0.0, "MarkdownV2");
-        return solution.guesses_count
+        return { "solution": solution, "wordle_no": wordle.wordle_no }
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -245,11 +244,14 @@ async function wordle_slur(raw_message, chatId, senderId, message_id) {
         scores[wordle_no][senderId] = count
         await store_wordle_scores(scores)
 
+        let bot_wordle_no = wordle_no
         if (bot_score == 0) {
-            bot_score = await COMMANDS.wordle({ message: { chat: { id: chatId } } }, [])
+            const bot_solution = await COMMANDS.wordle({ message: { chat: { id: chatId } } }, [])
+            bot_score = bot_solution.solution.guesses_count
+            bot_wordle_no = bot_solution.wordle_no
         }
 
-        if (bot_score != 0 && bot_score < count) {
+        if (bot_wordle_no == wordle_no && bot_score != 0 && bot_score < count) {
             const messages = [
                 "I beat your ass :#",
                 "Loser",
