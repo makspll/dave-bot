@@ -117,9 +117,9 @@ describe('Wordle tests', () => {
 
     })
 
-    it('solves wordle from 2024-07-26', async () => {
+    it('solves wordle from 2024-07-27', async () => {
         const words = await getWordleList();
-        const wordle = await getWordleForDay(new Date('2024-07-26'));
+        const wordle = await getWordleForDay(new Date('2024-07-27'));
         console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
@@ -134,13 +134,13 @@ describe('Wordle performance tests', () => {
         const originalConsoleLog = console.log;
         console.log = () => { };
 
-        let stats = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        let stats = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
 
         let guesses = 0;
         let wordles = 0;
         let startTime = new Date();
         const words = await getWordleList();
-        for (const wordle of await getAllWordlesBetweenInclusive(new Date('2024-01-01'), new Date('2024-06-30'))) {
+        for (const wordle of await getAllWordlesBetweenInclusive(new Date('2024-01-01'), new Date('2024-07-27'))) {
             const solution = solveWordle(wordle.wordle, words);
             stats[solution.guesses_count]++;
             guesses += solution.guesses_count;
