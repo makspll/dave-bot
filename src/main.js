@@ -258,7 +258,13 @@ async function wordle_slur(raw_message, chatId, senderId, message_id) {
                 "pfft",
                 "amateur",
                 "hah",
-                "cute"
+                "cute",
+                "lol",
+                "embarassing",
+                "it's wordlin time",
+                "bitch",
+                "do you want private lessons?",
+                "maybe hard mode isn't for you.."
             ]
             return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
         }
