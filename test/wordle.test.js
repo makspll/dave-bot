@@ -137,7 +137,7 @@ describe('Wordle performance tests', () => {
         const originalConsoleLog = console.log;
         console.log = () => { };
 
-        let stats = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+        let stats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 'x': 0 };
 
         let guesses = 0;
         let wordles = 0;
@@ -145,7 +145,11 @@ describe('Wordle performance tests', () => {
         const words = await getWordleList();
         for (const wordle of await getAllWordlesBetweenInclusive(new Date('2024-01-01'), new Date('2024-07-27'))) {
             const solution = solveWordle(wordle.wordle, words);
-            stats[solution.guesses_count]++;
+            if (solution.guess != wordle.wordle) {
+                stats['x']++
+            } else {
+                stats[solution.guesses_count]++;
+            }
             guesses += solution.guesses_count;
             wordles += 1;
         }
@@ -156,7 +160,7 @@ describe('Wordle performance tests', () => {
         const emojiBarChart = (stats) => {
             let chart = '';
             for (const count in stats) {
-                const emoji = '🟦';
+                const emoji = count == 'x' ? '🟧' : '🟦';
                 const bar = emoji.repeat(stats[count]);
                 chart += `${count}: ${bar}\n`;
             }
