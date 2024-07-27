@@ -68,6 +68,14 @@ const COMMANDS = {
         console.log("solved: ", solution)
         let message = generateWordleShareable(wordle, solution) + '\n';
 
+        let scores = await get_wordle_scores();
+        if (!(wordle.wordle_no in scores)) {
+            scores[wordle.wordle_no] = {}
+        }
+
+        scores[wordle.wordle_no]["bot"] = solution.guesses_count
+        await store_wordle_scores(scores);
+
         await sendMessage(message, payload.message.chat.id, 0, null, 0.0, "MarkdownV2");
 
     },
@@ -290,6 +298,14 @@ async function store_kv_object(key, value) {
     } else {
         console.log("Could not store KV object as it was null")
     }
+}
+
+async function get_wordle_scores() {
+    return await get_kv_object("wordle_scores", 60)
+}
+
+async function store_wordle_scores(scores) {
+    return store_kv_object("wordle_scores", scores)
 }
 
 async function get_included_ids() {
