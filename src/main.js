@@ -105,31 +105,41 @@ export default {
     //handles cron jobs
     async scheduled(event, env, ctx) {
         ENV = env
-        console.log("scheduled callback")
-        let jobs = await get_job_data()
-        console.log("jobs: " + JSON.stringify(jobs))
+        switch (event.cron) {
+            case "*/5 * * * *": // every five minutes
+                console.log("Processing jobs")
+                let jobs = await get_job_data()
+                console.log("jobs: " + JSON.stringify(jobs))
 
-        let msgs = []
-        let origCount = jobs.length
-        jobs = jobs.filter(j => {
-            if (j.type && j.type === "reminder30") {
-                let timeUntil = j.time - Math.floor(Date.now() / 1000)
-                if (timeUntil > 0) {
-                    if (timeUntil < 1800) {
-                        msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId, 0, null))
-                        return false
+                let msgs = []
+                let origCount = jobs.length
+                jobs = jobs.filter(j => {
+                    if (j.type && j.type === "reminder30") {
+                        let timeUntil = j.time - Math.floor(Date.now() / 1000)
+                        if (timeUntil > 0) {
+                            if (timeUntil < 1800) {
+                                msgs.push(async () => sendMessage(j.name + " is happening in less than 30 mins: " + j.name, j.chatId, 0, null))
+                                return false
+                            }
+                            return true
+                        }
                     }
-                    return true
-                }
-            }
-            return false
-        })
+                    return false
+                })
 
-        for (let i = 0; i < msgs.length; i++) {
-            await msgs[i]()
-        }
-        if (jobs.length != origCount) {
-            await store_job_data(jobs)
+                for (let i = 0; i < msgs.length; i++) {
+                    await msgs[i]()
+                }
+                if (jobs.length != origCount) {
+                    await store_job_data(jobs)
+                }
+
+                break;
+            case "0 8 * * *": // every morning
+                console.log("Firing off wordle")
+                await COMMANDS.wordle({ message: { chat: { id: ENV.MAIN_CHAT_ID } } }, [])
+                break;
+
         }
     },
 

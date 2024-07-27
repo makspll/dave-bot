@@ -9,4 +9,4 @@ kv_namespaces = [
 rules = [{ type = "ESModule", globs = ["**/*.js"], fallthrough = true }]
 
 [triggers]
-crons = ["*/1 * * * *"]
+crons = ["*/5 * * * *", "0 8 * * *"]

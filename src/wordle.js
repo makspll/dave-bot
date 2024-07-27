@@ -119,42 +119,74 @@ export function makeNextGuess(availableWords, knowledgeState) {
         // first guess is always alright
         return 'salet'
     }
-
+    const known_letters = calculateKnownLetters(knowledgeState);
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
     let bestGuess = 'horse';
     let bestScore = -99999999;
 
     for (const word of availableWords) {
         let score = 0;
-        let letter_scores = []
         let used_letters = new Set();
         for (const i of [0, 1, 2, 3, 4]) {
             const letter = word[i];
             // we can calculate the best word by looking at the a priori probabilities of their letters.
             // a simple heuristic we can use is, find the word which has the highest sum of the probabilities of its letters
             // we boost letters that are in the correct position by setting their probability to 1
-            const current_letter_score = knowledgeState.correct[i] == letter ? 1 : -5;
-            let total_current_letter_score = letter_position_probabilities[letter][i] + current_letter_score;
+            score += knowledgeState.correct[i] == letter ? 1 : letter_position_probabilities[letter][i];
 
             // slightly penalize words with duplicate letters
             // as they are less likely to be the solution
             const any_multiples_exist = Object.keys(knowledgeState.multiples).length > 0;
             if (!any_multiples_exist && used_letters.has(letter)) {
-                total_current_letter_score -= 2;
+                score -= 1;
             }
-
             used_letters.add(letter);
-            score += total_current_letter_score;
-            letter_scores.push(total_current_letter_score);
         }
+
+        // calculate the hint score if we were to guess this word
+        const hint_score = calculateHintScore(word, known_letters);
+        console.log(`word: ${word} hint_score: ${hint_score * 5}`);
+        score += hint_score * 5;
+
         if (score > bestScore) {
-            console.log(`new best guess: ${word} with score ${score} and letter scores: ${letter_scores}`);
+            console.log(`new best guess: ${word} with score ${score}`);
             bestScore = score;
             bestGuess = word;
         }
     }
 
     return bestGuess
+}
+
+export function calculateKnownLetters(knowledgeState) {
+    // find letters we already know something about
+    let known_letters = new Set();
+    for (const i of [0, 1, 2, 3, 4]) {
+        if (knowledgeState.correct[i] != null) {
+            known_letters.add(knowledgeState.correct[i]);
+        }
+    }
+
+    for (const letter in knowledgeState.known_letters_positions) {
+        known_letters.add(letter);
+    }
+
+    for (const letter in knowledgeState.not_in_puzzle) {
+        known_letters.add(letter);
+    }
+    return known_letters;
+}
+
+/// calculates how much information a new guess could give us given our current knowledge (i.e. a score from 0 to 1 describing how many new hints we could get)
+export function calculateHintScore(word, knownLetters) {
+    let score = 0;
+    for (const i of [0, 1, 2, 3, 4]) {
+        const letter = word[i];
+        if (!knownLetters.has(letter)) {
+            score++;
+        }
+    }
+    return score / 5;
 }
 
 export function initialKnowledgeState() {
