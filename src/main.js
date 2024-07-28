@@ -111,7 +111,7 @@ const COMMANDS = {
         const shareable = generateConnectionsShareable(state, connections)
         await sendMessage(shareable, payload.message.chat.id, 0, null, 0, "MarkdownV2")
         scores[connections.id]["bot"] = 4 - state.attempts
-        await store_connections_scores(score)
+        await store_connections_scores(scores)
         return [state, connections]
     },
     "schedule": async (payload, args) => {
