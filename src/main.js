@@ -13,7 +13,7 @@ import {
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
-import { convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, solveConnections } from "./connections.js";
+import { convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
 
 export let ENV = null;
 
@@ -281,11 +281,12 @@ const COMMON_RIPOSTES = [
 
 // waits for messages of the form: Connections\nPuzzle #413
 async function connections_slur(raw_message, chatId, senderId, senderName, message_id) {
-    const connections_regex = /Connections.*Puzzle.*(\d+).*/
-    const match = raw_message.match(connections_regex)
-    if (match) {
-        console.log("Connections match: " + raw_message)
-        const connections_no = parseInt(match[1])
+    let parse = parseConnectionsScoreFromShareable(raw_message);
+
+    if (parse) {
+        const { id, mistakes } = parse;
+        const connections_no = id;
+        console.log("Connections match: ", raw_message, "id: ", id, "mistakes: ", mistakes)
         let scores = await get_connections_scores()
         if (!("names" in scores)) {
             scores["names"] = {}
@@ -297,7 +298,7 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
             scores[connections_no] = {}
         }
         let bot_score = scores[connections_no]["bot"] ? scores[connections_no]["bot"] : -1
-        scores[connections_no][senderId] = count
+        scores[connections_no][senderId] = mistakes
 
         let bot_connections_no = connections_no
         if (bot_score == -1) {
@@ -307,7 +308,7 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
             scores[connections.id]["bot"] = bot_score
         }
 
-        if (bot_connections_no == connections_no && bot_score != -1 && bot_score < count) {
+        if (bot_connections_no == connections_no && bot_score < count) {
             const messages = [...COMMON_RIPOSTES, "It's connectin time"]
             return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
         }
