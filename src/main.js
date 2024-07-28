@@ -298,15 +298,19 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
             scores[connections_no] = {}
         }
         let bot_score = scores[connections_no]["bot"] ? scores[connections_no]["bot"] : -1
+        console.log("bot score: ", bot_score)
         scores[connections_no][senderId] = mistakes
 
         let bot_connections_no = connections_no
         if (bot_score == -1) {
+            console.log("playing since no bot score found")
             const [state, connections] = await COMMANDS.connections({ message: { chat: { id: chatId } } }, [])
             bot_score = 4 - state.attempts
             bot_connections_no = connections.id
             scores[connections.id]["bot"] = bot_score
         }
+
+        console.log("bot score: ", bot_score)
 
         if (bot_connections_no == connections_no && bot_score < count) {
             const messages = [...COMMON_RIPOSTES, "It's connectin time"]
