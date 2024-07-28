@@ -34,7 +34,9 @@ export async function getConnectionsForDay(date) {
     try {
         let response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
         // calculate days between June 12, 2023 and the print date
-        response.id = printDateToConnectionsNumber(response.print_date);
+        let newId = printDateToConnectionsNumber(response.print_date);
+        console.log("correcting id from id: ", response.id, " to print_date id: ", newId);
+        response.id = newId;
         return response.data;
     } catch (error) {
         console.error(error);
