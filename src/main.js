@@ -98,7 +98,7 @@ const COMMANDS = {
         console.log("scores: ", scores)
 
         if ("bot" in scores[connections_.id]) {
-            return sendMessage("I already solved this one", payload.message.chat.id, 0, null)
+            return [null, null]
         }
 
         const playerCallback = async (state, warning) => {
