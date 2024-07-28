@@ -307,7 +307,7 @@ function emojify_guess(guess, solution) {
     return emojified;
 }
 
-export function emojifyWordleScores(wordleScores) {
+export function emojifyWordleScores(wordleScores, title = "Wordles", reverse = false) {
     let id_to_guesses = {};
     for (const wordleId in wordleScores) {
         if (wordleId == "names") {
@@ -335,7 +335,10 @@ export function emojifyWordleScores(wordleScores) {
     }
     // generate emoji bar chart ordered by average guess number
     const sorted = Object.entries(id_to_guesses).sort((a, b) => a[1] - b[1]);
-    let chart = 'Leaderboard: Average | Wordles\n';
+    if (reverse) {
+        sorted.reverse();
+    }
+    let chart = `Leaderboard: Average | ${title}\n`;
     let place = 0;
     for (const [id, avg] of sorted) {
         const name = wordleScores.names[id] ? wordleScores.names[id] : id;

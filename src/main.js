@@ -63,6 +63,11 @@ const COMMANDS = {
         const scores = emojifyWordleScores(stats)
         return sendMessage(scores, payload.message.chat.id, 0, null, 0)
     },
+    "connectionsboard": async (payload, args) => {
+        const stats = await get_connections_scores()
+        const scores = emojifyWordleScores(stats, "Games")
+        return sendMessage(scores, payload.message.chat.id, 0, null, 0)
+    },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
         console.log("words count: ", words.length)
