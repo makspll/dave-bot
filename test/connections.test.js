@@ -13,8 +13,8 @@ afterEach(() => {
     server.close();
 });
 
-it("Solves connections for 2024-07-27", async () => {
-    const [state, connections] = await solveConnections(new Date("2024-07-27"), async (state) => {
+it("Solves connections for 2024-07-28", async () => {
+    const [state, connections] = await solveConnections(new Date("2024-07-28"), async (state) => {
         const words = state.tiles.slice(0, 4);
         return words.join(",");
     })

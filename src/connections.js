@@ -34,10 +34,11 @@ export async function getConnectionsForDay(date) {
     try {
         let response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
         // calculate days between June 12, 2023 and the print date
-        let newId = printDateToConnectionsNumber(response.print_date);
-        console.log("correcting id from id: ", response.id, " to print_date id: ", newId);
-        response.id = newId;
-        return response.data;
+        let data = response.data
+        let newId = printDateToConnectionsNumber(data.print_date);
+        console.log("correcting id from id: ", data.id, " to print_date id: ", newId);
+        data.id = newId
+        return data;
     } catch (error) {
         console.error(error);
         throw new Error('Failed to fetch connections');
@@ -77,7 +78,6 @@ export function convertStateToPrompt(state) {
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
 export async function solveConnections(date, playerCallback) {
     let connections = await getConnectionsForDay(date);
-    console.log("connections: ", connections);
     let all_tiles = connections.categories.flatMap(x => x.cards.map(y => y.content))
     // shuffle tiles
     all_tiles = all_tiles.sort(() => Math.random() - 0.5);
