@@ -300,6 +300,7 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
         let bot_score = scores[connections_no]["bot"] ? scores[connections_no]["bot"] : -1
         console.log("bot score: ", bot_score)
         scores[connections_no][senderId] = mistakes
+        await store_connections_scores(scores)
 
         let bot_connections_no = connections_no
         if (bot_score == -1) {
@@ -307,7 +308,6 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
             const [state, connections] = await COMMANDS.connections({ message: { chat: { id: chatId } } }, [])
             bot_score = 4 - state.attempts
             bot_connections_no = connections.id
-            scores[connections.id]["bot"] = bot_score
         }
 
         console.log("bot score: ", bot_score)
@@ -316,7 +316,6 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
             const messages = [...COMMON_RIPOSTES, "It's connectin time"]
             return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
         }
-        await store_connections_scores(scores)
     }
 }
 
