@@ -25,9 +25,16 @@ import { escapeMarkdown } from './markdown.js';
 //     }]
 //}
 
+export function printDateToConnectionsNumber(printDate) {
+    const days = Math.round((new Date(printDate) - new Date('2023-06-12')) / (1000 * 60 * 60 * 24));
+    return days + 1;
+}
+
 export async function getConnectionsForDay(date) {
     try {
-        const response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
+        let response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
+        // calculate days between June 12, 2023 and the print date
+        response.id = printDateToConnectionsNumber(response.print_date);
         return response.data;
     } catch (error) {
         console.error(error);
