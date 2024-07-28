@@ -83,6 +83,10 @@ const COMMANDS = {
             scores[wordle.wordle_no] = {}
         }
 
+        if ("bot" in scores[wordle.wordle_no]) {
+            return { "solution": solution, "wordle_no": wordle.wordle_no }
+        }
+
         scores[wordle.wordle_no]["bot"] = solution.guesses_count
         await store_wordle_scores(scores);
 
