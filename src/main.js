@@ -317,7 +317,7 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
 
         console.log("bot score: ", bot_score)
 
-        if (bot_connections_no == connections_no) {
+        if (bot_connections_no == connections_no && bot_score < mistakes) {
             const messages = [...COMMON_RIPOSTES, "It's connectin time"]
             return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
         }
