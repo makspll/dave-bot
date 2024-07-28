@@ -86,13 +86,17 @@ const COMMANDS = {
     },
     "connections": async (payload, args) => {
 
-        const done = await get_connections_done();
+        let scores = await get_connections_scores();
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
+
         const connections_ = await getConnectionsForDay(date_today)
-        console.log("connections today", connections_, "done: ", done)
-        if (connections_.id in done) {
-            return sendMessage("Already did this one chief..", payload.message.chat.id, 0, null)
+        if (!connections_.id in scores) {
+            scores[connections_.id] = {}
+        }
+
+        if ("bot" in scores[connections_.id]) {
+            return sendMessage("I already solved this one", payload.message.chat.id, 0, null)
         }
 
         const playerCallback = async (state, warning) => {
@@ -104,8 +108,9 @@ const COMMANDS = {
         const [state, connections] = await solveConnections(date_today, playerCallback);
         const shareable = generateConnectionsShareable(state, connections)
         await sendMessage(shareable, payload.message.chat.id, 0, null, 0, "MarkdownV2")
-        done[connections.id] = true
-        return store_connections_done(done)
+        scores[connections.id]["bot"] = 4 - state.attempts
+        await store_connections_scores(score)
+        return [state, connections]
     },
     "schedule": async (payload, args) => {
         console.log("received schedule command with args: " + args)
@@ -241,6 +246,7 @@ export default {
 
                     console.log("processing triggers")
                     console.log("Message is from: " + JSON.stringify(payload.message.from))
+                    await connections_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, senderName, payload.message.message_id);
                     await wordle_slur(payload.message.text, payload.message.chat.id, payload.message.from.id, senderName, payload.message.message_id);
                     await hardlyfier(words, payload.message.chat.id, payload.message.message_id);
                     await sickomode(payload.message.from.first_name, payload.message.chat.id, payload.message.message_id);
@@ -256,6 +262,57 @@ export default {
         return new Response("OK") // Doesn't really matter
     },
 };
+
+const COMMON_RIPOSTES = [
+    "I beat your ass :#",
+    "Loser",
+    "pfft",
+    "amateur",
+    "hah",
+    "cute",
+    "lol",
+    "embarassing",
+    "bitch",
+    "do you want private lessons?",
+    "maybe hard mode isn't for you.."
+]
+
+// waits for messages of the form: Connections\nPuzzle #413
+async function connections_slur(raw_message, chatId, senderId, senderName, message_id) {
+    const connections_regex = /Connections.*Puzzle.*(\d+).*/
+    const match = raw_message.match(connections_regex)
+    if (match) {
+        console.log("Connections match: " + raw_message)
+        const connections_no = parseInt(match[1])
+        let scores = await get_connections_scores()
+        if (!("names" in scores)) {
+            scores["names"] = {}
+        }
+        console.log("storing sender name: ", senderId)
+        scores["names"][senderId] = senderName
+
+        if (!(connections_no in scores)) {
+            scores[connections_no] = {}
+        }
+        let bot_score = scores[connections_no]["bot"] ? scores[connections_no]["bot"] : -1
+        scores[connections_no][senderId] = count
+
+        let bot_connections_no = connections_no
+        if (bot_score == -1) {
+            const [state, connections] = await COMMANDS.connections({ message: { chat: { id: chatId } } }, [])
+            bot_score = 4 - state.attempts
+            bot_connections_no = connections.id
+            scores[connections.id]["bot"] = bot_score
+        }
+
+        if (bot_connections_no == connections_no && bot_score != -1 && bot_score < count) {
+            const messages = [...COMMON_RIPOSTES, "It's connectin time"]
+            return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
+        }
+        await store_connections_scores(scores)
+    }
+}
+
 
 // waits for messages of the form: Wordle 1,134 5/6* ...
 // and parses them to determine a response and possibly store the score
@@ -291,18 +348,7 @@ async function wordle_slur(raw_message, chatId, senderId, senderName, message_id
 
         if (bot_wordle_no == wordle_no && bot_score != 0 && bot_score < count) {
             const messages = [
-                "I beat your ass :#",
-                "Loser",
-                "pfft",
-                "amateur",
-                "hah",
-                "cute",
-                "lol",
-                "embarassing",
-                "it's wordlin time",
-                "bitch",
-                "do you want private lessons?",
-                "maybe hard mode isn't for you.."
+                ...COMMON_RIPOSTES, "It's wordlin time"
             ]
             return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
         }
@@ -379,12 +425,12 @@ async function store_kv_object(key, value) {
     }
 }
 
-async function get_connections_done() {
-    return await get_kv_object("connections_done", 60)
+async function get_connections_scores() {
+    return await get_kv_object("connections_scores", 60)
 }
 
-async function store_connections_done(scores) {
-    return store_kv_object("connections_done", scores)
+async function store_connections_scores(scores) {
+    return store_kv_object("connections_scores", scores)
 }
 
 async function get_wordle_scores() {
