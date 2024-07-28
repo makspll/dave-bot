@@ -91,9 +91,11 @@ const COMMANDS = {
         date_today.setHours(date_today.getHours() + 1)
 
         const connections_ = await getConnectionsForDay(date_today)
-        if (!connections_.id in scores) {
+        if (!(connections_.id in scores)) {
             scores[connections_.id] = {}
         }
+        console.log("conenctions: ", connections_)
+        console.log("scores: ", scores)
 
         if ("bot" in scores[connections_.id]) {
             return sendMessage("I already solved this one", payload.message.chat.id, 0, null)
