@@ -11,7 +11,8 @@
   "scripts": {
     "start": "wrangler dev src/main.js",
     "deploy": "wrangler deploy src/main.js",
-    "test": "mocha"
+    "test": "mocha",
+    "test_connections": "mocha test/connections.test.js"
   },
   "type": "module",
   "dependencies": {

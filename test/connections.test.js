@@ -1,4 +1,5 @@
-import { generateConnectionsShareable, solveConnections } from "../src/connections.js";
+import { expect } from "chai";
+import { generateConnectionsShareable, parseConnectionsScoreFromShareable, solveConnections } from "../src/connections.js";
 import { makeMockServer } from "./server.js";
 
 let server = makeMockServer();
@@ -19,3 +20,11 @@ it("Solves connections for 2024-07-27", async () => {
     })
     console.log(generateConnectionsShareable(state, connections));
 });
+
+it("Parses connections with 4 mistakes correctly", async () => {
+    const message = 'Connections\nPuzzle #443\n🟨🟪🟨🟩\n🟪🟨🟨🟦\n🟩🟩🟦🟪\n🟦🟩🟪🟦'
+
+    const { id, mistakes } = parseConnectionsScoreFromShareable(message);
+    expect(id).to.equal(443);
+    expect(mistakes).to.equal(4);
+})

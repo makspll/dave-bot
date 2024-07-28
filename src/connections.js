@@ -175,28 +175,23 @@ export function parseConnectionsScoreFromShareable(message) {
     if (lines.length < 2) {
         return null;
     }
-    const puzzleLine = lines[1];
-    const puzzleMatch = puzzleLine.match(/.*#(\d+).*/);
+    const puzzleMatch = message.match(/#(\d+)/);
     if (!puzzleMatch) {
         return null;
     }
-    const id = parseInt(puzzleMatch[0]);
-
-
+    const id = parseInt(puzzleMatch[1]);
     // now parse the board, just count the lines which have 4 emojis which aren't the same
     const emojiRegex = /\p{Emoji_Presentation}/gu;
     // find all emojis in the multiline string
     const allEmojis = [...message.matchAll(emojiRegex)].map(x => x[0]);
-
     if (allEmojis.length % 4 !== 0) {
         return null;
     }
 
     let mistakes = 0;
-    let row = 0;
-    while (row < allEmojis.length / 4) {
-        const row = allEmojis.splice((row - 1) * 4, row * 4);
-        const uniqueEmojis = [...new Set(row)];
+    while (allEmojis.length >= 4) {
+        let emojiRow = allEmojis.splice(0, 4);
+        const uniqueEmojis = [...new Set(emojiRow)];
         if (uniqueEmojis.length !== 1) {
             mistakes++;
         }
