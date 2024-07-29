@@ -98,7 +98,7 @@ export function convertGuessToPrompt(guess) {
     } else {
         reason = `Incorrect guess, at least two words are in the wrong category. You have one less attempt left.`;
     }
-    return `You guessed: '${guess}'.${reason} `;
+    return `You guessed: '${guess.length ? guess.join(",") : JSON.stringify(guess)}'.${reason} `;
 }
 
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
