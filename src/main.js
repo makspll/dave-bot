@@ -425,7 +425,12 @@ export async function call_gpt(...message_history) {
             "messages": message_history
         })
     }).then(res => res.json())
-        .then(json => json.choices[0].message.content)
+        .then(json => {
+            if (!json.choices || json.choices.length == 0) {
+                throw new Error(JSON.stringify(json))
+            }
+            return json.choices[0].message.content
+        })
         .catch(err => console.log("error from open API call: " + err));
     return response;
 }
