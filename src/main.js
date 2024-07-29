@@ -111,8 +111,8 @@ const COMMANDS = {
 
         const playerCallback = async (state, invalid_guess) => {
             let messages = []
-            // system message
-            messages.push(convertGuessToPrompt(null))
+            messages.push(convertGuessToPrompt(null)) // system message
+            messages.push("Welcome to connections bot, here are your 16 words: '" + state.tiles.join(",") + "'") // user message
             for (const guess of [...state.guesses, invalid_guess]) {
                 if (!guess) continue;
                 messages.push(guess.guess.length ? guess.guess.join(",") : guess.guess) // assistant message
@@ -406,10 +406,10 @@ export async function call_tts(text) {
 }
 // calls chat gpt with the given message history and returns the response
 // the messages alternate between assistant and user messages starting from a system message
-// i.e. [system, assistant, user, assistant, user, ...]
+// i.e. [system, user, assistant, user, assistant ...]
 export async function call_gpt(...message_history) {
     let history = message_history.map((m, i) => ({
-        "role": i == 0 ? "system" : (i % 2 == 0 ? "user" : "assistant"),
+        "role": i == 0 ? "system" : (i % 2 == 0 ? "assistant" : "user"),
         "content": m
     }));
     let response = await fetch("https://api.openai.com/v1/chat/completions", {

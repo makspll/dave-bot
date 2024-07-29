@@ -56,7 +56,29 @@ export async function initializeConnectionsKnowledgeState(tiles) {
 }
 
 export function generateInitialPrompt() {
-    return 'You are acting as a player in the game of connections. There are 16 items, each one belongs to one of 4 groups with a certain theme, the theme could be for example "items that you put in an oven". Your goal is to figure out which groups those are one guess at a time. Each time you guess you can choose 4 cards, you get to make 4 mistakes, I will let you know if your guess is only one tile away from correct. You must respond with only a comma separated list of 4 tiles each time AND NOTHING ELSE. I will present you with the state of the game and you must continue the game from that point regardless if its the first turn, DO NOT ANSWER WITH ANYTHING OTHER THAN 4 COMMA SEPARATED WORDS, for example: "APPLE,ORANGE,BANANA,PEAR". NOTE NO SPECIAL CHARACTERS MUST BE PRESENT IN YOUR RESPONSE. ';
+    return `
+    you are a chatbot playing the connections game. The user is the game master and will give you hints and guidance throughout the game.
+    The game master will provide you with a list of 16 words, each word belongs to a category. Your goal is to categorise these words into 4 groups.
+    Each group should contain 4 words, the words in each group are connected in some way. You only need to name the words which are connected, not the category itself.
+    You will make guesses by providing 4 COMMA SEPARATED AND CAPITALISED WORDS. The game master will tell you if your guess is correct, one word away or incorrect.
+    If you make a mistake you will lose a life, you have 4 lives. If you guess correctly you will have to guess another 4 words from the remaining words.
+    Here is an example game: 
+    '''
+    GM: The words are: 'BEAR,GENERATE,PRODUCE,YIELD,ASIDE,DETOUR,DIGRESSION,TANGENT,BABE,FOX,SNACK,TEN,ARE,RADIUS,REVERSE,RIGHT'
+    Bot: 'BEAR,GENERATE,PRODUCE,YIELD'
+    GM: Correct! Your guess belongs to the category: 'CREATE, AS RESULTS'. Now you must guess another 4 words from the remaining words which are connected: 'ASIDE,DETOUR,DIGRESSION,TANGENT,BABE,FOX,SNACK,TEN,ARE,RADIUS,REVERSE,RIGHT'
+    Bot: 'ASIDE,DETOUR,DIGRESSION,TEN'
+    GM: One away! One word is in the wrong category. You have one less attempt left.
+    Bot: 'ASIDE,DETOUR,DIGRESSION,TANGENT'
+    GM: Correct! Your guess belongs to the category: 'OFF-TOPIC REMARKS'. Now you must guess another 4 words from the remaining words which are connected: 'BABE,FOX,SNACK,TEN,ARE,RADIUS,REVERSE,RIGHT'
+    Bot: 'BABE,FOX,SNACK,TEN'
+    GM: Correct! Your guess belongs to the category: 'HOTTIE'. Now you must guess another 4 words from the remaining words which are connected: 'ARE,RADIUS,REVERSE,RIGHT'
+    Bot: 'ARE,RADIUS,REVERSE,RIGHT'
+    GM: Correct! Your guess belongs to the category: 'WORDS REPRESENTED BY THE LETTER "R"'. You have successfully categorised all words.
+    '''
+    ONLY RESPOND WITH 4 COMMA SEPARATED AND CAPITALISED WORDS. AND NOTHING ELSE.
+    I REPEAT ONLY RESPOND WITH 4 COMMA SEPARATED AND CAPITALISED WORDS. AND NOTHING ELSE. NO EMOJIS, NO PUNCTUATION, NO SPACES, NO COMMENTS.
+    `;
 }
 
 // converts a guess to a prompt, if the guess was invalid it will return the invalid reason
@@ -92,7 +114,7 @@ export async function solveConnections(date, playerCallback) {
         // attempt to get valid input twice before failing
         let input_attempts = 0;
         let last_guess = guessCategory(await playerCallback(state, null), connections);
-        while (!last_guess.invalid && input_attempts < 3) {
+        while (last_guess.invalid && input_attempts < 3) {
             if (last_guess.correct && last_guess.category in state.categorised) {
                 last_guess.invalid = `the guess was already made, it was correct, it belongs to the category: ${last_guess.category}. You cannot guess the same category twice.`;
             }
