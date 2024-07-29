@@ -422,7 +422,7 @@ export async function call_gpt(...message_history) {
         body: JSON.stringify({
             "model": "gpt-3.5-turbo",
             "max_tokens": 40,
-            "messages": message_history
+            "messages": history
         })
     }).then(res => res.json())
         .then(json => {
