@@ -13,7 +13,7 @@ import {
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
-import { convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
+import { convertGuessToPrompt, convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
 
 export let ENV = null;
 
@@ -51,7 +51,7 @@ const COMMANDS = {
     "attack": async (payload, args) => {
         if (payload.message.from.id == ENV.GOD_ID) {
             await sendMessage("Yes sir", payload.message.chat.id, 0, null)
-            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "), [])
+            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "))
             sendMessage("sent: " + gpt_answer, ENV.GOD_ID, 0, null)
             return sendMessage(gpt_answer, parseInt(args[0]), 5, null, 1.0)
         } else {
@@ -110,9 +110,10 @@ const COMMANDS = {
             return [null, null]
         }
 
-        const playerCallback = async (state, warning) => {
-            const message = `${generateInitialPrompt()}\n STATE:\n${convertStateToPrompt(state)}\n Your previous guesses were: '${state.guesses}'${warning}`
-            const response = await call_gpt(message, [])
+        const playerCallback = async (state, invalid_guess) => {
+            let messages = [...state.guesses, invalid_guess].map(g => convertGuessToPrompt(g))
+            console.log("calling chat gpt with messages: ", messages)
+            const response = await call_gpt(...messages)
             console.log("chat gpt response: ", response);
             return response
         }
@@ -395,13 +396,12 @@ export async function call_tts(text) {
     } else {
         throw new Error("Error in tts call: " + JSON.stringify(await response.json()));
     }
-} export async function call_gpt(system_prompt, message_history) {
-    let messages = [{
-        "role": "system",
-        "content": system_prompt
-    }];
-    let history = message_history.map(m => ({
-        "role": "user",
+}
+// calls chat gpt with the given message history and returns the response
+// the messages alternate between system and user messages starting from a system message
+export async function call_gpt(...message_history) {
+    let history = message_history.map((m, i) => ({
+        "role": i % 2 == 0 ? "system" : "user",
         "content": m
     }));
     messages.push(...history);
@@ -583,7 +583,7 @@ async function keywords(words, chatId, senderId, message_id) {
                         relationship_prompt = NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
                     }
                 }
-                let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt), []);
+                let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt));
                 if (response) {
                     await sendMessage(response, chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE)
                 } else {

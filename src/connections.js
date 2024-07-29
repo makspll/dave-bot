@@ -59,23 +59,28 @@ export function generateInitialPrompt() {
     return 'You are acting as a player in the game of connections. There are 16 items, each one belongs to one of 4 groups with a certain theme, the theme could be for example "items that you put in an oven". Your goal is to figure out which groups those are one guess at a time. Each time you guess you can choose 4 cards, you get to make 4 mistakes, I will let you know if your guess is only one tile away from correct. You must respond with only a comma separated list of 4 tiles each time AND NOTHING ELSE. I will present you with the state of the game and you must continue the game from that point regardless if its the first turn, DO NOT ANSWER WITH ANYTHING OTHER THAN 4 COMMA SEPARATED WORDS, for example: "APPLE,ORANGE,BANANA,PEAR". NOTE NO SPECIAL CHARACTERS MUST BE PRESENT IN YOUR RESPONSE. ';
 }
 
-export function convertStateToPrompt(state) {
-    let prompt = 'Remaining uncategorised tiles:\n';
-    for (const tile of state.tiles) {
-        prompt += `- ${tile}\n`;
+// converts a guess to a prompt, if the guess was invalid it will return the invalid reason
+// this can be used to generate a message history for the bot
+// if no guess was made will generate the initial prompt
+export function convertGuessToPrompt(guess) {
+    let reason = ''
+    if (!guess) {
+        return generateInitialPrompt();
+    } else if (guess.invalid) {
+        reason = guess.invalid;
+    } else if (guess.correct) {
+        let uncategorised = `Remaining words to categorise: '${guess.remaining.join(',')}'`;
+        reason = `Correct! Your guess belongs to the category: ${guess.category}. Now you must guess another 4 words from the remaining words which are connected: ${uncategorised}`;
+    } else if (guess.one_away) {
+        reason = `Your guess is one word away from correct! One word is in the wrong category. You have one less attempt left.`;
+    } else {
+        reason = `Incorrect guess, at least two words are in the wrong category. You have one less attempt left.`;
     }
-    prompt += 'Categorised tiles:\n';
-    for (const [key, value] of Object.entries(state.categorised)) {
-        prompt += `${key}: ${value.join(', ')}\n`;
-    }
-    if (state.one_away) {
-        prompt += 'Your last guess was one away from correct!\n';
-    }
-    prompt += `Attempts remaining: ${state.attempts}\n`;
-    return prompt;
+    return `You guessed: '${guess}'.${reason} `;
 }
 
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
+// the callback will receive a second argument corresponding to the last invalid guess, if the last guess was invalid
 export async function solveConnections(date, playerCallback) {
     let connections = await getConnectionsForDay(date);
     let all_tiles = connections.categories.flatMap(x => x.cards.map(y => y.content))
@@ -84,67 +89,92 @@ export async function solveConnections(date, playerCallback) {
     let state = await initializeConnectionsKnowledgeState(all_tiles);
 
     while (state.attempts > 0) {
-        async function getValidInput(warning) {
-            let words = await playerCallback(state, warning);
-            console.log(`#Attempts: ${state.attempts}, Guessing: `, words, "warning: ", warning);
-            words = words.split(',').map(x => x.replace(/\W/g, '').trim());
-            let cats = []
-            for (const word of words) {
-                const category = connections.categories.find(x => x.cards.some(y => y.content === word));
-                cats.push(category.title);
-            }
-            return [words, cats]
-        }
-
         // attempt to get valid input twice before failing
         let input_attempts = 0;
-        let warning = ""
-        let categories = []
-        let words = []
-        while (input_attempts < 3) {
-            try {
-                [words, categories] = await getValidInput(warning);
-            } catch {
-                warning = "Your last guess: `" + words + "` WAS INVALID INPUT. YOU MUST RESPOND WITH ONLY A COMMA SEPARATED LIST OF 4 TILES EACH TIME AND NOTHING ELSE. for example: APPLE,ORANGE,BANANA,PEAR. NOTE NO SPECIAL CHARACTERS MUST BE PRESENT, try again"
+        let last_guess = guessCategory(await playerCallback(state, null), connections);
+        while (!last_guess.invalid && input_attempts < 3) {
+            if (last_guess.correct && last_guess.category in state.categorised) {
+                last_guess.invalid = `the guess was already made, it was correct, it belongs to the category: ${last_guess.category}. You cannot guess the same category twice.`;
             }
-            if (categories.length === 4 && words.length === 4) {
-                break;
-            }
+            last_guess = guessCategory(await playerCallback(state, last_guess), connections);
             input_attempts++;
         }
-        if (categories.length !== 4 || words.length !== 4) {
-            throw new Error('Failed to get valid input');
-        }
 
-        // find unique title counts and find the title with most occurences
-        const uniqueCategories = [...new Set(categories)];
-        let maxCategory = '';
-        let maxCategoryCount = 0;
-        for (const category of uniqueCategories) {
-            const count = categories.filter(x => x === category).length;
-            if (count > maxCategoryCount) {
-                maxCategory = category;
-                maxCategoryCount = count;
-            }
+        if (last_guess.invalid) {
+            throw new Error('failed to get valid input from player. fuck you openAI');
         }
+        console.log(`#${3 - state.attempts}, last_guess: ${invalid_guess} `);
 
-        if (maxCategoryCount === 4) {
-            // update state
-            state.categorised[maxCategory] = words;
-            state.tiles = state.tiles.filter(x => !words.includes(x));
-            state.one_away = undefined
-        } else if (maxCategoryCount === 3) {
-            // update state
-            state.one_away = true;
-            state.attempts--;
+        state.guesses.push(last_guess);
+        if (last_guess.correct) {
+            let category_to_remove = last_guess.category
+            let cards = connections.categories.find(c => c.title == category_to_remove).cards.map(c => c.content)
+            state.categorised[category_to_remove] = cards
+            state.tiles = state.tiles.filter(t => !cards.includes(t))
+
         } else {
             state.attempts--;
         }
-        state.guesses.push(words);
-        console.log("new state: ", state);
+
+        console.log("state after guess: ", state);
     }
 
     return [state, connections];
+}
+
+// parses guess & checks whether it is valid and correct, returns:
+// {
+//   correct: true/false,
+//   one_away: true/false
+//   category: "category title"
+//   invalid: "invalid reason"/null // if the guess is invalid everything else will be undefined apart from the guess
+//   guess: ["word1", "word2", "word3", "word4"]
+//   remaining: ["word1", "word2", "word3", "word4", ...] // if the guess was correct
+// }
+export function guessCategory(guess, connections) {
+    if (typeof (guess) === 'string') {
+        guess = words.split(',').map(x => x.replace(/\W/g, '').trim());
+    }
+
+    if (guess == null || guess.length !== 4) {
+        return { invalid: "guess does not contain 4 comma separated words", guess };
+    }
+
+    let categories = []
+    for (const word of guess) {
+        const category = connections.categories.find(x => x.cards.some(y => y.content === word));
+        if (!category) {
+            return { invalid: `The word ${word} is not part of the puzzle, use a valid word.`, guess };
+        }
+        categories.push(category.title);
+    }
+
+    // find unique title counts and find the title with most occurences
+    const uniqueCategories = [...new Set(categories)];
+    let maxCategory = '';
+    let maxCategoryCount = 0;
+    for (const category of uniqueCategories) {
+        const count = categories.filter(x => x === category).length;
+        if (count > maxCategoryCount) {
+            maxCategory = category;
+            maxCategoryCount = count;
+        }
+    }
+    if (maxCategoryCount === 4) {
+        let remaining = []
+        for (const category of connections.categories) {
+            if (category.title !== maxCategory) {
+                remaining = remaining.concat(category.cards.map(x => x.content));
+            }
+        }
+        // shuffle
+        remaining = remaining.sort(() => Math.random() - 0.5);
+        return { correct: true, one_away: false, category: maxCategory, guess, remaining };
+    } else if (maxCategoryCount === 3) {
+        return { correct: false, one_away: true, category: null, guess };
+    } else {
+        return { correct: false, one_away: false, category: null, guess };
+    }
 }
 
 // generates shareable of the format:
@@ -156,7 +186,7 @@ export async function solveConnections(date, playerCallback) {
 // 🟪🟪🟪🟪
 export function generateConnectionsShareable(state, connections) {
     let shareable = 'Connections\n';
-    shareable += `Puzzle ${connections.id}\n`;
+    shareable += `Puzzle ${connections.id} \n`;
     // give each category a color in order from green,orange through blue and purple:
     const colors = ['🟩', '🟨', '🟦', '🟪'];
     let category_to_color = {};
