@@ -13,7 +13,7 @@ import {
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
 import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
-import { convertGuessToPrompt, convertStateToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
+import { convertGuessToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
 
 export let ENV = null;
 
