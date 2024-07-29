@@ -217,7 +217,7 @@ export function generateConnectionsShareable(state, connections) {
     }
 
     for (const guesses of state.guesses) {
-        for (const word of guesses) {
+        for (const word of guesses.guess) {
             const category = connections.categories.find(x => x.cards.some(y => y.content === word));
             shareable += category_to_color[category.title];
         }
