@@ -111,7 +111,15 @@ const COMMANDS = {
         }
 
         const playerCallback = async (state, invalid_guess) => {
-            let messages = [...state.guesses, invalid_guess].map(g => convertGuessToPrompt(g))
+            let messages = []
+            // system message
+            messages.push(convertGuessToPrompt(null))
+            for (const guess of [...state.guesses, invalid_guess]) {
+                if (!guess) continue;
+                messages.push(guess.guess.length ? guess.guess.join(",") : guess.guess) // assistant message
+                messages.push(convertGuessToPrompt(guess)) // user message
+            }
+
             console.log("calling chat gpt with messages: ", messages)
             const response = await call_gpt(...messages)
             console.log("chat gpt response: ", response);
@@ -398,10 +406,11 @@ export async function call_tts(text) {
     }
 }
 // calls chat gpt with the given message history and returns the response
-// the messages alternate between system and user messages starting from a system message
+// the messages alternate between assistant and user messages starting from a system message
+// i.e. [system, assistant, user, assistant, user, ...]
 export async function call_gpt(...message_history) {
     let history = message_history.map((m, i) => ({
-        "role": i % 2 == 0 ? "system" : "user",
+        "role": i == 0 ? "system" : (i % 2 == 0 ? "user" : "assistant"),
         "content": m
     }));
     messages.push(...history);
