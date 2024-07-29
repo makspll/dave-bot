@@ -133,7 +133,7 @@ export async function solveConnections(date, playerCallback) {
 // }
 export function guessCategory(guess, connections) {
     if (typeof (guess) === 'string') {
-        guess = words.split(',').map(x => x.replace(/\W/g, '').trim());
+        guess = guess.split(',').map(x => x.replace(/\W/g, '').trim());
     }
 
     if (guess == null || guess.length !== 4) {
