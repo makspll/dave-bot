@@ -104,7 +104,6 @@ const COMMANDS = {
             scores[connections_.id] = {}
         }
         console.log("conenctions: ", connections_)
-        console.log("scores: ", scores)
 
         if ("bot" in scores[connections_.id]) {
             return [null, null]
