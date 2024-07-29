@@ -342,7 +342,7 @@ export function emojifyWordleScores(wordleScores, title = "Wordles", reverse = f
     let place = 0;
     for (const [id, avg] of sorted) {
         const name = wordleScores.names[id] ? wordleScores.names[id] : id;
-        const emoji = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+        const emoji = ['🥇', '🥈', '🥉', '🏅', '🎖️', '💩', '💩', '💩', '💩', '💩'];
         chart += `${String(name + emoji[place]).padEnd(11, ' ')}: ${String(avg).padEnd(7, ' ')} | ${String(id_to_guess_counts[id]).padEnd(7, ' ')}\n`;
         place++;
     }

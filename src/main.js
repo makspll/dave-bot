@@ -336,7 +336,7 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
 // waits for messages of the form: Wordle 1,134 5/6* ...
 // and parses them to determine a response and possibly store the score
 async function wordle_slur(raw_message, chatId, senderId, senderName, message_id) {
-    const wordle_regex = /Wordle ([\d,]+) (\d+\/\d+)\*.*/
+    const wordle_regex = /Wordle ([\d,]+) (\d+\/\d+).*/
     const match = raw_message.match(wordle_regex)
     if (match) {
         console.log("Wordle match: " + raw_message)
