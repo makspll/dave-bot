@@ -125,7 +125,7 @@ export async function solveConnections(date, playerCallback) {
         if (last_guess.invalid) {
             throw new Error('failed to get valid input from player. fuck you openAI');
         }
-        console.log(`#${3 - state.attempts}, last_guess: ${invalid_guess} `);
+        console.log(`#${3 - state.attempts}, last_guess: ${last_guess} `);
 
         state.guesses.push(last_guess);
         if (last_guess.correct) {

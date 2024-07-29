@@ -412,6 +412,7 @@ export async function call_gpt(...message_history) {
         "role": i == 0 ? "system" : (i % 2 == 0 ? "assistant" : "user"),
         "content": m
     }));
+    console.log("calling chat gpt with history: ", history)
     let response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
