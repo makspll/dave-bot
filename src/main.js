@@ -413,7 +413,6 @@ export async function call_gpt(...message_history) {
         "role": i == 0 ? "system" : (i % 2 == 0 ? "user" : "assistant"),
         "content": m
     }));
-    messages.push(...history);
     let response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -424,7 +423,7 @@ export async function call_gpt(...message_history) {
         body: JSON.stringify({
             "model": "gpt-3.5-turbo",
             "max_tokens": 40,
-            "messages": messages
+            "messages": message_history
         })
     }).then(res => res.json())
         .then(json => json.choices[0].message.content)
