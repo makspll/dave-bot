@@ -55,7 +55,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
 // accepts a dictionary from game id to name to score i.e. {game_id: {name: score}}
 // and converts it into a leaderboard format by calculating metrics based on the score
 // the score must be a number and the larger number is treated as a worse score. a 0 is the perfect score
-export function convertDailyScoresToLeaderboard(scores) {
+export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = false) {
     let name_to_metrics = {}
     for (const [game_id, player_scores] of Object.entries(scores)) {
         let all_player_daily_average = 0
@@ -94,6 +94,10 @@ export function convertDailyScoresToLeaderboard(scores) {
         if (metrics["Games (3+)"] > 0) {
             metrics["Avg. Delta"] = metrics["Avg. Delta"] / metrics["Games (3+)"]
         }
+
+        if (!show_games_3_plus) {
+            delete metrics["Games (3+)"]
+        }
     }
     
     // generate leaderoard dictionary
@@ -117,6 +121,10 @@ export function convertDailyScoresToLeaderboard(scores) {
                 "ascending": true
             }
         }
+    }
+
+    if (!show_games_3_plus) {
+        delete leaderboard.scorekinds["Games (3+)"]
     }
     
     return leaderboard
