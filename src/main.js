@@ -64,6 +64,13 @@ const COMMANDS = {
         let daily_scores = {}
         // replace the player_ids with their names
         for (const [game_id, player_scores] of Object.entries(stats)) {
+            if (game_id == "names") {
+                continue
+            }
+            if (args && args[0] && args[0] != game_id) {
+                continue
+            }
+
             daily_scores[game_id] = {}
             for (const [player_id, player_score] of Object.entries(player_scores)) {
                 let name = stats.names[player_id] ? stats.names[player_id] : player_id
@@ -80,6 +87,13 @@ const COMMANDS = {
         let daily_scores = {}
         // replace the player_ids with their names
         for (const [game_id, player_scores] of Object.entries(stats)) {
+            if (game_id == "names") {
+                continue
+            }
+            if (args && args[0] && args[0] != game_id) {
+                continue
+            }
+
             daily_scores[game_id] = {}
             for (const [player_id, player_score] of Object.entries(player_scores)) {
                 let name = stats.names[player_id] ? stats.names[player_id] : player_id
@@ -264,8 +278,6 @@ export default {
                         split_cmd.shift()
                         if (cmd) {
                             await cmd(payload, split_cmd)
-                        } else {
-                            await sendMessage("I don't know this command", payload.message.chat.id, 0, null)
                         }
                         return new Response("OK")
                     }
