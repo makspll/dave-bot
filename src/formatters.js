@@ -1,4 +1,5 @@
-import stringWidth from "string-width";
+import pkg from 'printable-characters';
+const { strlen } = pkg;
 import { stringPad } from "./utils.js";
 
 // expects a dictionary of the form:
@@ -34,8 +35,8 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     while (emojis.length < Object.keys(scores.scores).length) {
         emojis.push('💩');
     }
-    let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
-    let longest_name = Math.max(...Object.keys(scores.scores).map(x => stringWidth(x)));
+    let longest_emoji = Math.max(...emojis.map(x => strlen(x)));
+    let longest_name = Math.max(...Object.keys(scores.scores).map(x => strlen(x)));
     let title_column_length = Math.max(title.length, longest_name + longest_emoji + 1);
     let missing_score_value = "N/A";
     

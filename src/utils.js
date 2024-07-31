@@ -1,4 +1,5 @@
-import stringWidth from "string-width";
+import pkg from 'printable-characters';
+const { strlen } = pkg;
 
 export function formatDateToYYYYMMDD(date) {
     const year = date.getFullYear();
@@ -8,16 +9,16 @@ export function formatDateToYYYYMMDD(date) {
 }
 
 export function stringPad(string, target_length, fill = ' ', align = 'left') {
-    let padding_required = target_length - stringWidth(string);
+    let padding_required = target_length - strlen (string);
     if (padding_required <= 0) {
         return string;
     }
     let left_padding = Math.floor(padding_required / 2);
     let right_padding = padding_required - left_padding;
-    if (align = 'left') {
+    if (align == 'left') {
         right_padding = left_padding + right_padding;
         left_padding = 0;
-    } else if (align = 'right') {
+    } else if (align == 'right') {
         left_padding = left_padding + right_padding;
         right_padding = 0;
     }
