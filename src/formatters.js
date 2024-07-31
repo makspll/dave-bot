@@ -46,7 +46,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     for (const [name, user_scores] of Object.entries(scores.scores)) {
         let name_and_emoji = `${emojis.shift()} ${name}`;
         let name_padding = name_and_emoji.padEnd(name_column_length, ' ');
-        let score_padding = Object.entries(scores.scorekinds).map(([kind, value]) => (user_scores[kind] ? user_scores[kind] : missing_score_value).toString().padEnd(score_column_lengths[kind], ' ')).join(" | ");
+        let score_padding = Object.entries(scores.scorekinds).map(([kind, value]) => (user_scores[kind] ? user_scores[kind].toFixed(2) : missing_score_value).toString().padEnd(score_column_lengths[kind], ' ')).join(" | ");
         rows += `${name_padding} | ${score_padding}\n`;
     }
     return headers + rows;
