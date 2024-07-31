@@ -80,7 +80,7 @@ const COMMANDS = {
         console.log(daily_scores)
 
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Wordlers")
-        return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
+        return sendMessage(`<pre>\n${leaderboard}\n</pre>`, payload.message.chat.id, 0, null, 0, "HTML")
     },
     "connectionsboard": async (payload, args) => {
         const stats = await get_connections_scores()
@@ -101,7 +101,7 @@ const COMMANDS = {
             }
         }
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Connectors")
-        return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
+        return sendMessage(`<pre>\n${leaderboard}\n</pre>`, payload.message.chat.id, 0, null, 0, "HTML")
     },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
