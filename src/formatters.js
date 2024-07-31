@@ -36,7 +36,6 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
     let missing_score_value = "N/A";
     
-    let name_column_length = Math.max(Object.keys(scores.scores).reduce((a, b) => a.length > b.length ? a : b).length + longest_emoji, title.length);
     let score_column_lengths = {};
     for (const scorekind in scores.scorekinds) {
         score_column_lengths[scorekind] = Math.max(...Object.values(scores.scores).map(x => x[scorekind] ? x[scorekind].toString().length : missing_score_value.length), scores.scorekinds[scorekind].title.length);
@@ -46,7 +45,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
         let name_and_emoji = `${emojis.shift()} ${name}`;
-        let name_padding = name_and_emoji.padEnd(name_column_length + (name_and_emoji.length - stringWidth(name_and_emoji)) , ' ')
+        let name_padding = name_and_emoji.padEnd(title.length + (name_and_emoji.length - stringWidth(name_and_emoji)) , ' ')
         let score_padding = Object.entries(scores.scorekinds).map(([kind, value]) => (user_scores[kind] ? user_scores[kind].toFixed(2) : missing_score_value).toString().padEnd(score_column_lengths[kind], ' ')).join(" | ");
         rows += `${name_padding} | ${score_padding}\n`;
     }
