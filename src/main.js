@@ -70,7 +70,7 @@ const COMMANDS = {
                 daily_scores[game_id][name] = player_score
             }
         }
-        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), sort_by = "Avg.", title = "Top Wordlers")
+        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", title = "Top Wordlers")
         return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
     },
     "connectionsboard": async (payload, args) => {
@@ -84,7 +84,7 @@ const COMMANDS = {
                 daily_scores[game_id][name] = player_score
             }
         }
-        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), sort_by = "Avg.", title = "Top Connectors")
+        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", title = "Top Connectors")
         return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
     },
     "wordle": async (payload, args) => {
