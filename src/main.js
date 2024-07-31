@@ -271,9 +271,14 @@ export default {
 
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
                     console.log("Chat type: " + payload.message.chat.type)
+                    let included_ids = await get_included_ids()
                     if (payload.message.text.startsWith("/")) {
                         console.log("it's a command")
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
+                        if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(split_cmd[0])) {
+                            return new Response("ok")
+                        }
+
                         let cmd = COMMANDS[split_cmd[0].replace("/", "")]
                         split_cmd.shift()
                         if (cmd) {
@@ -282,7 +287,6 @@ export default {
                         return new Response("OK")
                     }
 
-                    let included_ids = await get_included_ids()
                     if (included_ids[payload.message.from.id] !== true) {
                         console.log("user not in inclusion list, ignoring message");
                         return new Response("Ok")
