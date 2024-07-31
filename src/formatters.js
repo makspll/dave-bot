@@ -42,7 +42,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     
     let score_column_lengths = {};
     for (const scorekind in scores.scorekinds) {
-        score_column_lengths[scorekind] = Math.max(...Object.values(scores.scores).map(x => x[scorekind] ? x[scorekind].toString().length : missing_score_value.length), scores.scorekinds[scorekind].title.length);
+        score_column_lengths[scorekind] = scores.scorekinds[scorekind].title.length;
     }
     console.log(scores.scorekinds)
     let headers = `${stringPad(title, title_column_length, 'center')} | ${Object.entries(scores.scorekinds).map((k,v) => stringPad(k.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
