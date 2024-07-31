@@ -16,8 +16,10 @@ export function stringPad(string, target_length, fill = ' ', align = 'left') {
     let right_padding = padding_required - left_padding;
     if (align = 'left') {
         right_padding = left_padding + right_padding;
+        left_padding = 0;
     } else if (align = 'right') {
         left_padding = left_padding + right_padding;
+        right_padding = 0;
     }
 
     return fill.repeat(left_padding) + string + fill.repeat(right_padding);
