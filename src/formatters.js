@@ -41,10 +41,10 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     
     let score_column_lengths = {};
     for (const scorekind in scores.scorekinds) {
-        score_column_lengths[scorekind] = scores.scorekinds[scorekind].title.length;
+        score_column_lengths[scorekind] = Math.max(scores.scorekinds[scorekind].title.toString().length, 4);
     }
-    console.log(scores.scorekinds)
-    let headers = `${stringPad(title, title_column_length, 'center')} | ${Object.entries(scores.scorekinds).map((k,v) => stringPad(k.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
+
+    let headers = `${stringPad(title, title_column_length, 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
         let name_and_emoji = `${emojis.shift()} ${name}`;
