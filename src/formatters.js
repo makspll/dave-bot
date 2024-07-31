@@ -1,3 +1,4 @@
+import stringWidth from "string-width";
 
 // expects a dictionary of the form:
 // {
@@ -32,9 +33,9 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     while (emojis.length < Object.keys(scores.scores).length) {
         emojis.push('💩');
     }
-    let longest_emoji = Math.max(...emojis.map(x => x.length));
+    let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
     let missing_score_value = "N/A";
-
+    
     let name_column_length = Math.max(Object.keys(scores.scores).reduce((a, b) => a.length > b.length ? a : b).length + longest_emoji, title.length);
     let score_column_lengths = {};
     for (const scorekind in scores.scorekinds) {
