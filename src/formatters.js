@@ -117,7 +117,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Games": {
-                "title": "#",
+                "title": "N",
                 "ascending": true
             },
             "Games (3+)": {
