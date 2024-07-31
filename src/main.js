@@ -40,6 +40,10 @@ const COMMANDS = {
         return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, 0, null)
     },
     "optin": async (payload, args) => {
+        if (payload.message.chat.id != ENV.MAIN_CHAT_ID) {
+            return
+        }
+
         let ids = await get_included_ids()
         console.log("ids: " + ids)
         ids[payload.message.from.id] = true
