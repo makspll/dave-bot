@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { escapeMarkdown } from './markdown.js';
 import { formatDateToYYYYMMDD } from './utils.js';
+import { config, expect } from 'chai';
 
 export const ALL_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
     'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
@@ -307,44 +308,20 @@ function emojify_guess(guess, solution) {
     return emojified;
 }
 
-export function emojifyWordleScores(wordleScores, title = "Wordles", reverse = false) {
-    let id_to_guesses = {};
-    for (const wordleId in wordleScores) {
-        if (wordleId == "names") {
-            continue;
-        }
-        for (const id in wordleScores[wordleId]) {
-            if (id_to_guesses[id] == null) {
-                id_to_guesses[id] = [];
+// retrieves wordle stats from engaging-data.com
+// wordlepuzzles={"626": {"date": "03/07", "num": 626, "answer": "HORSE", "cumulative": [1, 9, 44, 76, 92, 98], "individual": [1, 8, 35, 32, 16, 6], "sample": 666983, "datestr": "030723"}}
+// note the id's are wrong :C, have to match them up by answer or something
+export async function getHistoricWordleStats() {
+
+    try {
+        const response = await axios.get('https://engaging-data.com/pages/scripts/wordlebot/wordlepuzzles.js', {
+            headers: {
+                'Accept': 'text/plain'
             }
-            id_to_guesses[id].push(wordleScores[wordleId][id]);
-        }
+        });
+        return JSON.parse(response.data.split('=')[1])
+    } catch (error) {
+        console.error('Error retrieving wordle list:', error);
+        return {}
     }
-
-    if (!("names" in wordleScores)) {
-        wordleScores["names"] = {};
-    }
-    let id_to_guess_counts = {};
-
-    // average out guess counts
-    for (const id in id_to_guesses) {
-        const guesses = id_to_guesses[id];
-        const average = guesses.reduce((a, b) => a + b, 0) / guesses.length;
-        id_to_guess_counts[id] = guesses.length;
-        id_to_guesses[id] = average.toFixed(2);
-    }
-    // generate emoji bar chart ordered by average guess number
-    const sorted = Object.entries(id_to_guesses).sort((a, b) => a[1] - b[1]);
-    if (reverse) {
-        sorted.reverse();
-    }
-    let chart = `Leaderboard: Average | ${title}\n`;
-    let place = 0;
-    for (const [id, avg] of sorted) {
-        const name = wordleScores.names[id] ? wordleScores.names[id] : id;
-        const emoji = ['🥇', '🥈', '🥉', '🏅', '🎖️', '💩', '💩', '💩', '💩', '💩'];
-        chart += `${String(name + emoji[place]).padEnd(11, ' ')}: ${String(avg).padEnd(7, ' ')} | ${String(id_to_guess_counts[id]).padEnd(7, ' ')}\n`;
-        place++;
-    }
-    return chart
 }

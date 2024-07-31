@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, emojifyWordleScores } from '../src/wordle.js';
+import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats } from '../src/wordle.js';
 import { makeMockServer } from './server.js';
 
 let server = makeMockServer();
@@ -130,19 +130,9 @@ describe('Wordle tests', () => {
         console.log(generateWordleShareable(wordle, solution))
     })
 
-    it('correctly displays stats', async () => {
-        const stats = emojifyWordleScores({
-            "names": { "123": "apple", "321": "pear" },
-            "1": {
-                "123": 1,
-                "321": 2
-            },
-            "2": {
-                "321": 4
-            },
-        })
-
-        console.log(stats)
+    it('correctly gets historic data', async () => {
+        const wordles = await getHistoricWordleStats();
+        expect(Object.entries(wordles)).to.have.lengthOf.above(100);
     })
 });
 

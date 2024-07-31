@@ -12,8 +12,9 @@ import {
     DEFAULT_MSG_DELAY,
     AUDIO_MESSAGE_CHANCE,
 } from "./data.js";
-import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable, emojifyWordleScores } from "./wordle.js";
-import { convertGuessToPrompt, generateConnectionsShareable, generateInitialPrompt, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
+import { solveWordle, getWordleList, getWordleForDay, generateWordleShareable } from "./wordle.js";
+import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, parseConnectionsScoreFromShareable, solveConnections } from "./connections.js";
+import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
 
 export let ENV = null;
 
@@ -60,13 +61,31 @@ const COMMANDS = {
     },
     "wordleboard": async (payload, args) => {
         const stats = await get_wordle_scores()
-        const scores = emojifyWordleScores(stats)
-        return sendMessage(scores, payload.message.chat.id, 0, null, 0)
+        let daily_scores = {}
+        // replace the player_ids with their names
+        for (const [game_id, player_scores] of stats) {
+            daily_scores[game_id] = {}
+            for (const [player_id, player_score] of player_scores) {
+                let name = stats.names[player_id] ? stats.names[player_id] : player_id
+                daily_scores[game_id][name] = player_score
+            }
+        }
+        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), sort_by = "Avg.", title = "Top Wordlers")
+        return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
     },
     "connectionsboard": async (payload, args) => {
         const stats = await get_connections_scores()
-        const scores = emojifyWordleScores(stats, "Games")
-        return sendMessage(scores, payload.message.chat.id, 0, null, 0)
+        let daily_scores = {}
+        // replace the player_ids with their names
+        for (const [game_id, player_scores] of stats) {
+            daily_scores[game_id] = {}
+            for (const [player_id, player_score] of player_scores) {
+                let name = stats.names[player_id] ? stats.names[player_id] : player_id
+                daily_scores[game_id][name] = player_score
+            }
+        }
+        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), sort_by = "Avg.", title = "Top Connectors")
+        return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
     },
     "wordle": async (payload, args) => {
         const words = await getWordleList();
@@ -281,6 +300,7 @@ export default {
         return new Response("OK") // Doesn't really matter
     },
 };
+
 
 const COMMON_RIPOSTES = [
     "I beat your ass :#",
