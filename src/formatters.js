@@ -45,7 +45,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     }
 
     let headers = `${stringPad(title, title_column_length, 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
-    headers += '-'.repeat(headers.length - 1) + '\n';
+    headers += '-'.repeat(headers.length - 4) + '\n';
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
         let name_and_emoji = `${emojis.shift()} ${name}`;
@@ -117,7 +117,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Games": {
-                "title": "Games",
+                "title": "#",
                 "ascending": true
             },
             "Games (3+)": {
@@ -125,7 +125,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Avg. Delta": {
-                "title": "Avg. Delta",
+                "title": "Avg. Diff.",
                 "ascending": true
             }
         }
