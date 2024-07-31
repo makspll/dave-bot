@@ -70,6 +70,8 @@ const COMMANDS = {
                 daily_scores[game_id][name] = player_score
             }
         }
+        console.log(daily_scores)
+
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Wordlers")
         return sendMessage(leaderboard, payload.message.chat.id, 0, null, 0)
     },
