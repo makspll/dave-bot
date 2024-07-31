@@ -63,9 +63,9 @@ const COMMANDS = {
         const stats = await get_wordle_scores()
         let daily_scores = {}
         // replace the player_ids with their names
-        for (const [game_id, player_scores] of stats) {
+        for (const [game_id, player_scores] of Object.entries(stats)) {
             daily_scores[game_id] = {}
-            for (const [player_id, player_score] of player_scores) {
+            for (const [player_id, player_score] of Object.entries(player_scores)) {
                 let name = stats.names[player_id] ? stats.names[player_id] : player_id
                 daily_scores[game_id][name] = player_score
             }
@@ -77,9 +77,9 @@ const COMMANDS = {
         const stats = await get_connections_scores()
         let daily_scores = {}
         // replace the player_ids with their names
-        for (const [game_id, player_scores] of stats) {
+        for (const [game_id, player_scores] of Object.entries(stats)) {
             daily_scores[game_id] = {}
-            for (const [player_id, player_score] of player_scores) {
+            for (const [player_id, player_score] of Object.entries(player_scores)) {
                 let name = stats.names[player_id] ? stats.names[player_id] : player_id
                 daily_scores[game_id][name] = player_score
             }
