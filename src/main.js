@@ -56,7 +56,7 @@ const COMMANDS = {
     "attack": async (payload, args) => {
         if (payload.message.from.id == ENV.GOD_ID) {
             await sendMessage("Yes sir", payload.message.chat.id, 0, null)
-            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "))
+            let gpt_answer = await call_gpt([SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" ")])
             sendMessage("sent: " + gpt_answer, ENV.GOD_ID, 0, null)
             return sendMessage(gpt_answer, parseInt(args[0]), 5, null, 1.0)
         } else {
@@ -159,7 +159,7 @@ const COMMANDS = {
             }
 
             console.log("calling chat gpt with messages: ", messages)
-            const response = await call_gpt(...messages)
+            const response = await call_gpt(messages, "gpt-4o")
             console.log("chat gpt response: ", response);
             return response
         }
@@ -449,7 +449,7 @@ export async function call_tts(text) {
 // calls chat gpt with the given message history and returns the response
 // the messages alternate between assistant and user messages starting from a system message
 // i.e. [system, user, assistant, user, assistant ...]
-export async function call_gpt(...message_history) {
+export async function call_gpt(message_history, model="gp5-3.5-turbo") {
     let history = message_history.map((m, i) => ({
         "role": i == 0 ? "system" : (i % 2 == 0 ? "assistant" : "user"),
         "content": m
@@ -463,7 +463,7 @@ export async function call_gpt(...message_history) {
             "Authorization": "Bearer " + ENV.OPEN_AI_KEY
         },
         body: JSON.stringify({
-            "model": "gpt-3.5-turbo",
+            "model": model,
             "max_tokens": 40,
             "messages": history
         })
@@ -638,7 +638,7 @@ async function keywords(words, chatId, senderId, message_id) {
                         relationship_prompt = NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
                     }
                 }
-                let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt));
+                let response = await call_gpt([SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt)]);
                 if (response) {
                     await sendMessage(response, chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE)
                 } else {
