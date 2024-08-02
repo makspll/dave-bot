@@ -449,7 +449,7 @@ export async function call_tts(text) {
 // calls chat gpt with the given message history and returns the response
 // the messages alternate between assistant and user messages starting from a system message
 // i.e. [system, user, assistant, user, assistant ...]
-export async function call_gpt(message_history, model="gpt3.5-turbo") {
+export async function call_gpt(message_history, model="gpt-3.5-turbo") {
     let history = message_history.map((m, i) => ({
         "role": i == 0 ? "system" : (i % 2 == 0 ? "assistant" : "user"),
         "content": m
