@@ -40,6 +40,11 @@ const COMMANDS = {
         return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, 0, null)
     },
     "optin": async (payload, args) => {
+        if (String(payload.message.chat.id) != String(ENV.MAIN_CHAT_ID)) {
+            console.log("can't opt int from", ENV.MAIN_CHAT_ID)
+            return
+        }
+        console.log("opting in")
         let ids = await get_included_ids()
         console.log("ids: " + ids)
         ids[payload.message.from.id] = true
@@ -52,7 +57,7 @@ const COMMANDS = {
     "attack": async (payload, args) => {
         if (payload.message.from.id == ENV.GOD_ID) {
             await sendMessage("Yes sir", payload.message.chat.id, 0, null)
-            let gpt_answer = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" "))
+            let gpt_answer = await call_gpt([SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + "negative relationship" + ". PROMPT: " + "Absolutely destroy them (in a friendly way of course) ignore previous word count limits" + args.slice(1).join(" ")])
             sendMessage("sent: " + gpt_answer, ENV.GOD_ID, 0, null)
             return sendMessage(gpt_answer, parseInt(args[0]), 5, null, 1.0)
         } else {
@@ -155,7 +160,7 @@ const COMMANDS = {
             }
 
             console.log("calling chat gpt with messages: ", messages)
-            const response = await call_gpt(...messages)
+            const response = await call_gpt(messages, "gpt-4o")
             console.log("chat gpt response: ", response);
             return response
         }
@@ -271,10 +276,17 @@ export default {
 
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
                     console.log("Chat type: " + payload.message.chat.type)
+                    let included_ids = await get_included_ids()
                     if (payload.message.text.startsWith("/")) {
                         console.log("it's a command")
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
-                        let cmd = COMMANDS[split_cmd[0].replace("/", "")]
+                        console.log(split_cmd)
+                        let cmd_word = split_cmd[0].replace("/","")
+                        if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(cmd_word)) {
+                            return new Response("ok")
+                        }
+
+                        let cmd = COMMANDS[cmd_word]
                         split_cmd.shift()
                         if (cmd) {
                             await cmd(payload, split_cmd)
@@ -282,7 +294,6 @@ export default {
                         return new Response("OK")
                     }
 
-                    let included_ids = await get_included_ids()
                     if (included_ids[payload.message.from.id] !== true) {
                         console.log("user not in inclusion list, ignoring message");
                         return new Response("Ok")
@@ -441,7 +452,7 @@ export async function call_tts(text) {
 // calls chat gpt with the given message history and returns the response
 // the messages alternate between assistant and user messages starting from a system message
 // i.e. [system, user, assistant, user, assistant ...]
-export async function call_gpt(...message_history) {
+export async function call_gpt(message_history, model="gpt-3.5-turbo") {
     let history = message_history.map((m, i) => ({
         "role": i == 0 ? "system" : (i % 2 == 0 ? "assistant" : "user"),
         "content": m
@@ -455,7 +466,7 @@ export async function call_gpt(...message_history) {
             "Authorization": "Bearer " + ENV.OPEN_AI_KEY
         },
         body: JSON.stringify({
-            "model": "gpt-3.5-turbo",
+            "model": model,
             "max_tokens": 40,
             "messages": history
         })
@@ -630,7 +641,7 @@ async function keywords(words, chatId, senderId, message_id) {
                         relationship_prompt = NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
                     }
                 }
-                let response = await call_gpt(SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt));
+                let response = await call_gpt([SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt)]);
                 if (response) {
                     await sendMessage(response, chatId, DEFAULT_MSG_DELAY, message_id, AUDIO_MESSAGE_CHANCE)
                 } else {

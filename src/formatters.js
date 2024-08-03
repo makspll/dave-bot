@@ -19,8 +19,8 @@ import { stringPad } from "./utils.js";
 function sort_scores(scores, sort_by) {
     let ascending = scores.scorekinds[sort_by].ascending;
     scores.scores = Object.fromEntries(Object.entries(scores.scores).sort((a, b) => {
-        let compA = a[1][sort_by] ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
-        let compB = b[1][sort_by] ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
+        let compA = a[1][sort_by] !== undefined ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
+        let compB = b[1][sort_by] !== undefined ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
         if (ascending) {
             return compA - compB;
         } else {
@@ -61,7 +61,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     }
 
     let headers = `${stringPad(title, title_column_length, 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
-    headers += '-'.repeat(headers.length - 1) + '\n';
+    headers += '-'.repeat(headers.length - 4) + '\n';
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
         let change = '';
@@ -82,7 +82,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
         let name_and_emoji = `${change} ${emojis.shift()} ${name}`;
         let name_padding = stringPad(name_and_emoji, title_column_length, ' ', 'left');
         let score_padding = Object.entries(scores.scorekinds).map(([kind, _]) => {
-            let value = user_scores[kind] ? user_scores[kind].toFixed(2) : missing_score_value;
+            let value = user_scores[kind] !== undefined ? user_scores[kind].toFixed(2) : missing_score_value;
             return stringPad(value, score_column_lengths[kind], ' ')
         }
         ).join(" | ");
@@ -148,7 +148,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Games": {
-                "title": "Games",
+                "title": "N",
                 "ascending": true
             },
             "Games (3+)": {
@@ -156,7 +156,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Avg. Delta": {
-                "title": "Avg. Delta",
+                "title": "Avg. Diff.",
                 "ascending": true
             }
         }
