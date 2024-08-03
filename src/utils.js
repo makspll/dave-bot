@@ -8,7 +8,7 @@ export function formatDateToYYYYMMDD(date) {
 }
 
 export function stringPad(string, target_length, fill = ' ', align = 'left') {
-    let padding_required = target_length - stringWidth (string);
+    let padding_required = target_length - stringWidth(string);
     if (padding_required <= 0) {
         return string;
     }
