@@ -281,6 +281,7 @@ export default {
                     if (payload.message.text.startsWith("/")) {
                         console.log("it's a command")
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
+                        console.log(split_cmd)
                         if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(split_cmd[0])) {
                             return new Response("ok")
                         }
