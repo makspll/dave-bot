@@ -282,11 +282,11 @@ export default {
                         console.log("it's a command")
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
                         console.log(split_cmd)
-                        if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(split_cmd[0])) {
+                        let cmd_word = split_cmd[0].replace("/","") if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(cmd_word) {
                             return new Response("ok")
                         }
 
-                        let cmd = COMMANDS[split_cmd[0].replace("/", "")]
+                        let cmd = COMMANDS[cmd_word]
                         split_cmd.shift()
                         if (cmd) {
                             await cmd(payload, split_cmd)
