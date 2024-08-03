@@ -89,9 +89,9 @@ const COMMANDS = {
         // remove latest wordle
         const latestWordleNo = Object.keys(daily_scores).reduce((a, b) => {
             if (a == "names") {
-                return b
+                return parseInt(b)
             } else {
-                Math.max(a, b)
+                return Math.max(parseInt(a), parseInt(b))
             }
         });
         console.log(latestWordleNo)
@@ -124,9 +124,9 @@ const COMMANDS = {
         // remove latest wordle
         const latestWordleNo = Object.keys(daily_scores).reduce((a, b) => {
             if (a == "names") {
-                return b
+                return parseInt(b)
             } else {
-                Math.max(a, b)
+                return Math.max(parseInt(a), parseInt(b))
             }
         });
         delete previous_scores[latestWordleNo];
