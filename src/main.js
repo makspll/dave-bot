@@ -266,6 +266,7 @@ export default {
                 console.log("Firing off wordle")
                 await sendMessage("Mornin' babes', it's wordlin time", ENV.MAIN_CHAT_ID, 0, null, 0.0)
                 await COMMANDS.wordle({ message: { chat: { id: ENV.MAIN_CHAT_ID } } }, [])
+                await COMMANDS.connections({ message: { chat: { id: ENV.MAIN_CHAT_ID } } }, [])
                 break;
 
         }
@@ -391,20 +392,7 @@ async function connections_slur(raw_message, chatId, senderId, senderName, messa
         scores[connections_no][senderId] = mistakes
         await store_connections_scores(scores)
 
-        let bot_connections_no = connections_no
-        if (bot_score == 999) {
-            console.log("playing since no bot score found")
-            const [state, connections] = await COMMANDS.connections({ message: { chat: { id: chatId } } }, [])
-            if (state != null) {
-                bot_score = 4 - state.attempts
-                bot_connections_no = connections.id
-            }
-
-        }
-
-        console.log("bot score: ", bot_score)
-
-        if (bot_connections_no == connections_no && bot_score < mistakes) {
+        if (bot_score < mistakes) {
             const messages = [...COMMON_RIPOSTES, "It's connectin time"]
             return sendMessage(sample(messages), chatId, 0, message_id, 0.9)
         }
@@ -433,18 +421,11 @@ async function wordle_slur(raw_message, chatId, senderId, senderName, message_id
         if (!(wordle_no in scores)) {
             scores[wordle_no] = {}
         }
-        let bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 0
+        let bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 999
         scores[wordle_no][senderId] = count
         await store_wordle_scores(scores)
 
-        let bot_wordle_no = wordle_no
-        if (bot_score == 0) {
-            const bot_solution = await COMMANDS.wordle({ message: { chat: { id: chatId } } }, [])
-            bot_score = bot_solution.solution.guesses_count
-            bot_wordle_no = bot_solution.wordle_no
-        }
-
-        if (bot_wordle_no == wordle_no && bot_score != 0 && bot_score < count) {
+        if (bot_score < count) {
             const messages = [
                 ...COMMON_RIPOSTES, "It's wordlin time"
             ]
