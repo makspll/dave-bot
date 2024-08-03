@@ -78,7 +78,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
             change = '✨';
         }
 
-        let name_and_emoji = `${change} ${emojis.shift()} ${name}`;
+        let name_and_emoji = `${change}${emojis.shift()} ${name}`;
         let name_padding = stringPad(name_and_emoji, title_column_length, ' ', 'left');
         let score_padding = Object.entries(scores.scorekinds).map(([kind, _]) => {
             let value = user_scores[kind] !== undefined ? user_scores[kind].toFixed(2) : missing_score_value;
