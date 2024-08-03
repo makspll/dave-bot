@@ -60,7 +60,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
         score_column_lengths[scorekind] = Math.max(scores.scorekinds[scorekind].title.toString().length, 4);
     }
 
-    let headers = `${stringPad(title, title_column_length, 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
+    let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
     headers += '-'.repeat(headers.length - 4) + '\n';
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
