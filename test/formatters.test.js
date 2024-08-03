@@ -23,7 +23,7 @@ it('correctly generates leaderboard', async () => {
                     "ascending": false
                 }
             }
-        }, 'games', "Leaderboard"
+        }, 'average', "Leaderboard"
     )
 
     console.log(stats)
@@ -38,6 +38,10 @@ it('correctly accounts for delta scores', async () => {
             "cherry": {
                 "average": 4,
                 "games": 1
+            }, 
+            "new": {
+                "average": 0,
+                "games": 1,
             }
         },
         "scorekinds": {
@@ -51,15 +55,10 @@ it('correctly accounts for delta scores', async () => {
             }
         }
     }
-    const prev_scores = {...scores}
-    prev_scores.scores.new = {
-        "average": 0,
-        "games": 1
-    }
-
-
+    let prev_scores = JSON.parse(JSON.stringify(scores));
+    delete prev_scores.scores.new
     const stats = generateLeaderboard(
-        scores, 'games', "Leaderboard", prev_scores
+        scores, 'average', "Leaderboard", prev_scores
     )
 
     console.log(stats)

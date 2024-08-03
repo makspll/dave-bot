@@ -69,7 +69,6 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
             // find previous rank
             let previous_rank = previous_scores.scores[name].rank;
             let rank_change = previous_rank - user_scores.rank;
-            console.log(previous_rank, user_scores.rank, rank_change);
             if (rank_change > 0) {
                 change = `🔺${rank_change}`;
             } else if (rank_change < 0) {
@@ -156,7 +155,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Avg. Delta": {
-                "title": "Avg. Diff.",
+                "title": "Avg. Diff",
                 "ascending": true
             }
         }
