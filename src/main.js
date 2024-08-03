@@ -42,7 +42,7 @@ const COMMANDS = {
     "optin": async (payload, args) => {
         console.log("aaacx", payload.message)
         if (String(payload.message.chat.id) != String(ENV.MAIN_CHAT_ID)) {
-            console.log("can't opt int from")
+            console.log("can't opt int from", ENV.MAIN_CHAT_ID)
             return
         }
         console.log("opting in")
