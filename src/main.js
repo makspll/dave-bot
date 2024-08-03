@@ -40,7 +40,6 @@ const COMMANDS = {
         return sendMessage("You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying.", payload.message.chat.id, 0, null)
     },
     "optin": async (payload, args) => {
-        console.log("aaacx", payload.message)
         if (String(payload.message.chat.id) != String(ENV.MAIN_CHAT_ID)) {
             console.log("can't opt int from", ENV.MAIN_CHAT_ID)
             return
