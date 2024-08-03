@@ -20,6 +20,7 @@ jobs:
             TELEGRAM_API_KEY
             OPEN_AI_KEY
             GOD_ID
+            MAIN_CHAT_ID
         env:
           TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
           OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
