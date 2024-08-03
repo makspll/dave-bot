@@ -77,7 +77,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
                 change = '🔴0'
             }
         } else if (previous_scores){
-            change = '✨';
+            change = '✨0';
         }
 
         let name_and_emoji = `${change}${emojis.shift()} ${name}`;
