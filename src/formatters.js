@@ -74,7 +74,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
             } else if (rank_change < 0) {
                 change = `🔻${Math.abs(rank_change)}`;
             } else {
-                change = '🔴'
+                change = '🔴0'
             }
         } else if (previous_scores){
             change = '✨';
