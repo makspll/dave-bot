@@ -45,7 +45,7 @@ const COMMANDS = {
             console.log("can't opt int from")
             return
         }
-
+        console.log("opting in")
         let ids = await get_included_ids()
         console.log("ids: " + ids)
         ids[payload.message.from.id] = true
