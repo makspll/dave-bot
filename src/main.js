@@ -117,7 +117,19 @@ const COMMANDS = {
                 daily_scores[game_id][name] = player_score
             }
         }
-        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Connectors")
+
+        let previous_scores = JSON.parse(JSON.stringify(daily_scores))
+        // remove latest wordle
+        const latestWordleNo = Object.keys(daily_scores).reduce((a, b) => {
+            if (a == "names") {
+                return b
+            } else {
+                Math.max(a, b)
+            }
+        });
+        delete previous_scores[latestWordleNo];
+
+        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Connectors", convertDailyScoresToLeaderboard(previous_scores))
         return sendMessage(`<pre>\n${leaderboard}\n</pre>`, payload.message.chat.id, 0, null, 0, "HTML")
     },
     "wordle": async (payload, args) => {
