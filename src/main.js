@@ -94,6 +94,7 @@ const COMMANDS = {
                 Math.max(a, b)
             }
         });
+        console.log(latestWordleNo)
         delete previous_scores[latestWordleNo];
         console.log(previous_scores)
 
