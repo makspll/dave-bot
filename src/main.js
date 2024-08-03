@@ -95,6 +95,7 @@ const COMMANDS = {
             }
         });
         delete previous_scores[latestWordleNo];
+        console.log(previous_scores)
 
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Wordlers", convertDailyScoresToLeaderboard(previous_scores))
         return sendMessage(`<pre>\n${leaderboard}\n</pre>`, payload.message.chat.id, 0, null, 0, "HTML")
@@ -128,6 +129,7 @@ const COMMANDS = {
             }
         });
         delete previous_scores[latestWordleNo];
+        console.log(previous_scores)
 
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Connectors", convertDailyScoresToLeaderboard(previous_scores))
         return sendMessage(`<pre>\n${leaderboard}\n</pre>`, payload.message.chat.id, 0, null, 0, "HTML")
