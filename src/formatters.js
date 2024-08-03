@@ -20,8 +20,8 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     let ascending = scores.scorekinds[sort_by].ascending;
     // sort scores.scores by sort_by
     scores.scores = Object.fromEntries(Object.entries(scores.scores).sort((a, b) => {
-        let compA = a[1][sort_by] ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
-        let compB = b[1][sort_by] ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
+        let compA = a[1][sort_by] !== undefined ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
+        let compB = b[1][sort_by] !== undefined ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
         if (ascending) {
             return compA - compB;
         } else {
