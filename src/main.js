@@ -283,7 +283,7 @@ export default {
                         let split_cmd = payload.message.text.split('@')[0].split(' ')
                         console.log(split_cmd)
                         let cmd_word = split_cmd[0].replace("/","")
-                        if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(cmd_word) {
+                        if(included_ids[payload.message.from.id] !== true && !["info","optin","optout"].includes(cmd_word)) {
                             return new Response("ok")
                         }
 
