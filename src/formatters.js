@@ -15,10 +15,9 @@ import { stringPad } from "./utils.js";
 //          }
 //      }
 // }
-export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
-    // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
+
+function sort_scores(scores, sort_by) {
     let ascending = scores.scorekinds[sort_by].ascending;
-    // sort scores.scores by sort_by
     scores.scores = Object.fromEntries(Object.entries(scores.scores).sort((a, b) => {
         let compA = a[1][sort_by] ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
         let compB = b[1][sort_by] ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
@@ -28,15 +27,32 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
             return compB - compA;
         }
     }));
+    // append `rank` to each score
+    for (const [i, [name, user_scores]] of Object.entries(Object.entries(scores.scores))) {
+        user_scores.rank = parseInt(i) + 1;
+    }
+}
+
+export function generateLeaderboard(scores, sort_by, title = "Leaderboard", previous_scores = null) {
+    // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
+    let ascending = scores.scorekinds[sort_by].ascending;
+    // sort scores.scores by sort_by
+    sort_scores(scores, sort_by);
+    if (previous_scores) {
+        // sort previous_scores.scores by sort_by
+        sort_scores(previous_scores, sort_by);
+    }
 
     // generate leaderboard string, make it aligned and pretty
     let emojis = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+    let change_emojis = ['🔻', '🔺', '✨']
     while (emojis.length < Object.keys(scores.scores).length) {
         emojis.push('💩');
     }
     let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
+    let longest_change_emoji = Math.max(...change_emojis.map(x => stringWidth(x)));
     let longest_name = Math.max(...Object.keys(scores.scores).map(x => stringWidth(x)));
-    let title_column_length = Math.max(title.length, longest_name + longest_emoji + 1);
+    let title_column_length = Math.max(title.length, longest_name + longest_emoji + longest_change_emoji + 2);
     let missing_score_value = "N/A";
     
     let score_column_lengths = {};
@@ -48,7 +64,22 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard") {
     headers += '-'.repeat(headers.length - 1) + '\n';
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
-        let name_and_emoji = `${emojis.shift()} ${name}`;
+        let change = '';
+        if (previous_scores && name in previous_scores.scores) {
+            // find previous rank
+            let previous_rank = previous_scores.scores[name].rank;
+            let rank_change = previous_rank - user_scores.rank;
+            console.log(previous_rank, user_scores.rank, rank_change);
+            if (rank_change > 0) {
+                change = `🔺${rank_change}`;
+            } else if (rank_change < 0) {
+                change = `🔻${Math.abs(rank_change)}`;
+            }
+        } else if (previous_scores){
+            change = '✨';
+        }
+
+        let name_and_emoji = `${change} ${emojis.shift()} ${name}`;
         let name_padding = stringPad(name_and_emoji, title_column_length, ' ', 'left');
         let score_padding = Object.entries(scores.scorekinds).map(([kind, _]) => {
             let value = user_scores[kind] ? user_scores[kind].toFixed(2) : missing_score_value;

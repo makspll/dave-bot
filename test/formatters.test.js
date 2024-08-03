@@ -29,6 +29,42 @@ it('correctly generates leaderboard', async () => {
     console.log(stats)
 })
 
+it('correctly accounts for delta scores', async () => {
+    const scores = {
+        "scores": {
+            "apple": {
+                "average": 3
+            },
+            "cherry": {
+                "average": 4,
+                "games": 1
+            }
+        },
+        "scorekinds": {
+            "average": {
+                "title": "Average",
+                "ascending": true
+            },
+            "games": {
+                "title": "Games",
+                "ascending": false
+            }
+        }
+    }
+    const prev_scores = {...scores}
+    prev_scores.scores.new = {
+        "average": 0,
+        "games": 1
+    }
+
+
+    const stats = generateLeaderboard(
+        scores, 'games', "Leaderboard", prev_scores
+    )
+
+    console.log(stats)
+})
+
 it('correctly converts daily scores to leaderboard', async () => {
     const stats = convertDailyScoresToLeaderboard(
         {
