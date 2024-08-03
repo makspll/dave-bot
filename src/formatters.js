@@ -80,14 +80,15 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
             change = '✨0';
         }
 
-        let name_and_emoji = `${change}${emojis.shift()} ${name}`;
-        let name_padding = stringPad(name_and_emoji, title_column_length, ' ', 'left');
+        let name_and_emoji = `${emojis.shift()} ${name}`;
+        let name_padding = stringPad(name_and_emoji, title_column_length - stringWidth(change), ' ', 'left');
+        let change_padding = stringPad(change, title_column_length - stringWidth(name_padding), ' ', 'right');
         let score_padding = Object.entries(scores.scorekinds).map(([kind, _]) => {
             let value = user_scores[kind] !== undefined ? user_scores[kind].toFixed(2) : missing_score_value;
             return stringPad(value, score_column_lengths[kind], ' ')
         }
         ).join(" | ");
-        rows += `${name_padding} | ${score_padding}\n`;
+        rows += `${name_padding}${change_padding} | ${score_padding}\n`;
     }
     return headers + rows;
 }
