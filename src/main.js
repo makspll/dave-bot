@@ -66,6 +66,7 @@ const COMMANDS = {
     },
     "wordleboard": async (payload, args) => {
         const stats = await get_wordle_scores()
+
         let daily_scores = {}
         // replace the player_ids with their names
         for (const [game_id, player_scores] of Object.entries(stats)) {
@@ -84,7 +85,18 @@ const COMMANDS = {
         }
         console.log(daily_scores)
 
-        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Wordlers")
+        let previous_scores = JSON.parse(JSON.stringify(daily_scores))
+        // remove latest wordle
+        const latestWordleNo = Object.keys(daily_scores).reduce((a, b) => {
+            if (a == "names") {
+                return b
+            } else {
+                Math.max(a, b)
+            }
+        });
+        delete previous_scores[latestWordleNo];
+
+        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "Avg.", "Top Wordlers", convertDailyScoresToLeaderboard(previous_scores))
         return sendMessage(`<pre>\n${leaderboard}\n</pre>`, payload.message.chat.id, 0, null, 0, "HTML")
     },
     "connectionsboard": async (payload, args) => {
