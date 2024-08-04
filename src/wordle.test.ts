@@ -1,6 +1,8 @@
-import { expect } from 'chai';
-import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleWord, WordleIndices } from '../src/wordle.js';
+import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleWord, WordleIndices } from './wordle.js';
 import { makeMockServer } from './server.js';
+
+const TEST_TIMEOUT_SECONDS = 120;
+jest.setTimeout(70 * TEST_TIMEOUT_SECONDS)
 
 let server = makeMockServer();
 
@@ -16,14 +18,14 @@ afterEach(() => {
 describe('Wordle tests', () => {
     it('should retrieve at least 100 words including horse', async () => {
         const words = await getWordleList();
-        expect(words).to.have.lengthOf.above(100);
-        expect(words).to.include('horse');
+        expect(words.length).toBeGreaterThan(100);
+        expect(words).toContain('horse');
     });
 
     it('gets correct wordle for day 2023-03-07', async () => {
         const wordle = await getWordleForDay(new Date('2023-03-07'));
         console.log(wordle)
-        expect(wordle!.wordle).to.equal('horse');
+        expect(wordle!.wordle).toBe('horse');
     });
 
     it('gets correct letter probabilities', async () => {
@@ -31,18 +33,19 @@ describe('Wordle tests', () => {
         const probabilities = calculateLetterProbabilities(words);
         // all existing letters should have a probability dependent on their frequency across words at the given positions
         // all frequencies should sum to 1 across all positions
-        expect(probabilities['h']).to.deep.equal([1, 0, 0, 0, 0]);
-        expect(probabilities['o']).to.deep.equal([0, 3 / 5, 0, 0, 0]);
-        expect(probabilities['s']).to.deep.equal([0, 0, 1 / 5, 2 / 5, 2 / 5]);
-        expect(probabilities['e']).to.deep.equal([0, 0, 0, 2 / 5, 3 / 5]);
-        expect(probabilities['r']).to.deep.equal([0, 0, 1 / 5, 0, 0]);
-        expect(probabilities['t']).to.deep.equal([0, 0, 0, 1 / 5, 0]);
-        expect(probabilities['i']).to.deep.equal([0, 1 / 5, 0, 0, 0]);
-        expect(probabilities['d']).to.deep.equal([0, 0, 1 / 5, 0, 0]);
-        expect(probabilities['p']).to.deep.equal([0, 0, 1 / 5, 0, 0]);
-        expect(probabilities['u']).to.deep.equal([0, 0, 1 / 5, 0, 0]);
-        expect(probabilities['a']).to.deep.equal([0, 1 / 5, 0, 0, 0]);
-        expect(Object.keys(probabilities)).to.have.lengthOf(26);
+
+        expect(probabilities['h']).toStrictEqual([1, 0, 0, 0, 0]);
+        expect(probabilities['o']).toStrictEqual([0, 3 / 5, 0, 0, 0]);
+        expect(probabilities['s']).toStrictEqual([0, 0, 1 / 5, 2 / 5, 2 / 5]);
+        expect(probabilities['e']).toStrictEqual([0, 0, 0, 2 / 5, 3 / 5]);
+        expect(probabilities['r']).toStrictEqual([0, 0, 1 / 5, 0, 0]);
+        expect(probabilities['t']).toStrictEqual([0, 0, 0, 1 / 5, 0]);
+        expect(probabilities['i']).toStrictEqual([0, 1 / 5, 0, 0, 0]);
+        expect(probabilities['d']).toStrictEqual([0, 0, 1 / 5, 0, 0]);
+        expect(probabilities['p']).toStrictEqual([0, 0, 1 / 5, 0, 0]);
+        expect(probabilities['u']).toStrictEqual([0, 0, 1 / 5, 0, 0]);
+        expect(probabilities['a']).toStrictEqual([0, 1 / 5, 0, 0, 0]);
+        expect(Object.keys(probabilities)).toHaveLength(26);
 
 
     })
@@ -52,7 +55,7 @@ describe('Wordle tests', () => {
         const probabilities = calculateLetterProbabilities(words);
         for (const letter of ALL_LETTERS) {
             if (!words.some(word => word.includes(letter))) {
-                expect(probabilities[letter]).to.deep.equal([0, 0, 0, 0, 0]);
+                expect(probabilities[letter]).toStrictEqual([0, 0, 0, 0, 0]);
             }
         }
     });
@@ -66,7 +69,7 @@ describe('Wordle tests', () => {
             for (const letter of ALL_LETTERS) {
                 sum += probabilities[letter][index];
             }
-            expect(sum).to.be.closeTo(1, 0.0001);
+            expect(sum).toBeCloseTo(1, 0.0001);
         }
     })
 
@@ -77,7 +80,7 @@ describe('Wordle tests', () => {
         const knowledgeState = initialKnowledgeState();
         knowledgeState.guesses = ['asdasd'] as WordleWord[];
         const guess = makeNextGuess(words, knowledgeState);
-        expect(guess).to.equal('crate');
+        expect(guess).toBe('crate');
     })
 
     it('prune words removes impossible words', async () => {
@@ -91,7 +94,7 @@ describe('Wordle tests', () => {
         knowledgeState.correct.set(4, 'e');
 
         const pruned = pruneWords(words, knowledgeState);
-        expect(pruned).to.deep.equal(['horse']);
+        expect(pruned).toStrictEqual(['horse']);
     })
 
     it('possible letter locations are updated correctly - horse vs crane', async () => {
@@ -99,16 +102,17 @@ describe('Wordle tests', () => {
         const solution = 'crane' as WordleWord;
         const knowledgeState = initialKnowledgeState();
         updateKnowledgeState(knowledgeState, guess, solution);
-        expect(knowledgeState).to.deep.equal({
-            correct: { 4: 'e' },
-            known_letters_positions: {
-                r: [0, 1, 3, 4],
-                e: [0, 1, 2, 3, 4]
-            },
-            not_in_puzzle: { 'h': true, 'o': true, 's': true },
+
+        expect(knowledgeState).toStrictEqual({
+            correct: new Map([[4, 'e']]),
+            known_letters_positions: new Map([
+                ['r', new Set([0, 1, 3, 4])],
+                ['e', new Set([0, 1, 2, 3, 4])]
+            ]),
+            not_in_puzzle: new Set(['h', 'o', 's']),
             guesses: ['horse'],
             available_words: [],
-            multiples: {},
+            multiples: new Map(),
         });
     })
 
@@ -116,7 +120,7 @@ describe('Wordle tests', () => {
         const solution = 'hello' as WordleWord;
         const availableWords = ['horse', 'house', 'haste', 'hides', 'hopes', 'hello'] as WordleWord[];
         const { guess, guesses_count } = solveWordle(solution, availableWords);
-        expect(guess).to.equal(solution);
+        expect(guess).toBe(solution);
 
     })
 
@@ -132,7 +136,7 @@ describe('Wordle tests', () => {
 
     it('correctly gets historic data', async () => {
         const wordles = await getHistoricWordleStats();
-        expect(Object.entries(wordles)).to.have.lengthOf.above(100);
+        expect(Object.entries(wordles).length).toBeGreaterThan(100);
     })
 });
 
@@ -175,6 +179,6 @@ describe('Wordle performance tests', () => {
         };
 
         console.log(emojiBarChart(stats));
-        expect(guesses / wordles).to.be.below(5);
-    }).timeout(999999);
+        expect(guesses / wordles).toBeLessThan(5);
+    });
 })

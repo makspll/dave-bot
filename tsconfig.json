@@ -9,8 +9,8 @@
         "strict": true,
         "types": [
             "@cloudflare/workers-types",
-            "@types/mocha",
             "@types/node",
+            "jest"
         ],
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -26,5 +26,5 @@
     "exclude": [
         "node_modules",
         "dist",
-    ]
+    ],
 }

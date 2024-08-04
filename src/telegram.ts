@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios"
-import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data"
+import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
+import { call_tts } from "./openai.js"
 
 export interface TelegramMessage {
     message: {
@@ -44,10 +45,13 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
 
     console.log("sending telegram message", { ...request, api_key: "REDACTED" })
 
-    if (audio_chance > 0 && Math.random() < audio_chance) {
+    if (audio_chance > 0 && Math.random() < audio_chance && request.payload.text) {
         console.log("sending as audio via random chance");
         try {
-            request.payload.voice = await call_tts(request.payload.text)
+            request.payload.voice = await call_tts({
+                api_key: request.api_key,
+                payload: request.payload.text
+            })
         } catch (err) {
             console.error("Error in calling tts, falling back on text message", err)
         }

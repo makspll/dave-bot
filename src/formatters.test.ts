@@ -1,5 +1,4 @@
-import { expect } from "chai"
-import { convertDailyScoresToLeaderboard, generateLeaderboard } from "../src/formatters.js"
+import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js"
 
 it('correctly generates leaderboard', async () => {
     let leaderboard = {
@@ -49,9 +48,7 @@ it('correctly converts daily scores to leaderboard', async () => {
         }
     )
 
-    console.log(stats)
-
-    expect(stats).to.deep.equal({
+    expect(stats).toBe({
         "scores": {
             "3": {
                 "Avg.": 3.00,

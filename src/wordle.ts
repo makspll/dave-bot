@@ -61,11 +61,11 @@ export function pruneWords(availableWords: WordleWord[], knowledgeState: WordleK
         for (const i of WordleIndices) {
             const letter = word[i];
 
-            if (letter in knowledgeState.not_in_puzzle) {
+            if (knowledgeState.not_in_puzzle.has(letter)) { // eliminate words with letters not in the puzzle
                 return false;
-            } else if (knowledgeState.correct.get(i) != null && knowledgeState.correct.get(i) != letter) {
+            } else if (knowledgeState.correct.get(i) && knowledgeState.correct.get(i) != letter) { // eliminate words with correct letters in the wrong position
                 return false;
-            } else if (knowledgeState.known_letters_positions.has(letter)
+            } else if (knowledgeState.known_letters_positions.has(letter) // eliminate words with misplaced letters
                 && !(knowledgeState.known_letters_positions.get(letter)!.has(i))
             ) {
                 return false
@@ -79,7 +79,7 @@ export function pruneWords(availableWords: WordleWord[], knowledgeState: WordleK
 
 
         // if the word does not include the misplaced letters in the puzzle prune it
-        for (const letter in knowledgeState.known_letters_positions) {
+        for (const [letter, positions] of knowledgeState.known_letters_positions) {
             if (!word.includes(letter)) {
                 return false;
             }
@@ -94,41 +94,46 @@ export type LetterTypes = typeof ALL_LETTERS
 export const WordleIndices = [0, 1, 2, 3, 4] as const
 export type Letter = LetterTypes[number]
 export type WordleIndex = 0 | 1 | 2 | 3 | 4
-export type LetterProbabilities = Record<Letter, Record<WordleIndex, number>>
+export type Pentuple<T> = [T, T, T, T, T]
+export type LetterProbabilities = Record<Letter, Pentuple<number>>
 export type WordleWord = string & { length: 5 } & { [i in WordleIndex]: Letter };
 
 export function calculateLetterProbabilities(availableWords: WordleWord[]): LetterProbabilities {
     const letterProbabilities: LetterProbabilities = {
-        a: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        b: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        c: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        d: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        e: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        f: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        g: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        h: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        i: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        j: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        k: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        l: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        m: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        n: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        o: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        p: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        q: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        r: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        s: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        t: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        u: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        v: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        w: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        x: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        y: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-        z: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
+        a: [0, 0, 0, 0, 0],
+        b: [0, 0, 0, 0, 0],
+        c: [0, 0, 0, 0, 0],
+        d: [0, 0, 0, 0, 0],
+        e: [0, 0, 0, 0, 0],
+        f: [0, 0, 0, 0, 0],
+        g: [0, 0, 0, 0, 0],
+        h: [0, 0, 0, 0, 0],
+        i: [0, 0, 0, 0, 0],
+        j: [0, 0, 0, 0, 0],
+        k: [0, 0, 0, 0, 0],
+        l: [0, 0, 0, 0, 0],
+        m: [0, 0, 0, 0, 0],
+        n: [0, 0, 0, 0, 0],
+        o: [0, 0, 0, 0, 0],
+        p: [0, 0, 0, 0, 0],
+        q: [0, 0, 0, 0, 0],
+        r: [0, 0, 0, 0, 0],
+        s: [0, 0, 0, 0, 0],
+        t: [0, 0, 0, 0, 0],
+        u: [0, 0, 0, 0, 0],
+        v: [0, 0, 0, 0, 0],
+        w: [0, 0, 0, 0, 0],
+        x: [0, 0, 0, 0, 0],
+        y: [0, 0, 0, 0, 0],
+        z: [0, 0, 0, 0, 0],
     };
-    availableWords.flatMap((word) => Array.from(word)).forEach((a, i) => {
-        letterProbabilities[a as Letter][i as WordleIndex] += 1;
-    })
+
+    for (const word of availableWords) {
+        for (const i of WordleIndices) {
+            const letter = word[i];
+            letterProbabilities[letter][i] += 1;
+        }
+    }
 
 
     for (const letter of ALL_LETTERS) {
@@ -145,7 +150,7 @@ export function calculateLetterProbabilities(availableWords: WordleWord[]): Lett
 export function makeNextGuess(availableWords: WordleWord[], knowledgeState: WordleKnowledgeState) {
     if (knowledgeState.guesses.length == 0) {
         // first guess is randomized
-        return sample(['salet', 'crate', 'horse', 'slate'])
+        return sample(['salet', 'crate', 'plate'])
     }
     const known_letters = calculateKnownLetters(knowledgeState);
     const letter_position_probabilities = calculateLetterProbabilities(availableWords);
@@ -164,8 +169,7 @@ export function makeNextGuess(availableWords: WordleWord[], knowledgeState: Word
 
             // slightly penalize words with duplicate letters
             // as they are less likely to be the solution
-            const any_multiples_exist = Object.keys(knowledgeState.multiples).length > 0;
-            if (!any_multiples_exist && used_letters.has(letter)) {
+            if (used_letters.has(letter)) {
                 score -= 1;
             }
             used_letters.add(letter);
@@ -176,7 +180,6 @@ export function makeNextGuess(availableWords: WordleWord[], knowledgeState: Word
         score += hint_score * 5;
 
         if (score > bestScore) {
-            console.log(`new best guess: ${word} with score ${score} and hint score ${hint_score}`);
             bestScore = score;
             bestGuess = word;
         }
@@ -244,14 +247,12 @@ export function updateKnowledgeState(previous_state: WordleKnowledgeState, guess
     for (const i of WordleIndices) {
         const letter = guess[i];
         if (solution[i] == letter) {
-            console.log(`correct letter ${letter} at position ${i}`);
             previous_state.correct.set(i, letter)
             let known_positions = previous_state.known_letters_positions.get(letter);
             if (!known_positions) {
                 previous_state.known_letters_positions.set(letter, new Set(WordleIndices));
             }
         } else if (solution.includes(letter)) {
-            console.log(`incorrect letter ${letter} at position ${i}`);
             let known_positions = previous_state.known_letters_positions.get(letter);
             if (!known_positions) {
                 known_positions = new Set(WordleIndices);
@@ -260,7 +261,6 @@ export function updateKnowledgeState(previous_state: WordleKnowledgeState, guess
             // keep track of letters which are in the puzzle but not in the correct position by storing their possible positions
             known_positions.delete(i);
         } else {
-            console.log(`letter ${letter} not in puzzle`);
             // incorrect letter, eliminate from possible positions
             previous_state.not_in_puzzle.add(letter)
         }
@@ -289,21 +289,13 @@ export function solveWordle(solution: WordleWord, availableWords: WordleWord[]):
         // no need to prune if we have no information yet
         knowledgeState.available_words.push([...availableWords])
         const guess = makeNextGuess(availableWords, knowledgeState);
-        console.log(`#${knowledgeState.guesses.length}: guess: '${guess}'. with ${availableWords.length} words left`);
 
         updateKnowledgeState(knowledgeState, guess, solution);
-        console.log(`new knowledge state:` + JSON.stringify({
-            'correct': knowledgeState.correct,
-            'not_in_puzzle': knowledgeState.not_in_puzzle,
-            'known_letters_positions': knowledgeState.known_letters_positions,
-            'guesses': knowledgeState.guesses,
-            'multiples': knowledgeState.multiples
-        }, null, 2));
+
         availableWords = pruneWords(availableWords, knowledgeState);
     }
 
 
-    console.log(`Took ${knowledgeState.guesses} guesses!`);
     let solved = knowledgeState.guesses.at(-1) == solution;
     let count = solved ? knowledgeState.guesses.length : 7;
     return {

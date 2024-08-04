@@ -89,7 +89,6 @@ export async function getConnectionsForDay(date: Date): Promise<ConnectionsRespo
         // calculate days between June 12, 2023 and the print date
         let data = response.data
         let newId = printDateToConnectionsNumber(data.print_date);
-        console.log("correcting id from id: ", data.id, " to print_date id: ", newId);
         data.id = newId
         return data;
     } catch (error) {
@@ -184,7 +183,6 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
         }
 
         if (isValidGuess(last_guess)) {
-            console.log(`#${3 - state.attempts}, last_guess: ${last_guess} `);
 
             state.guesses.push(last_guess);
             if (last_guess.category) {
@@ -198,7 +196,6 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
                 state.attempts--;
             }
 
-            console.log("state after guess: ", state);
         } else {
             throw new Error('failed to get valid input from player. fuck you openAI');
         }

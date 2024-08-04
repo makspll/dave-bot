@@ -1,5 +1,4 @@
-import { expect } from "chai";
-import { generateConnectionsShareable, parseConnectionsScoreFromShareable, printDateToConnectionsNumber, solveConnections } from "../src/connections.js";
+import { generateConnectionsShareable, parseConnectionsScoreFromShareable, printDateToConnectionsNumber, solveConnections } from "./connections.js";
 import { makeMockServer } from "./server.js";
 
 let server = makeMockServer();
@@ -25,8 +24,8 @@ it("Parses connections with 4 mistakes correctly", async () => {
     const message = 'Connections\nPuzzle #443\n🟨🟪🟨🟩\n🟪🟨🟨🟦\n🟩🟩🟦🟪\n🟦🟩🟪🟦'
 
     const { id, mistakes } = parseConnectionsScoreFromShareable(message)!;
-    expect(id).to.equal(443);
-    expect(mistakes).to.equal(4);
+    expect(id).toBe(443);
+    expect(mistakes).toBe(4);
 })
 
 it('print date calculated correctly for years in the future', async () => {
@@ -35,10 +34,10 @@ it('print date calculated correctly for years in the future', async () => {
 
     while (connectionsNumber < 4000) {
         let out = printDateToConnectionsNumber(currentDate)
-        expect(out, `For date ${currentDate} and number ${connectionsNumber}`).to.equal(connectionsNumber)
+        expect(out).toBe(connectionsNumber)
         currentDate.setDate(currentDate.getDate() + 1)
         connectionsNumber++;
     }
 
-    expect(413).to.equal(printDateToConnectionsNumber(new Date('2024-07-28')))
+    expect(413).toBe(printDateToConnectionsNumber(new Date('2024-07-28')))
 })

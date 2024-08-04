@@ -1,5 +1,4 @@
-import { escapeMarkdown } from '../src/markdown.js';
-import { expect } from 'chai';
+import { escapeMarkdown } from './markdown.js';
 
 it('escapeMarkdown should escape special characters', () => {
     const input = 'This is a **bold** text with _italic_ and [link](https://example.com).';
@@ -7,5 +6,5 @@ it('escapeMarkdown should escape special characters', () => {
 
     const output = escapeMarkdown(input);
 
-    expect(output).to.equal(expectedOutput);
+    expect(output).toBe(expectedOutput);
 });
