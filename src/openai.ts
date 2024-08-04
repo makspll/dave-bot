@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/index.mjs";
-import { APIError } from "openai/src/error.js";
 
 export interface TTSRequest {
     api_key: string;
@@ -23,12 +22,12 @@ export async function call_tts(request: TTSRequest): Promise<Blob> {
         }
     }).then((blob) => {
         return blob
-    }).catch((error: APIError) => {
+    }).catch((error: typeof OpenAI.APIError) => {
         console.error("Error in tts call:", error);
         return error
     })
 
-    if (!response || response instanceof APIError) {
+    if (!response || response instanceof OpenAI.APIError) {
         throw response
     }
 
@@ -61,14 +60,14 @@ export async function call_gpt(request: LLMCompletionsRequest): Promise<string> 
     console.log("Calling chat gpt, request:", { ...request, api_key: "REDACTED" });
     let response = await client.chat.completions.create(request.payload).then((response) => {
         return response.choices[0].message.content
-    }).catch((error: APIError) => {
+    }).catch((error: typeof OpenAI.APIError) => {
         console.error("Error in chat gpt call:", error);
         return error
     })
 
-    if (!response || response instanceof APIError) {
+    if (!response || response instanceof OpenAI.APIError) {
         throw response
     }
 
-    return response
+    return response as string
 }
