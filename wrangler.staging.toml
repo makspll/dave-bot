@@ -19,4 +19,4 @@ crons = ["*/5 * * * *", "0 8 * * *"]
 [[d1_databases]]
 binding = "DB"                                       # i.e. available in your Worker on env.DB
 database_name = "davebase-staging"
-database_id = "2e365f03-579a-4576-a81f-8faee4d6057c"
+database_id = "8ef22207-9673-4fe6-a6e6-b578a7e6ea52"
