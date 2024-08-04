@@ -105,6 +105,7 @@ export default {
                     text: `Error: ${error}, stack trace: ${console.trace()}`,
                 },
                 api_key: env.TELEGRAM_API_KEY,
+                audio_chance: 0
             })
         }
 
