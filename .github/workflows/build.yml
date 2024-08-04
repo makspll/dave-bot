@@ -8,6 +8,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy To Production On Push To Main
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: cloudflare
@@ -31,6 +32,7 @@ jobs:
           MAIN_CHAT_ID: ${{ secrets.MAIN_CHAT_ID }}
 
   pr-deploy:
+    name: Deploy To Staging On PR
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     environment: cloudflare-staging
