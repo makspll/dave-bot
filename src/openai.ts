@@ -32,7 +32,7 @@ export async function call_tts(request: TTSRequest): Promise<Blob> {
         throw response
     }
 
-    return response;
+    return response as Blob;
 }
 
 
