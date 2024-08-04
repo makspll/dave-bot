@@ -268,7 +268,7 @@ export let connections_slur: Action = async (message: TelegramMessage, settings:
 // waits for messages of the form: Wordle 1,134 5/6* ...
 // and parses them to determine a response and possibly store the score
 export let wordle_slur: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    const wordle_regex = /Wordle ([\d,\.]+) (\d+\/\d+).*/
+    const wordle_regex = /Wordle ([\d,\.]+) ([\dX]+\/\d+).*/
     const match = message.message.text.match(wordle_regex)
     if (match) {
         console.log("Wordle match: ", message.message.text)
