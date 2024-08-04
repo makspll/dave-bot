@@ -198,4 +198,4 @@ export const POSITIVE_AFFECTION_PROMPTS = [
 
 
 export const DEFAULT_MSG_DELAY = 8;
-export const AUDIO_MESSAGE_CHANCE = 1.0;
+export const AUDIO_MESSAGE_CHANCE = 0.9;
