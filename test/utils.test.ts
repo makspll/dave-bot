@@ -34,7 +34,7 @@ it('various padded emojis and letters pad to the same string width', () => {
     const input2 = 'abcde✨ 0'
     const input3 = '🔻🔺d✨🔴a'
 
-   expect(stringWidth(stringPad(input1, 15, '*'))).to.equal(stringWidth(stringPad(input2, 15, '*')))
-   expect(stringWidth(stringPad(input2, 15, '*'))).to.equal(stringWidth(stringPad(input3, 15, '*')))
-    
+    expect(stringWidth(stringPad(input1, 15, '*'))).to.equal(stringWidth(stringPad(input2, 15, '*')))
+    expect(stringWidth(stringPad(input2, 15, '*'))).to.equal(stringWidth(stringPad(input3, 15, '*')))
+
 })

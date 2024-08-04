@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": [
+            "esnext"
+        ],
+        "strict": true,
+        "types": [
+            "@cloudflare/workers-types",
+            "@types/mocha",
+            "@types/node",
+        ],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "es2022",
+        "allowJs": true,
+        "moduleDetection": "force",
+        "isolatedModules": true,
+    },
+    "include": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+    ]
+}

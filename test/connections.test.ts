@@ -24,7 +24,7 @@ it("Solves connections for 2024-07-28", async () => {
 it("Parses connections with 4 mistakes correctly", async () => {
     const message = 'Connections\nPuzzle #443\n🟨🟪🟨🟩\n🟪🟨🟨🟦\n🟩🟩🟦🟪\n🟦🟩🟪🟦'
 
-    const { id, mistakes } = parseConnectionsScoreFromShareable(message);
+    const { id, mistakes } = parseConnectionsScoreFromShareable(message)!;
     expect(id).to.equal(443);
     expect(mistakes).to.equal(4);
 })
@@ -40,5 +40,5 @@ it('print date calculated correctly for years in the future', async () => {
         connectionsNumber++;
     }
 
-    expect(413, printDateToConnectionsNumber(new Date('2024-07-28')))
+    expect(413).to.equal(printDateToConnectionsNumber(new Date('2024-07-28')))
 })

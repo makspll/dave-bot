@@ -48,7 +48,7 @@ export function makeMockServer() {
                 }
                 const file = fs.readFileSync(folderPath);
                 if (path.extname(folderPath) === '.json') {
-                    response = HttpResponse.json(JSON.parse(file));
+                    response = HttpResponse.json(JSON.parse(file.toString()));
                 } else {
                     response = new HttpResponse(file.toString());
                 }

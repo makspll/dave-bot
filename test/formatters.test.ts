@@ -2,64 +2,34 @@ import { expect } from "chai"
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "../src/formatters.js"
 
 it('correctly generates leaderboard', async () => {
-    const stats = generateLeaderboard(
-        {
-            "scores": {
-                "apple": {
-                    "average": 3
-                },
-                "cherry": {
-                    "average": 4,
-                    "games": 1
-                }
-            },
-            "scorekinds": {
-                "average": {
-                    "title": "Average",
-                    "ascending": true
-                },
-                "games": {
-                    "title": "Games",
-                    "ascending": false
-                }
-            }
-        }, 'average', "Leaderboard"
-    )
+    let leaderboard = {
+        scores: new Map(),
+        scorekinds: new Map()
+    }
+    leaderboard.scores.set("apple", { average: 3 })
+    leaderboard.scores.set("cherry", { average: 4, games: 1 })
+    leaderboard.scorekinds.set("average", { title: "Average", ascending: true })
+    leaderboard.scorekinds.set("games", { title: "Games", ascending: false })
+
+    const stats = generateLeaderboard(leaderboard, 'avg', "Leaderboard")
 
     console.log(stats)
 })
 
 it('correctly accounts for delta scores', async () => {
-    const scores = {
-        "scores": {
-            "apple": {
-                "average": 3
-            },
-            "cherry": {
-                "average": 4,
-                "games": 1
-            }, 
-            "new": {
-                "average": 0,
-                "games": 1,
-            }
-        },
-        "scorekinds": {
-            "average": {
-                "title": "Average",
-                "ascending": true
-            },
-            "games": {
-                "title": "Games",
-                "ascending": false
-            }
-        }
+    let leaderboard = {
+        scores: new Map(),
+        scorekinds: new Map()
     }
-    let prev_scores = JSON.parse(JSON.stringify(scores));
+    leaderboard.scores.set("apple", { average: 3 })
+    leaderboard.scores.set("cherry", { average: 4, games: 1 })
+    leaderboard.scores.set("new", { average: 0, games: 1 })
+    leaderboard.scorekinds.set("average", { title: "Average", ascending: true })
+    leaderboard.scorekinds.set("games", { title: "Games", ascending: false })
+
+    let prev_scores = JSON.parse(JSON.stringify(leaderboard));
     delete prev_scores.scores.new
-    const stats = generateLeaderboard(
-        scores, 'average', "Leaderboard", prev_scores
-    )
+    const stats = generateLeaderboard(leaderboard, 'avg', "Leaderboard", prev_scores)
 
     console.log(stats)
 })
