@@ -102,7 +102,7 @@ export default {
             await sendMessage({
                 payload: {
                     chat_id: env.GOD_ID,
-                    text: `Error: ${error}, stack trace: ${console.trace()}`,
+                    text: `Error: ${error}, stringified: ${JSON.stringify(error)}`,
                 },
                 api_key: env.TELEGRAM_API_KEY,
                 audio_chance: 0
