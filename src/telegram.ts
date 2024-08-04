@@ -78,7 +78,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
 
 
     const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}`
-    const response = axios.post(url, form_data)
+    const response = await axios.post(url, form_data)
         .then(res => {
             console.log("Successfully sent telegram message", res)
         })
