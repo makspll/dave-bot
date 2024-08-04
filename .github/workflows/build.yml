@@ -4,36 +4,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: cloudflare
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build & Deploy Worker
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          secrets: |
-            TELEGRAM_API_KEY
-            OPEN_AI_KEY
-            GOD_ID
-            MAIN_CHAT_ID
-        env:
-          TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
-          OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
-          GOD_ID: ${{ secrets.GOD_ID }}
-          MAIN_CHAT_ID: ${{ secrets.MAIN_CHAT_ID }}
-
-  pr-deploy:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    environment: cloudflare-staging
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
