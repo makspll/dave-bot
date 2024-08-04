@@ -1,18 +1,26 @@
-import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js"
+import { convertDailyScoresToLeaderboard, generateLeaderboard, LeaderboardScores } from "./formatters.js"
+import { compareMultilineStrings } from "./utils.test.js"
+
+
 
 it('correctly generates leaderboard', async () => {
-    let leaderboard = {
+    let leaderboard: LeaderboardScores = {
         scores: new Map(),
         scorekinds: new Map()
     }
-    leaderboard.scores.set("apple", { average: 3 })
-    leaderboard.scores.set("cherry", { average: 4, games: 1 })
-    leaderboard.scorekinds.set("average", { title: "Average", ascending: true })
+    leaderboard.scores.set("apple", new Map([["avg", { value: 3, rank: 0 }]]))
+    leaderboard.scores.set("cherry", new Map([["avg", { value: 4, rank: 0 }], ["games", { value: 1, rank: 0 }]]))
+    leaderboard.scorekinds.set("avg", { title: "Average", ascending: true })
     leaderboard.scorekinds.set("games", { title: "Games", ascending: false })
 
     const stats = generateLeaderboard(leaderboard, 'avg', "Leaderboard")
 
-    console.log(stats)
+    compareMultilineStrings(stats, `
+        Leaderboard | Average | Games
+        --------------------------
+        🥇 apple    | 3.00    | N/A  
+        🥈 cherry   | 4.00    | 1.00 
+    `)
 })
 
 it('correctly accounts for delta scores', async () => {
@@ -20,17 +28,22 @@ it('correctly accounts for delta scores', async () => {
         scores: new Map(),
         scorekinds: new Map()
     }
-    leaderboard.scores.set("apple", { average: 3 })
-    leaderboard.scores.set("cherry", { average: 4, games: 1 })
-    leaderboard.scores.set("new", { average: 0, games: 1 })
-    leaderboard.scorekinds.set("average", { title: "Average", ascending: true })
+    leaderboard.scores.set("apple", new Map([["avg", { value: 3, rank: 0 }]]))
+    leaderboard.scores.set("cherry", new Map([["avg", { value: 4, rank: 0 }], ["games", { value: 1, rank: 0 }]]))
+    leaderboard.scores.set("new", new Map([["avg", { value: 0, rank: 0 }], ["games", { value: 1, rank: 0 }]]))
+    leaderboard.scorekinds.set("avg", { title: "Average", ascending: true })
     leaderboard.scorekinds.set("games", { title: "Games", ascending: false })
 
-    let prev_scores = JSON.parse(JSON.stringify(leaderboard));
-    delete prev_scores.scores.new
+    let prev_scores = structuredClone(leaderboard)
+    prev_scores.scores.delete("new")
     const stats = generateLeaderboard(leaderboard, 'avg', "Leaderboard", prev_scores)
-
-    console.log(stats)
+    compareMultilineStrings(stats, `
+    Leaderboard | Average | Games
+    --------------------------
+    🥇 new  ✨0 | 0.00    | 1.00 
+    🥈 apple🔻1 | 3.00    | N/A 
+    🥉 cherry🔻1 | 4.00    | 1.00    
+    `)
 })
 
 it('correctly converts daily scores to leaderboard', async () => {
@@ -48,44 +61,28 @@ it('correctly converts daily scores to leaderboard', async () => {
         }
     )
 
-    expect(stats).toBe({
-        "scores": {
-            "3": {
-                "Avg.": 3.00,
-                "Avg. Delta": -1,
-                "Games": 2,
-                "Games (3+)": 1,
-            },
-            "4": {
-                "Avg.": 4.00,
-                "Avg. Delta": 0,
-                "Games": 1,
-                "Games (3+)": 1,
-            },
-            "5": {
-                "Avg.": 5.00,
-                "Avg. Delta": 1,
-                "Games": 2,
-                "Games (3+)": 1,
-            }
-        },
-        "scorekinds": {
-            "Avg.": {
-                "title": "Avg.",
-                "ascending": true
-            },
-            "Games": {
-                "title": "Games",
-                "ascending": true
-            },
-            "Games (3+)": {
-                "title": "Games (3+)",
-                "ascending": true
-            },
-            "Avg. Delta": {
-                "title": "Avg. Delta",
-                "ascending": true
-            }
-        }
+    expect(stats).toEqual({
+        "scores": new Map([
+            ["3", new Map([
+                ["avg", { "rank": 0, "value": 3 }],
+                ["games", { "rank": 0, "value": 2 }],
+                ["avg_delta", { "rank": 0, "value": -1 }]
+            ])],
+            ["4", new Map([
+                ["avg", { "rank": 0, "value": 4 }],
+                ["games", { "rank": 0, "value": 1 }],
+                ["avg_delta", { "rank": 0, "value": 0 }]
+            ])],
+            ["5", new Map([
+                ["avg", { "rank": 0, "value": 5 }],
+                ["games", { "rank": 0, "value": 2 }],
+                ["avg_delta", { "rank": 0, "value": 1 }]
+            ])]
+        ]),
+        "scorekinds": new Map([
+            ["avg", { "title": "Avg.", "ascending": true }],
+            ["games", { "title": "N", "ascending": true }],
+            ["avg_delta", { "title": "Avg. Diff", "ascending": true }]
+        ])
     })
 })

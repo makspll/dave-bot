@@ -197,7 +197,7 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
             }
 
         } else {
-            throw new Error('failed to get valid input from player. fuck you openAI');
+            throw new Error('failed to get valid input from player');
         }
     }
 
@@ -221,13 +221,13 @@ export function guessCategory(guess: string, connections: ConnectionsResponse): 
         words = []
     }
 
-    if (guess == null || guess.length !== 4) {
+    if (words == null || words.length !== 4) {
         let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 comma separated words", guess: words };
         return invalid_guess;
     }
 
     let categories = []
-    for (const word of guess) {
+    for (const word of words) {
         const category = connections.categories.find(x => x.cards.some(y => y.content === word));
         if (!category) {
             let invalid_guess: InvalidGuess = { invalid: `The word ${word} is not part of the puzzle, use a valid word.`, guess: words };

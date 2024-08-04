@@ -96,24 +96,20 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     for (const [name, user_scores] of scores.scores) {
         let change = '';
         if (previous_scores) {
-            let is_sort_by_metric = name == sort_by;
             let current_metric = user_scores.get(sort_by);
             let previous_user = previous_scores.scores.get(name);
-            if (is_sort_by_metric && current_metric && previous_user) {
+            if (current_metric && previous_user) {
                 let previous_metric = previous_user.get(sort_by);
-                if (!previous_metric) {
-                    change = '✨0';
-                } else {
+                if (previous_metric) {
                     let rank_change = previous_metric.rank - current_metric.rank;
                     if (rank_change > 0) {
                         change = `🔺${rank_change}`;
                     } else if (rank_change < 0) {
                         change = `🔻${Math.abs(rank_change)}`;
-                    } else {
-                        change = '✨0';
                     }
                 }
-
+            } else if (current_metric) {
+                change = '✨0';
             }
         }
 
@@ -146,7 +142,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
         let all_player_daily_average = 0
         const day_players_count = Object.keys(player_scores).length
         for (const [player_id, score] of Object.entries(player_scores)) {
-            if (!(player_id in name_to_metrics)) {
+            if (!(name_to_metrics.has(player_id))) {
                 let player_metrics: Map<MetricId, MetricBody> = new Map()
                 player_metrics.set("avg", { value: 0, rank: 0 })
                 player_metrics.set("games", { value: 0, rank: 0 })

@@ -1,5 +1,7 @@
 import { generateConnectionsShareable, parseConnectionsScoreFromShareable, printDateToConnectionsNumber, solveConnections } from "./connections.js";
 import { makeMockServer } from "./server.js";
+import { compareMultilineStrings } from "./utils.test.js";
+
 
 let server = makeMockServer();
 
@@ -13,11 +15,22 @@ afterEach(() => {
 });
 
 it("Solves connections for 2024-07-28", async () => {
-    const [state, connections] = await solveConnections(new Date("2024-07-28"), async (state) => {
+    // mock open AI 
+    const [state, connections] = await solveConnections(new Date("2024-07-28"), async (state, last_guess) => {
+        state.tiles.sort()
         const words = state.tiles.slice(0, 4);
         return words.join(",");
     })
-    console.log(generateConnectionsShareable(state, connections));
+    const shareable = generateConnectionsShareable(state, connections)
+    console.log(shareable)
+    compareMultilineStrings(shareable, `
+        Connections
+        Puzzle 413 
+        🟪🟦🟨🟪
+        🟪🟦🟨🟪
+        🟪🟦🟨🟪
+        🟪🟦🟨🟪
+    `)
 });
 
 it("Parses connections with 4 mistakes correctly", async () => {
