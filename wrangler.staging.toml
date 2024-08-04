@@ -3,7 +3,7 @@ main = "src/main.ts"
 compatibility_date = "2024-01-01"
 send_metrics = true
 kv_namespaces = [
-  { binding = "KV_STORE", id = "5f1b958a44be4df5b768ddb5e420da1e" },
+  { binding = "KV_STORE", id = "7e31a629221b49b7a9ad3b30b3516e13" },
 ]
 
 rules = [
