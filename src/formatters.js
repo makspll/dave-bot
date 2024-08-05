@@ -57,7 +57,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     
     let score_column_lengths = {};
     for (const scorekind in scores.scorekinds) {
-        score_column_lengths[scorekind] = Math.max(stringWidth(scores.scorekinds[scorekind].title.toString()), 5);
+        score_column_lengths[scorekind] = Math.max(stringWidth(scores.scorekinds[scorekind].title.toString()), 4);
     }
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
@@ -84,7 +84,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
         let name_padding = stringPad(name_and_emoji, title_column_length - stringWidth(change), ' ', 'left');
         let change_padding = stringPad(change, title_column_length - stringWidth(name_padding), ' ', 'right');
         let score_padding = Object.entries(scores.scorekinds).map(([kind, _]) => {
-            let value = user_scores[kind] !== undefined ? user_scores[kind].toFixed(2) : missing_score_value;
+            let value = user_scores[kind] !== undefined ? user_scores[kind].toFixed(1) : missing_score_value;
             return stringPad(value, score_column_lengths[kind], ' ')
         }
         ).join(" | ");
@@ -158,7 +158,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Avg. Delta": {
-                "title": "Avg🔺",
+                "title": "Avg-",
                 "ascending": true
             }
         }
