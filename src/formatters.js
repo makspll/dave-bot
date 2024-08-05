@@ -76,10 +76,10 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
             } else if (rank_change < 0) {
                 change = `🔻${Math.abs(rank_change)}`;
             } else {
-                change = '🔴0'
+                change = ''
             }
         } else if (previous_scores){
-            change = '✨0';
+            change = '💥';
         }
 
         let name_and_emoji = `${emojis.shift()} ${name}`;
