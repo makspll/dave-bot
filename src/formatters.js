@@ -102,7 +102,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
     let name_to_metrics = {}
     for (const [game_id, player_scores] of Object.entries(scores)) {
         let all_player_daily_average = 0
-        const day_players_count = Object.keys(player_scores).length
+        const day_players_count = Object.keys(player_scores).filter(x => x =="bot").length
         for (const [player_id, score] of Object.entries(player_scores)) {
             if(!(player_id in name_to_metrics)) {
                 name_to_metrics[player_id] = {}
@@ -116,7 +116,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
             if (day_players_count >= 3) {
                 name_to_metrics[player_id]["Games (3+)"] += 1
             }
-            all_player_daily_average += score
+            all_player_daily_average += player_id == "bot" ? 0 : score
         }
         if (day_players_count > 0) {
             all_player_daily_average /= day_players_count
