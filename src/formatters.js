@@ -44,7 +44,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     }
 
     // generate leaderboard string, make it aligned and pretty
-    let emojis = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+    let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
     let change_emojis = ['🔻', '🔺', '✨', '🔴']
     while (emojis.length < Object.keys(scores.scores).length) {
         emojis.push('💩');
@@ -57,7 +57,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     
     let score_column_lengths = {};
     for (const scorekind in scores.scorekinds) {
-        score_column_lengths[scorekind] = Math.max(scores.scorekinds[scorekind].title.toString().length, 4);
+        score_column_lengths[scorekind] = Math.max(stringWidth(scores.scorekinds[scorekind].title.toString()), 5);
     }
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
@@ -146,7 +146,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
         "scores": name_to_metrics,
         "scorekinds": {
             "Avg.": {
-                "title": "Avg.",
+                "title": "Avg",
                 "ascending": true
             },
             "Games": {
@@ -158,7 +158,7 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
                 "ascending": true
             },
             "Avg. Delta": {
-                "title": "Avg. Diff",
+                "title": "Avg🔺",
                 "ascending": true
             }
         }
