@@ -63,7 +63,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     score_column_lengths["Games"] = 2
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${Object.entries(scores.scorekinds).map(([k,v]) => stringPad(v.title, score_column_lengths[k], ' ', 'center')).join(" | ")}\n`;
-    headers += '-'.repeat(headers.length - 1) + '\n';
+    headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
         let change = '';
