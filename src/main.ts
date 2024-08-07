@@ -26,7 +26,6 @@ function get_settings(env: Env): ChatbotSettings {
 export default {
     //handles cron jobs
     async scheduled(event: any, env: Env, ctx: ExecutionContext) {
-        console.log(env, env.OPENAI_AI_KEY)
         let settings: ChatbotSettings = get_settings(env)
 
         switch (event.cron) {
@@ -70,6 +69,8 @@ export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
         console.log("fetch callback")
+        console.log(env, env.OPENAI_AI_KEY)
+
         try {
             if (request.method === "POST") {
                 const payload: TelegramMessage = await request.json()
