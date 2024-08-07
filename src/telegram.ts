@@ -19,19 +19,6 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
             console.error("Error in calling tts, falling back on text message", err)
         }
     }
-
-    // send either text or voice message
-    let endpoint = "sendMessage"
-    if (request.payload.voice) {
-        endpoint = "sendVoice"
-        delete request.payload.text
-    }
-
-    let form_data = new FormData();
-    Object.entries(request.payload).forEach(([key, value]) => {
-        form_data.append(key, value);
-    })
-
     // Calling the API endpoint to send a telegram message
     if (delay > 0) {
         // delay by provided amount of seconds + random seconds between 0 and 10
@@ -39,15 +26,31 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
         await new Promise((resolve) => setTimeout(resolve, (delay + variance) * 1000));
     }
 
-
-    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}`
-    let config: AxiosRequestConfig = {
-        method: endpoint == "sendMessage" ? "get" : "post",
-        url,
-        data: form_data,
+    // send either text or voice message
+    let endpoint = "sendMessage"
+    let method = "GET"
+    if (request.payload.voice) {
+        endpoint = "sendVoice"
+        delete request.payload.text
+        method = "POST"
     }
 
-    const response = await axios.request(config)
+
+
+
+    let form_data: FormData | undefined = undefined
+    let parameters = ""
+    if (method === "POST") {
+        form_data = new FormData()
+        Object.entries(request.payload).forEach(([key, value]) => {
+            form_data!.append(key, value);
+        })
+    } else {
+        parameters = Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
+    }
+
+    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}?${parameters}`
+    const response = await axios.request({ url, method, data: form_data })
         .then(res => {
             console.log("Successfully sent telegram message", res)
         })
