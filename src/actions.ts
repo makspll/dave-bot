@@ -245,7 +245,7 @@ export let wordle_slur: Action = async (message: TelegramMessage, settings: Chat
     const match = message.message.text.match(wordle_regex)
     if (match) {
         console.log("Wordle match: ", message.message.text)
-        const wordle_no = parseInt(match[1].replace(",", ""))
+        const wordle_no = parseInt(match[1].replace(",", "").replace('.', ""))
         const guesses = match[2].split("/")
         const count = parseInt(guesses[0])
 
