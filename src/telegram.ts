@@ -6,7 +6,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     let audio_chance = request.audio_chance != undefined ? request.audio_chance : AUDIO_MESSAGE_CHANCE
     let delay = request.delay ? request.delay : DEFAULT_MSG_DELAY
 
-    console.log("sending telegram message", { ...request, api_key: "REDACTED", open_ai_key: "REDACTED" })
+    console.log("sending telegram message", { ...request })
 
     if (audio_chance > 0 && Math.random() < audio_chance && request.payload.text) {
         console.log("sending as audio via random chance");
