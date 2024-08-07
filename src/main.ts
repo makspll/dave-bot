@@ -8,7 +8,7 @@ import { TRIGGERS } from "./data.js";
 export interface Env {
     MAIN_CHAT_ID: number,
     GOD_ID: number,
-    KV_NAMESPACE: KVNamespace,
+    KV_STORE: KVNamespace,
     TELEGRAM_API_KEY: string,
     OPENAI_API_KEY: string,
 }
@@ -19,7 +19,7 @@ function get_settings(env: Env): ChatbotSettings {
         openai_api_key: env.OPENAI_API_KEY,
         main_chat_id: env.MAIN_CHAT_ID,
         god_id: env.GOD_ID,
-        kv_namespace: env.KV_NAMESPACE
+        kv_namespace: env.KV_STORE
     }
 }
 
@@ -75,20 +75,20 @@ export default {
                 if ('message' in payload && payload.message.text) {
                     let settings: ChatbotSettings = get_settings(env)
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
-                    let actions = [
-                        connections_slur,
-                        wordle_slur,
-                        hardlyfier,
-                        sickomode,
-                        keywords(TRIGGERS),
-                        screamo,
+                    let actions: [string, Action][] = [
+                        ["connections", connections_slur],
+                        ["wordle", wordle_slur],
+                        ["hardly know her", hardlyfier],
+                        ["dave sickomode", sickomode],
+                        ["keyword triggers", keywords(TRIGGERS)],
+                        ["random scream", screamo],
                     ]
 
-                    for (const action of actions) {
-                        console.log("Running action: " + action.name)
+                    for (const [name, action] of actions) {
+                        console.log("Running action: " + name)
                         let keep_going = await action(payload, settings)
                         if (!keep_going) {
-                            console.log("Action " + action.name + " stopped the chain")
+                            console.log("Action " + name + " stopped the chain")
                             break
                         }
                     }
