@@ -12,7 +12,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
         console.log("sending as audio via random chance");
         try {
             request.payload.voice = await call_tts({
-                api_key: request.api_key,
+                api_key: request.open_ai_key,
                 payload: request.payload.text
             })
         } catch (err) {
@@ -34,9 +34,6 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
         delete request.payload.text
         method = "POST"
     }
-
-
-
 
     let form_data: FormData | undefined = undefined
     let parameters = ""
