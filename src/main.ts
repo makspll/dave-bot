@@ -10,13 +10,13 @@ export interface Env {
     GOD_ID: number,
     KV_STORE: KVNamespace,
     TELEGRAM_API_KEY: string,
-    OPENAI_API_KEY: string,
+    OPENAI_AI_KEY: string,
 }
 
 function get_settings(env: Env): ChatbotSettings {
     return {
         telegram_api_key: env.TELEGRAM_API_KEY,
-        openai_api_key: env.OPENAI_API_KEY,
+        openai_api_key: env.OPENAI_AI_KEY,
         main_chat_id: env.MAIN_CHAT_ID,
         god_id: env.GOD_ID,
         kv_namespace: env.KV_STORE
