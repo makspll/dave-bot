@@ -33,6 +33,7 @@ export default {
                 console.log("Firing off wordle")
                 await sendMessage({
                     api_key: settings.telegram_api_key,
+                    open_ai_key: settings.openai_api_key,
                     payload: {
                         chat_id: settings.main_chat_id,
                         text: `Good morning! It's wordlin time!`
@@ -105,6 +106,7 @@ export default {
                     text: `Error: ${error}, stringified: ${JSON.stringify(error)}`,
                 },
                 api_key: env.TELEGRAM_API_KEY,
+                open_ai_key: env.OPENAI_AI_KEY,
                 audio_chance: 0
             })
         }

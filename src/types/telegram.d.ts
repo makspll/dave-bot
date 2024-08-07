@@ -22,7 +22,8 @@ declare global {
     }
 
     interface TelegramSendMessageRequest {
-        api_key: string
+        api_key: string,
+        open_ai_key: string,
         audio_chance?: number
         delay?: number
         payload: TelegramSendPayload

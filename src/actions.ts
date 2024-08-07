@@ -79,7 +79,8 @@ export let sickomode: Action = async (message: TelegramMessage, settings: Chatbo
             chat_id: message.message.chat.id,
             reply_to_message_id: message.message.message_id
         },
-        api_key: settings.telegram_api_key
+        api_key: settings.telegram_api_key,
+        open_ai_key: settings.openai_api_key
     });
 
     return true
@@ -107,6 +108,7 @@ export let hardlyfier: Action = async (message: TelegramMessage, settings: Chatb
                 reply_to_message_id: message.message.message_id
             },
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key
         })
     }
     return true
@@ -121,6 +123,7 @@ export let screamo: Action = async (message: TelegramMessage, settings: ChatbotS
                 reply_to_message_id: message.message.message_id
             },
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             audio_chance: 1
         }
         await sendMessage(payload)
@@ -193,7 +196,8 @@ export let keywords: (triggers: KeywordTrigger[]) => Action =
                 chat_id: message.message.chat.id,
                 reply_to_message_id: message.message.message_id
             },
-            api_key: settings.telegram_api_key
+            api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key
         })
 
         return true
@@ -229,7 +233,8 @@ export let connections_slur: Action = async (message: TelegramMessage, settings:
                     chat_id: message.message.chat.id,
                     reply_to_message_id: message.message.message_id
                 },
-                api_key: settings.telegram_api_key
+                api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key
             })
         }
     }
@@ -269,7 +274,8 @@ export let wordle_slur: Action = async (message: TelegramMessage, settings: Chat
                     chat_id: message.message.chat.id,
                     reply_to_message_id: message.message.message_id
                 },
-                api_key: settings.telegram_api_key
+                api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key
             })
         }
     }
