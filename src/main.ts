@@ -10,13 +10,13 @@ export interface Env {
     GOD_ID: number,
     KV_STORE: KVNamespace,
     TELEGRAM_API_KEY: string,
-    OPENAI_AI_KEY: string,
+    OPEN_AI_KEY: string,
 }
 
 function get_settings(env: Env): ChatbotSettings {
     return {
         telegram_api_key: env.TELEGRAM_API_KEY,
-        openai_api_key: env.OPENAI_AI_KEY,
+        openai_api_key: env.OPEN_AI_KEY,
         main_chat_id: env.MAIN_CHAT_ID,
         god_id: env.GOD_ID,
         kv_namespace: env.KV_STORE
@@ -69,7 +69,7 @@ export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
         console.log("fetch callback")
-        console.log(env, env.OPENAI_AI_KEY)
+        console.log(env, env.OPEN_AI_KEY)
 
         try {
             if (request.method === "POST") {
@@ -108,7 +108,7 @@ export default {
                     text: `Error: ${error}, stringified: ${JSON.stringify(error)}`,
                 },
                 api_key: env.TELEGRAM_API_KEY,
-                open_ai_key: env.OPENAI_AI_KEY,
+                open_ai_key: env.OPEN_AI_KEY,
                 audio_chance: 0
             })
         }
