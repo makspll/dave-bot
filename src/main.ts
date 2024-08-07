@@ -26,6 +26,7 @@ function get_settings(env: Env): ChatbotSettings {
 export default {
     //handles cron jobs
     async scheduled(event: any, env: Env, ctx: ExecutionContext) {
+        console.log(env, env.OPENAI_AI_KEY)
         let settings: ChatbotSettings = get_settings(env)
 
         switch (event.cron) {
