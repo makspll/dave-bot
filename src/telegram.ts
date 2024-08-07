@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios"
+import axios, { AxiosError, AxiosRequestConfig } from "axios"
 import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
 import { call_tts } from "./openai.js"
 
@@ -41,7 +41,13 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
 
 
     const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}`
-    const response = await axios.post(url, form_data)
+    let config: AxiosRequestConfig = {
+        method: endpoint == "sendMessage" ? "get" : "post",
+        url,
+        data: form_data,
+    }
+
+    const response = await axios.request(config)
         .then(res => {
             console.log("Successfully sent telegram message", res)
         })
