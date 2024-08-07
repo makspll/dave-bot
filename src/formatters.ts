@@ -59,7 +59,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     }
 
     // generate leaderboard string, make it aligned and pretty
-    let emojis = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+    let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
     let change_emojis = ['🔻', '🔺', '✨', '🔴']
     while (emojis.length < Object.keys(scores.scores).length) {
         emojis.push('💩');
@@ -72,16 +72,18 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
 
     let score_column_lengths: Map<MetricId, number> = new Map();
     for (const [metricId, definition] of scores.scorekinds) {
-        let max = Math.max(definition.title.toString().length, 4)
+        let max = Math.max(stringWidth(definition.title.toString()), 4);
         score_column_lengths.set(metricId, max);
     }
+
+    score_column_lengths.set("games", 2);
 
     let padded_score_titles = Array.from(scores.scorekinds.entries())
         .map(([k, v]) => stringPad(v.title, score_column_lengths.get(k) ?? 4, ' ', 'center'))
         .join(" | ");
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${padded_score_titles}\n`;
-    headers += '-'.repeat(headers.length - 4) + '\n';
+    headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of scores.scores) {
         let change = '';
@@ -99,7 +101,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
                     }
                 }
             } else if (current_metric) {
-                change = '✨0';
+                change = '💥';
             }
         }
 
@@ -109,10 +111,10 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
         let score_padding = Array.from(scores.scorekinds.keys()).map(metricId => {
             let metricValue = user_scores.get(metricId)
             let metricString;
-            if (!metricValue) {
+            if (metricValue === undefined) {
                 metricString = missing_score_value
             } else {
-                metricString = metricValue.value.toFixed(2)
+                metricString = parseFloat(metricValue.value.toFixed(2)).toString()
             }
 
             return stringPad(metricString, score_column_lengths.get(metricId) ?? 4, ' ')
@@ -130,7 +132,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
 
     for (const [game_id, player_scores] of Object.entries(scores)) {
         let all_player_daily_average = 0
-        const day_players_count = Object.keys(player_scores).length
+        const day_players_count = Object.keys(player_scores).filter(x => x != "bot").length
         for (const [player_id, score] of Object.entries(player_scores)) {
             if (!(name_to_metrics.has(player_id))) {
                 let player_metrics: Map<MetricId, MetricBody> = new Map()
@@ -146,7 +148,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
             if (day_players_count >= 3) {
                 player_metrics.get("games_3_plus")!.value += 1
             }
-            all_player_daily_average += score
+            all_player_daily_average += player_id == "bot" ? 0 : score
         }
         if (day_players_count > 0) {
             all_player_daily_average /= day_players_count
@@ -180,10 +182,10 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
 
     // generate leaderoard dictionary
     let metric_definitions: Map<MetricId, MetricDefinition> = new Map()
-    metric_definitions.set("avg", { title: "Avg.", ascending: true })
+    metric_definitions.set("avg", { title: "Avg", ascending: true })
     metric_definitions.set("games", { title: "N", ascending: true })
     metric_definitions.set("games_3_plus", { title: "Games (3+)", ascending: true })
-    metric_definitions.set("avg_delta", { title: "Avg. Diff", ascending: true })
+    metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
 
     let leaderboard = {
         "scores": name_to_metrics,
