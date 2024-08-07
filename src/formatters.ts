@@ -1,6 +1,6 @@
 import stringWidth from "string-width";
 import { stringPad } from "./utils.js";
-import { Scores } from "./kv_store.js";
+
 
 // expects a dictionary of the form:
 // {
@@ -42,16 +42,6 @@ function sort_scores(scores: LeaderboardScores, sort_by: MetricId) {
     scores.scores = new Map([...all_scores]);
 }
 
-type MetricId = "avg" | "games" | "games_3_plus" | "avg_delta" | "rank";
-type MetricDefinition = {
-    title: string,
-    ascending: boolean
-};
-
-type MetricBody = {
-    rank: number,
-    value: number,
-}
 
 
 export interface LeaderboardScores {

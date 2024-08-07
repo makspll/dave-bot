@@ -20,15 +20,6 @@ export async function store_kv_object(namespace: KVNamespace, key: string, value
 }
 
 
-export type Scores = {
-    [game: string]: {
-        [id: string]: number
-    }
-} & {
-    "names"?: {
-        [id: string]: string
-    }
-}
 
 export async function get_connections_scores(namespace: KVNamespace): Promise<Scores> {
     return await get_kv_object(namespace, "connections_scores", 60)

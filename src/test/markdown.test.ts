@@ -1,4 +1,4 @@
-import { escapeMarkdown } from './markdown.js';
+import { escapeMarkdown } from '../markdown.js';
 
 it('escapeMarkdown should escape special characters', () => {
     const input = 'This is a **bold** text with _italic_ and [link](https://example.com).';

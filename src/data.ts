@@ -1,4 +1,4 @@
-export const TRIGGERS = [
+export const TRIGGERS: KeywordTrigger[] = [
   {
     "trigger": ["what", "do", "you", "think", "of", "me", "dave"],
     "chance": 1,

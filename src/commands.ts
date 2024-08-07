@@ -1,11 +1,10 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, isValidGuess, PlayerCallback, solveConnections } from "./connections.js";
+import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, PlayerCallback, solveConnections } from "./connections.js";
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, Scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./kv_store.js";
+import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./kv_store.js";
 import { call_gpt } from "./openai.js";
-import { ChatbotSettings } from "./settings.js";
-import { sendMessage, TelegramMessage } from "./telegram.js";
+import { sendMessage } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, solveWordle } from "./wordle.js";
 
 export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: ChatbotSettings, args: string[]) => Promise<any> } = {

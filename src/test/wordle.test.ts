@@ -1,5 +1,5 @@
-import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleWord, WordleIndices } from './wordle.js';
-import { makeMockServer } from './server.js';
+import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleWord, WordleIndices } from '../wordle.js';
+import { makeMockServer } from '../server.js';
 
 const TEST_TIMEOUT_SECONDS = 120;
 jest.setTimeout(70 * TEST_TIMEOUT_SECONDS)

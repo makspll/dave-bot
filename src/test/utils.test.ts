@@ -1,17 +1,6 @@
-import { stringPad } from "./utils.js";
+import { stringPad } from "../utils.js";
 import stringWidth from "string-width";
 
-
-export function compareMultilineStrings(received: string, expected: string) {
-    const receivedLines = received.trim().split('\n');
-    const expectedLines = expected.trim().split('\n');
-
-
-    for (let i = 0; i < receivedLines.length; i++) {
-        expect(receivedLines[i].trim()).toBe(expectedLines[i].trim());
-    }
-    expect(receivedLines.length).toBe(expectedLines.length);
-}
 
 it('stringPad should pad the string with specified character', () => {
     const input = 'hello';

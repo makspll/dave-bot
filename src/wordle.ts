@@ -2,10 +2,6 @@ import axios from 'axios';
 import { escapeMarkdown } from './markdown.js';
 import { formatDateToYYYYMMDD, sample } from './utils.js';
 
-export const ALL_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-    'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-    'w', 'x', 'y', 'z'] as const;
-
 export async function getWordleList() {
     try {
         const response = await axios.get('https://raw.githubusercontent.com/tabatkins/wordle-list/main/words');
@@ -17,10 +13,6 @@ export async function getWordleList() {
     }
 }
 
-export interface WordleResponse {
-    wordle: WordleWord,
-    wordle_no: number
-}
 
 export async function getWordleForDay(day: Date): Promise<WordleResponse | null> {
     try {
@@ -90,13 +82,7 @@ export function pruneWords(availableWords: WordleWord[], knowledgeState: WordleK
 }
 
 // calculates the probability that a random word has a given letter at a given position for all letters and positions
-export type LetterTypes = typeof ALL_LETTERS
-export const WordleIndices = [0, 1, 2, 3, 4] as const
-export type Letter = LetterTypes[number]
-export type WordleIndex = 0 | 1 | 2 | 3 | 4
-export type Pentuple<T> = [T, T, T, T, T]
-export type LetterProbabilities = Record<Letter, Pentuple<number>>
-export type WordleWord = string & { length: 5 } & { [i in WordleIndex]: Letter };
+
 
 export function calculateLetterProbabilities(availableWords: WordleWord[]): LetterProbabilities {
     const letterProbabilities: LetterProbabilities = {
@@ -220,15 +206,6 @@ export function calculateHintScore(word: WordleWord, knownLetters: Set<Letter>) 
 }
 
 
-export interface WordleKnowledgeState {
-    correct: Map<WordleIndex, Letter>
-    not_in_puzzle: Set<Letter>
-    known_letters_positions: Map<Letter, Set<WordleIndex>>
-    guesses: WordleWord[]
-    available_words: WordleWord[][] // list of available words before each guess
-    multiples: Map<Letter, number>
-}
-
 export function initialKnowledgeState(): WordleKnowledgeState {
     return {
         'correct': new Map(), // position to letter mapping of correct letters
@@ -276,12 +253,8 @@ export function updateKnowledgeState(previous_state: WordleKnowledgeState, guess
     }
 }
 
-export interface WordleSolveOutput {
-    guess: WordleWord,
-    guesses_count: number,
-    guesses: WordleWord[],
-    available_words: WordleWord[][]
-}
+
+
 
 export function solveWordle(solution: WordleWord, availableWords: WordleWord[]): WordleSolveOutput {
     let knowledgeState = initialKnowledgeState();

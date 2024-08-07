@@ -1,5 +1,5 @@
-import { convertDailyScoresToLeaderboard, generateLeaderboard, LeaderboardScores } from "./formatters.js"
-import { compareMultilineStrings } from "./utils.test.js"
+import { convertDailyScoresToLeaderboard, generateLeaderboard, LeaderboardScores } from "../formatters.js"
+import { compareMultilineStrings } from "./utils/utils.test.js"
 
 
 

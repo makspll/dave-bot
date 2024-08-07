@@ -1,7 +1,7 @@
-import { sendMessage, TelegramMessage } from "./telegram.js";
-import { ChatbotSettings } from "./settings.js";
+import { sendMessage } from "./telegram.js";
 import { connections_slur, hardlyfier, keywords, screamo, sickomode, wordle_slur } from "./actions.js";
 import { COMMANDS } from "./commands.js";
+import { TRIGGERS } from "./data.js";
 
 
 
@@ -80,7 +80,7 @@ export default {
                         wordle_slur,
                         hardlyfier,
                         sickomode,
-                        keywords,
+                        keywords(TRIGGERS),
                         screamo,
                     ]
 

@@ -2,43 +2,6 @@ import axios, { AxiosError } from "axios"
 import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
 import { call_tts } from "./openai.js"
 
-export interface TelegramMessage {
-    message: {
-        message_id: number,
-        from: {
-            id: number,
-            is_bot: boolean,
-            first_name: string,
-            last_name: string,
-            username: string,
-            language_code: string
-        },
-        chat: {
-            id: number,
-            title: string,
-            type: string
-        },
-        date: number,
-        text: string
-    }
-
-}
-
-export interface TelegramSendMessageRequest {
-    api_key: string
-    audio_chance?: number,
-    delay?: number,
-    payload: TelegramSendPayload
-}
-
-export interface TelegramSendPayload {
-    parse_mode?: string,
-    reply_to_message_id?: number,
-    chat_id: number,
-    voice?: Blob,
-    text?: string,
-}
-
 export async function sendMessage(request: TelegramSendMessageRequest): Promise<void> {
     let audio_chance = request.audio_chance != undefined ? request.audio_chance : AUDIO_MESSAGE_CHANCE
     let delay = request.delay ? request.delay : DEFAULT_MSG_DELAY

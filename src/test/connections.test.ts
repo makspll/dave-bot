@@ -1,6 +1,6 @@
-import { generateConnectionsShareable, parseConnectionsScoreFromShareable, printDateToConnectionsNumber, solveConnections } from "./connections.js";
-import { makeMockServer } from "./server.js";
-import { compareMultilineStrings } from "./utils.test.js";
+import { generateConnectionsShareable, parseConnectionsScoreFromShareable, printDateToConnectionsNumber, solveConnections } from "../connections.js";
+import { makeMockServer } from "../server.js";
+import { compareMultilineStrings } from "./utils/utils.test.js";
 
 
 let server = makeMockServer();

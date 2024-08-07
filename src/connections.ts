@@ -1,60 +1,6 @@
 import axios from 'axios';
 import { formatDateToYYYYMMDD } from './utils.js';
 
-export interface Guess {
-    guess: string[],
-}
-
-export interface ValidGuess extends Guess {
-    one_away: boolean,
-    category: string | null | undefined,
-    remaining?: string[]
-}
-
-export interface InvalidGuess extends Guess {
-    invalid: string,
-}
-
-export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
-    return (guess as InvalidGuess).invalid === undefined
-}
-
-export function isValidGuess(guess: Guess): guess is ValidGuess {
-    return (guess as ValidGuess).category !== undefined
-}
-
-function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGuess {
-    return { invalid, guess: guess.guess }
-}
-
-
-export interface ConnectionsKnowledgeState {
-    categorised: { [key: string]: string[] },
-    tiles: string[],
-    attempts: number,
-    one_away: boolean | undefined,
-    guesses: ValidGuess[]
-}
-
-export interface CategoryCards {
-    title: string,
-    cards: {
-        content: string,
-        position: number
-    }[]
-}
-
-export interface ConnectionsResponse {
-    id: number,
-    print_date: string,
-    editor: string,
-    categories: [
-        CategoryCards,
-        CategoryCards,
-        CategoryCards,
-        CategoryCards
-    ]
-}
 // retrieves connections for a specific date, returns a json object in the format:
 //{
 // "id": 440,
@@ -295,15 +241,6 @@ export function generateConnectionsShareable(state: ConnectionsKnowledgeState, c
     return shareable;
 }
 
-// parses a shereable and returns either null if it's not a connections shareable or json with:
-// {
-//    "id": 440,
-//    "mistakes": 4
-// }
-export interface ParsedConnectionsShareable {
-    id: number
-    mistakes: number
-}
 
 export function parseConnectionsScoreFromShareable(message: string): ParsedConnectionsShareable | null {
     const lines = message.split('\n');

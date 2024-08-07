@@ -1,10 +1,4 @@
 import OpenAI from "openai";
-import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/index.mjs";
-
-export interface TTSRequest {
-    api_key: string;
-    payload: string
-}
 
 export async function call_tts(request: TTSRequest): Promise<Blob> {
     const client = new OpenAI({
@@ -35,18 +29,6 @@ export async function call_tts(request: TTSRequest): Promise<Blob> {
 }
 
 
-export interface LLMCompletionsRequest {
-    api_key: string;
-    payload: ChatCompletionCreateParamsNonStreaming
-}
-
-export interface LLMCompletionsResponse {
-    choices: {
-        message: {
-            content: string;
-        }
-    }[];
-}
 
 
 // calls chat gpt with the given message history and returns the response

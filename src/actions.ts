@@ -3,15 +3,9 @@ import { parseConnectionsScoreFromShareable } from "./connections.js"
 import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, MAX_AFFECTION_LEVEL, NEGATIVE_AFFECTION_PROMPTS, POSITIVE_AFFECTION_PROMPTS, SENTIMENT_PER_AFFECTION_LEVEL, SICKOMODE_PROBABILITY, SYSTEM_PROMPT, TRIGGERS } from "./data.js"
 import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./kv_store.js"
 import { call_gpt } from "./openai.js"
-import { ChatbotSettings } from "./settings.js"
-import { sendMessage, TelegramMessage } from "./telegram.js"
+import { sendMessage } from "./telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 
-
-
-interface Action {
-    (message: TelegramMessage, settings: ChatbotSettings): Promise<boolean>
-}
 
 // very funi roasts aimed at sender
 export let sickomode: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
@@ -137,94 +131,73 @@ export let screamo: Action = async (message: TelegramMessage, settings: ChatbotS
 }
 
 // very funi keyword reactions, scans messages for keywords and replies with pre-set phrases, returns true if the trigger was satisfied, regardless if the action actually fired
-export let keywords: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let words = to_words(message.message.text);
-    let trigger = TRIGGERS.find(list => {
-        let phrase = list.trigger;
-        // find the phrase in sequence in the words
-        // if the phrase is just one word it will still work
-        let phrase_idx = 0;
-        for (let i = 0; i < words.length; i++) {
-            if (words[i] == phrase[phrase_idx]) {
-                phrase_idx = phrase_idx + 1;
-                if (phrase_idx == phrase.length) {
-                    return true
-                }
-            } else {
-                phrase_idx = 0;
-            }
-        }
-    })
-
-    if (trigger != null) {
-        console.log("keyword probability for random keyword in message: " + trigger.chance);
-        if (Math.random() < trigger.chance) {
-            let gpt_chance = trigger.gpt_chance ? trigger.gpt_chance : KEYWORD_GPT_CHANCE
-            let affection_data = await get_affection_data(settings.kv_namespace);
-            if (trigger.gpt_prompt && (Math.random() < gpt_chance)) {
-                // TODO: get few messages before this one as well
-                console.log("Calling chat gpt for this one. :)")
-                let relationship_prompt = "no previous relationship";
-                let affection_value = affection_data[message.message.from.id]
-                let affection_level = Math.min(Math.floor(Math.abs(affection_value) / SENTIMENT_PER_AFFECTION_LEVEL), MAX_AFFECTION_LEVEL)
-                console.log("Absolute affection level: " + affection_level)
-                if (affection_value != null) {
-                    if (affection_value > 0) {
-                        relationship_prompt = POSITIVE_AFFECTION_PROMPTS[affection_level - 1]
-                    } else {
-                        relationship_prompt = NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
+export let keywords: (triggers: KeywordTrigger[]) => Action =
+    (triggers) => async (message: TelegramMessage, settings: ChatbotSettings) => {
+        let words = to_words(message.message.text);
+        let trigger = triggers.find(list => {
+            let phrase = list.trigger;
+            // find the phrase in sequence in the words
+            // if the phrase is just one word it will still work
+            let phrase_idx = 0;
+            for (let i = 0; i < words.length; i++) {
+                if (words[i] == phrase[phrase_idx]) {
+                    phrase_idx = phrase_idx + 1;
+                    if (phrase_idx == phrase.length) {
+                        return true
                     }
-                }
-                let response = await call_gpt({
-                    api_key: settings.openai_api_key,
-                    payload: {
-                        model: "gpt-3.5-turbo",
-                        messages: [
-                            { role: "system", content: SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt) },
-                        ]
-                    }
-                });
-
-                if (response) {
-                    await sendMessage({
-                        payload: {
-                            text: response,
-                            chat_id: message.message.chat.id,
-                            reply_to_message_id: message.message.message_id
-                        },
-                        api_key: settings.telegram_api_key
-                    })
                 } else {
-                    console.error("Error in calling chat gpt")
+                    phrase_idx = 0;
                 }
-            } else {
-                // analyse sentiment and pick appropriate variation from the sentiment variations
-                console.log("Triggered");
-                let sentiment = calculate_sentiment(words)
-                if (affection_data[message.message.from.id] == null) {
-                    affection_data[message.message.from.id] = sentiment
-                } else {
-                    affection_data[message.message.from.id] += sentiment
-                }
-                await store_affection_data(settings.kv_namespace, affection_data);
-                console.log("Sentiment: " + sentiment);
-                console.log("positive variants: " + trigger.pos_sent_variations)
-                console.log("negative variants: " + trigger.neg_sent_variations)
-                const text = sentiment >= 0 ? sample(trigger.pos_sent_variations ?? []) : sample(trigger.neg_sent_variations ?? [])
-                console.log("variant: " + text)
-                await sendMessage({
-                    payload: {
-                        text,
-                        chat_id: message.message.chat.id,
-                        reply_to_message_id: message.message.message_id
-                    },
-                    api_key: settings.telegram_api_key
-                })
             }
+        })
+
+        if (!trigger) { return true }
+        if (Math.random() >= trigger.chance) { return true }
+
+        let gpt_chance = trigger.gpt_chance ? trigger.gpt_chance : KEYWORD_GPT_CHANCE
+        let affection_data = await get_affection_data(settings.kv_namespace);
+        let text;
+        if (trigger.gpt_prompt && (Math.random() < gpt_chance)) {
+            let relationship_prompt = "no previous relationship";
+            let affection_value = affection_data[message.message.from.id]
+            let affection_level = Math.min(Math.floor(Math.abs(affection_value) / SENTIMENT_PER_AFFECTION_LEVEL), MAX_AFFECTION_LEVEL)
+
+            relationship_prompt = affection_value > 0 ?
+                POSITIVE_AFFECTION_PROMPTS[affection_level - 1] :
+                NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
+
+            text = await call_gpt({
+                api_key: settings.openai_api_key,
+                payload: {
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                        { role: "system", content: SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt) },
+                    ]
+                }
+            });
+        } else {
+            // analyse sentiment and pick appropriate variation from the sentiment variations
+            let sentiment = calculate_sentiment(words)
+            if (affection_data[message.message.from.id] == null) {
+                affection_data[message.message.from.id] = sentiment
+            } else {
+                affection_data[message.message.from.id] += sentiment
+            }
+            await store_affection_data(settings.kv_namespace, affection_data);
+            text = sentiment >= 0 ? sample(trigger.pos_sent_variations ?? []) : sample(trigger.neg_sent_variations ?? [])
         }
+
+        await sendMessage({
+            payload: {
+                text,
+                chat_id: message.message.chat.id,
+                reply_to_message_id: message.message.message_id
+            },
+            api_key: settings.telegram_api_key
+        })
+
+        return true
     }
-    return true
-}
 
 
 // waits for messages of the form: Connections\nPuzzle #413
