@@ -407,7 +407,7 @@ async function wordle_slur(raw_message, chatId, senderId, senderName, message_id
     const match = raw_message.match(wordle_regex)
     if (match) {
         console.log("Wordle match: " + raw_message)
-        const wordle_no = parseInt(match[1].replace(",", ""))
+        const wordle_no = parseInt(match[1].replace(",", "").replace('.',""))
         const guesses = match[2].split("/")
         const count = guesses[0] == 'X' ? 7 : parseInt(guesses[0])
 
