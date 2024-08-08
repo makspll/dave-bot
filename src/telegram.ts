@@ -47,6 +47,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
         parameters = Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
     }
 
+    console.log("sending telegram message", endpoint, method, parameters, form_data)
     const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}?${parameters}`
     const response = await axios.request({ url, method, data: form_data })
         .then(res => {
