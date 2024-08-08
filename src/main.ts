@@ -69,7 +69,6 @@ export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
         console.log("fetch callback")
-        console.log(env, env.OPEN_AI_KEY)
 
         try {
             if (request.method === "POST") {
