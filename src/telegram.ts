@@ -15,6 +15,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
                 api_key: request.open_ai_key,
                 payload: request.payload.text
             })
+            console.log("Successfully generated voice message", request.payload.voice, request.payload.voice.size)
         } catch (err) {
             console.error("Error in calling tts, falling back on text message", err)
         }
