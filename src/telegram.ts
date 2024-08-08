@@ -52,6 +52,6 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
             console.log("Successfully sent telegram message", res)
         })
         .catch((err: AxiosError) => {
-            console.error("Error in sending telegram message", err.toJSON())
+            console.error("Error in sending telegram message", err.toJSON(), err.response?.data)
         })
 }
