@@ -163,11 +163,11 @@ export function convertDailyScoresToLeaderboard(scores, show_games_3_plus = fals
             },
             "Games": {
                 "title": "N",
-                "ascending": true
+                "ascending": false
             },
             "Games (3+)": {
                 "title": "Games (3+)",
-                "ascending": true
+                "ascending": false
             },
             "Avg. Delta": {
                 "title": "Avg-",
