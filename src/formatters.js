@@ -77,7 +77,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of Object.entries(scores.scores)) {
-        let change = '';
+        let change = ' ';
         if (previous_scores && name in previous_scores.scores) {
             // find previous rank
             let previous_rank = previous_scores.scores[name].rank;
@@ -86,8 +86,6 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
                 change = `▲${rank_change}`;
             } else if (rank_change < 0) {
                 change = `▽${Math.abs(rank_change)}`;
-            } else {
-                change = ''
             }
         } else if (previous_scores){
             change = '💥';
