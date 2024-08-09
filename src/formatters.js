@@ -56,7 +56,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
 
     // generate leaderboard string, make it aligned and pretty
     let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
-    let change_emojis = ['🔻', '🖕', '✨', '🔴']
+    let change_emojis = ['🔻', '▲', '✨', '🔴']
     while (emojis.length < Object.keys(scores.scores).length) {
         emojis.push('💩');
     }
@@ -83,7 +83,7 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
             let previous_rank = previous_scores.scores[name].rank;
             let rank_change = previous_rank - user_scores.rank;
             if (rank_change > 0) {
-                change = `🖕${rank_change}`;
+                change = `▲${rank_change}`;
             } else if (rank_change < 0) {
                 change = `🔻${Math.abs(rank_change)}`;
             } else {
