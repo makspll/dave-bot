@@ -245,7 +245,7 @@ export function parseConnectionsScoreFromShareable(message) {
     const emojiRegex = /\p{Emoji_Presentation}/gu;
     // find all emojis in the multiline string
     const allEmojis = [...message.matchAll(emojiRegex)].map(x => x[0]);
-    if (allEmojis.length % 4 !== 0) {
+    if ((allEmojis.length % 4 !== 0) || allEmojis.length < 16) {
         return null;
     }
 
