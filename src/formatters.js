@@ -31,7 +31,7 @@ function sort_scores(scores, sort_by_order) {
         for (const sort_metric of sort_by_order){
             let ascending = scores.scorekinds[sort_metric].ascending;
             let diff = compare_scores(a,b,sort_metric,ascending)
-            console.log("comparing", sort_metric, diff, ascending, )
+            console.log("comparing", sort_metric, diff, ascending, a[0], b[0])
             if (Math.abs(diff) >= 0.01) {
                 return diff
             }
