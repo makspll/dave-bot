@@ -31,7 +31,7 @@ function sort_scores(scores, sort_by_order) {
         for (const sort_metric of sort_by_order){
             let ascending = scores.scorekinds[sort_metric].ascending;
             let diff = compare_scores(a,b,sort_metric,ascending)
-            console.log("comparing", sort_metric, diff, ascending, a[0], b[0])
+            
             if (Math.abs(diff) >= 0.01) {
                 return diff
             }
@@ -48,10 +48,10 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     let ascending = scores.scorekinds[sort_by].ascending;
     // sort scores.scores by sort_by
-    sort_scores(scores, [sort_by, "Avg. Delta", "Games"]);
+    sort_scores(scores, [sort_by, "Games", "Avg. Delta"]);
     if (previous_scores) {
         // sort previous_scores.scores by sort_by
-        sort_scores(previous_scores, [sort_by, "Avg. Delta", "Games"])
+        sort_scores(previous_scores, [sort_by, "Games", "Avg. Delta"])
     }
 
     // generate leaderboard string, make it aligned and pretty
