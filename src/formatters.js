@@ -29,8 +29,8 @@ function compare_scores(a,b, sort_by, ascending) {
 function sort_scores(scores, sort_by_order) {
     scores.scores = Object.fromEntries(Object.entries(scores.scores).sort((a, b) => {
         for (const sort_metric of sort_by_order){
-            let ascending = scores.scorekinds[sort_by].ascending;
-            let diff = compare_scores(a,b,sort_by,ascending)
+            let ascending = scores.scorekinds[sort_metric].ascending;
+            let diff = compare_scores(a,b,sort_by_metric,ascending)
             if (diff !== 0) {
                 return diff
             }
