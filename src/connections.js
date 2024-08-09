@@ -233,7 +233,7 @@ export function generateConnectionsShareable(state, connections) {
 // }
 export function parseConnectionsScoreFromShareable(message) {
     const lines = message.split('\n');
-    if (lines.length < 2) {
+    if (lines.length < 4 || !lines[0].includes("Connections")) {
         return null;
     }
     const puzzleMatch = message.match(/#(\d+)/);
