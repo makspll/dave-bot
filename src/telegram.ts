@@ -30,15 +30,12 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     // send either text or voice message
     let endpoint = "sendMessage"
     let method = "GET"
-    if (request.payload.voice) {
+    let form_data = undefined
+    let parameters = ""
+    if (request.payload.voice !== undefined) {
         endpoint = "sendVoice"
         delete request.payload.text
         method = "POST"
-    }
-
-    let form_data: FormData | undefined = undefined
-    let parameters = ""
-    if (method === "POST") {
         form_data = new FormData()
         Object.entries(request.payload).forEach(([key, value]) => {
             form_data!.append(key, value);
@@ -54,6 +51,6 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
             console.log("Successfully sent telegram message", res)
         })
         .catch((err: AxiosError) => {
-            console.error("Error in sending telegram message", err.toJSON(), err.response?.data, err.request)
+            console.error("Error in sending telegram message", err.response?.data)
         })
 }
