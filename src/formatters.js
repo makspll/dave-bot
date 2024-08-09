@@ -31,14 +31,15 @@ function sort_scores(scores, sort_by_order) {
         for (const sort_metric of sort_by_order){
             let ascending = scores.scorekinds[sort_metric].ascending;
             let diff = compare_scores(a,b,sort_metric,ascending)
-            if (Math.abs(diff) > 0.01) {
+            console.log("comparing", sort_metric, diff, ascending, )
+            if (Math.abs(diff) >= 0.01) {
                 return diff
             }
         }
         return 0
     }));
     // append `rank` to each score
-    for (const [i, [name, user_scores]] of Object.entries(Object.entries(scores.scores))) {
+    for (const [i, [name, user_scores]] of Object.entries(scores.scores)) {
         user_scores.rank = parseInt(i) + 1;
     }
 }
