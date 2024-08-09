@@ -39,7 +39,7 @@ function sort_scores(scores, sort_by_order) {
         return 0
     }));
     // append `rank` to each score
-    for (const [i, [name, user_scores]] of Object.entries(scores.scores)) {
+    for (const [i, [name, user_scores]] of Object.entries(Object.entries(scores.scores))) {
         user_scores.rank = parseInt(i) + 1;
     }
 }
