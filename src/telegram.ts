@@ -41,11 +41,11 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
             form_data!.append(key, value);
         })
     } else {
-        parameters = Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
+        parameters = '?' + Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
     }
 
     console.log("sending telegram message", endpoint, method, parameters, form_data)
-    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}?${parameters}`
+    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}${parameters}`
     const response = await axios.request({ url, method, data: form_data })
         .then(res => {
             console.log("Successfully sent telegram message", res)
