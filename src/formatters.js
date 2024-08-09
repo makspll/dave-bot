@@ -16,16 +16,26 @@ import { stringPad } from "./utils.js";
 //      }
 // }
 
-function sort_scores(scores, sort_by) {
-    let ascending = scores.scorekinds[sort_by].ascending;
+function compare_scores(a,b, sort_by, ascending) {
+    let compA = a[1][sort_by] !== undefined ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
+    let compB = b[1][sort_by] !== undefined ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
+    if (ascending) {
+        return compA - compB;
+    } else {
+        return compB - compA;
+    }
+}
+
+function sort_scores(scores, sort_by_order) {
     scores.scores = Object.fromEntries(Object.entries(scores.scores).sort((a, b) => {
-        let compA = a[1][sort_by] !== undefined ? a[1][sort_by] : (ascending ? Infinity : -Infinity);
-        let compB = b[1][sort_by] !== undefined ? b[1][sort_by] : (ascending ? Infinity : -Infinity);
-        if (ascending) {
-            return compA - compB;
-        } else {
-            return compB - compA;
+        for (const sort_metric of sort_by_order){
+            let ascending = scores.scorekinds[sort_by].ascending;
+            let diff = compare_scores(a,b,sort_by,ascending)
+            if (diff !== 0) {
+                return diff
+            }
         }
+        return 0
     }));
     // append `rank` to each score
     for (const [i, [name, user_scores]] of Object.entries(Object.entries(scores.scores))) {
@@ -37,10 +47,10 @@ export function generateLeaderboard(scores, sort_by, title = "Leaderboard", prev
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     let ascending = scores.scorekinds[sort_by].ascending;
     // sort scores.scores by sort_by
-    sort_scores(scores, sort_by);
+    sort_scores(scores, [sort_by]);
     if (previous_scores) {
         // sort previous_scores.scores by sort_by
-        sort_scores(previous_scores, sort_by);
+        sort_scores(previous_scores, [sort_by]);
     }
 
     // generate leaderboard string, make it aligned and pretty
