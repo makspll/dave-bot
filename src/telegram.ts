@@ -28,37 +28,39 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     }
 
     // send either text or voice message
-    let endpoint = "sendMessage"
-    let method = "GET"
-    let form_data = undefined
-    let parameters = ""
+    let endpoint;
+    let method;
+    let data: any;
+    let headers;
     if (request.payload.voice !== undefined) {
         endpoint = "sendVoice"
         delete request.payload.text
         method = "POST"
-        form_data = new FormData()
-        Object.entries(request.payload).forEach(([key, value]) => {
-            if (value instanceof Blob) {
-                form_data!.append(key, value, "voice.ogg")
-            } else {
-                form_data!.append(key, value);
-            }
-        })
+        data = new FormData()
     } else {
-        parameters = '?' + Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
+        endpoint = "sendMessage"
+        method = "GET"
+        data = new URLSearchParams()
     }
 
-    console.log("sending telegram message", endpoint, method, parameters, form_data)
-    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}${parameters}`
-    const message_id = await axios.request({
-        url, method, data: form_data
-    }).then(res => {
-        const data = res.data
-        console.log("Successfully sent telegram message", data)
-        return data.result.message_id as number
-    }).catch((err: AxiosError) => {
-        console.error("Error in sending telegram message", err.response?.data, err.toJSON())
+    Object.entries(request.payload).forEach(([key, value]) => {
+        data.append(key, value);
     })
+
+    console.log("sending telegram message", endpoint, method, data)
+    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}`
+
+    const message_id = await fetch(url, {
+        method,
+        body: data,
+    }).then(res => res.json())
+        .then(res => {
+            const data: any = res
+            console.log("Successfully sent telegram message", data)
+            return data.result.message_id as number
+        }).catch((err: Error) => {
+            console.error("Error in sending telegram message", err)
+        })
 
     if (message_id === undefined) {
         throw new Error("Failed to send telegram message")

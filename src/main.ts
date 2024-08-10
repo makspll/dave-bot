@@ -2,7 +2,7 @@ import { sendMessage } from "./telegram.js";
 import { connections_slur, hardlyfier, keywords, screamo, sickomode, wordle_slur } from "./actions.js";
 import { COMMANDS } from "./commands.js";
 import { TRIGGERS } from "./data.js";
-import { util } from "util";
+import * as util from "node:util";
 
 export interface Env {
     MAIN_CHAT_ID: number,

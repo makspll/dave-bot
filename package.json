@@ -20,7 +20,7 @@
   },
   "private": true,
   "scripts": {
-    "start": "wrangler dev src/main.ts",
+    "start": "wrangler dev src/main.ts --port 3000",
     "deploy": "wrangler deploy src/main.js",
     "test": "jest"
   },
