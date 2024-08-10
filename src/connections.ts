@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { formatDateToYYYYMMDD } from './utils.js';
-import { escapeMarkdown } from './markdown.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
@@ -25,18 +24,29 @@ import { escapeMarkdown } from './markdown.js';
 //     }]
 //}
 
-export function printDateToConnectionsNumber(printDate) {
-    const days = Math.round((new Date(printDate) - new Date('2023-06-12')) / (1000 * 60 * 60 * 24));
+
+export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
+    return (guess as InvalidGuess).invalid === undefined;
+}
+
+export function isValidGuess(guess: Guess): guess is ValidGuess {
+    return (guess as ValidGuess).category !== undefined;
+}
+export function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGuess {
+    return { invalid, guess: guess.guess };
+}
+
+export function printDateToConnectionsNumber(printDate: string | Date): number {
+    const days = Math.round((+new Date(printDate) - +new Date('2023-06-12')) / (1000 * 60 * 60 * 24));
     return days + 1;
 }
 
-export async function getConnectionsForDay(date) {
+export async function getConnectionsForDay(date: Date): Promise<ConnectionsResponse> {
     try {
         let response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
         // calculate days between June 12, 2023 and the print date
         let data = response.data
         let newId = printDateToConnectionsNumber(data.print_date);
-        console.log("correcting id from id: ", data.id, " to print_date id: ", newId);
         data.id = newId
         return data;
     } catch (error) {
@@ -45,7 +55,7 @@ export async function getConnectionsForDay(date) {
     }
 }
 
-export async function initializeConnectionsKnowledgeState(tiles) {
+export async function initializeConnectionsKnowledgeState(tiles: string[]): Promise<ConnectionsKnowledgeState> {
     return {
         categorised: {}, // dictionary from category title to list of 4 words
         tiles: tiles,
@@ -84,26 +94,33 @@ export function generateInitialPrompt() {
 // converts a guess to a prompt, if the guess was invalid it will return the invalid reason
 // this can be used to generate a message history for the bot
 // if no guess was made will generate the initial prompt
-export function convertGuessToPrompt(guess) {
+export function convertGuessToPrompt(guess: Guess | null) {
     let reason = ''
     if (!guess) {
         return generateInitialPrompt();
-    } else if (guess.invalid) {
+    } else if (isInvalidGuess(guess)) {
         reason = guess.invalid;
-    } else if (guess.correct) {
-        let uncategorised = `Remaining words to categorise: '${guess.remaining.join(',')}'`;
-        reason = `Correct! Your guess belongs to the category: ${guess.category}. Now you must guess another 4 words from the remaining words which are connected: ${uncategorised}`;
-    } else if (guess.one_away) {
-        reason = `Your guess is one word away from correct! One word is in the wrong category. You have one less attempt left.`;
-    } else {
-        reason = `Incorrect guess, at least two words are in the wrong category. You have one less attempt left.`;
+    } else if (isValidGuess(guess)) {
+        if (guess.category) {
+            let uncategorised = `Remaining words to categorise: '${guess.remaining ? guess.remaining.join(',') : 'UNKNOWN SEE PREVIOUS MESSAGE'}'`;
+            reason = `Correct! Your guess belongs to the category: ${guess.category}. Now you must guess another 4 words from the remaining words which are connected: ${uncategorised}`;
+        } else if (guess.one_away) {
+            reason = `One away! One word is in the wrong category. You have one less attempt left.`;
+        }
+        else {
+            reason = `Incorrect guess, at least two words are in the wrong category. You have one less attempt left.`;
+        }
     }
-    return `You guessed: '${guess.length ? guess.join(",") : JSON.stringify(guess)}'.${reason} `;
+    return `You guessed: '${guess.guess.join(',')}'.${reason} `;
+}
+
+export interface PlayerCallback {
+    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): any
 }
 
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
 // the callback will receive a second argument corresponding to the last invalid guess, if the last guess was invalid
-export async function solveConnections(date, playerCallback) {
+export async function solveConnections(date: Date, playerCallback: PlayerCallback): Promise<[ConnectionsKnowledgeState, ConnectionsResponse]> {
     let connections = await getConnectionsForDay(date);
     let all_tiles = connections.categories.flatMap(x => x.cards.map(y => y.content))
     // shuffle tiles
@@ -114,31 +131,32 @@ export async function solveConnections(date, playerCallback) {
         // attempt to get valid input twice before failing
         let input_attempts = 0;
         let last_guess = guessCategory(await playerCallback(state, null), connections);
-        while (last_guess.invalid && input_attempts < 3) {
-            if (last_guess.correct && last_guess.category in state.categorised) {
-                last_guess.invalid = `the guess was already made, it was correct, it belongs to the category: ${last_guess.category}. You cannot guess the same category twice.`;
-            }
+
+        while (isInvalidGuess(last_guess) && input_attempts < 3) {
             last_guess = guessCategory(await playerCallback(state, last_guess), connections);
             input_attempts++;
+            if (isValidGuess(last_guess) && last_guess.category && last_guess.category in state.categorised) {
+                last_guess = makeInvalidGuess(`the guess was already made, it was correct, it belongs to the category: ${last_guess.category}. You cannot guess the same category twice.`, last_guess);
+            }
         }
 
-        if (last_guess.invalid) {
-            throw new Error('failed to get valid input from player. fuck you openAI');
-        }
-        console.log(`#${3 - state.attempts}, last_guess: ${last_guess} `);
+        if (isValidGuess(last_guess)) {
 
-        state.guesses.push(last_guess);
-        if (last_guess.correct) {
-            let category_to_remove = last_guess.category
-            let cards = connections.categories.find(c => c.title == category_to_remove).cards.map(c => c.content)
-            state.categorised[category_to_remove] = cards
-            state.tiles = state.tiles.filter(t => !cards.includes(t))
+            state.guesses.push(last_guess);
+            if (last_guess.category) {
+                let category_to_remove = last_guess.category
+                let category = connections.categories.find(c => c.title == category_to_remove)
+                if (!category) throw new Error('category not found in connections: ' + category_to_remove)
+                let cards = category.cards.map(c => c.content)
+                state.categorised[category_to_remove] = cards
+                state.tiles = state.tiles.filter(t => !cards.includes(t))
+            } else {
+                state.attempts--;
+            }
 
         } else {
-            state.attempts--;
+            throw new Error('failed to get valid input from player');
         }
-
-        console.log("state after guess: ", state);
     }
 
     return [state, connections];
@@ -153,20 +171,25 @@ export async function solveConnections(date, playerCallback) {
 //   guess: ["word1", "word2", "word3", "word4"]
 //   remaining: ["word1", "word2", "word3", "word4", ...] // if the guess was correct
 // }
-export function guessCategory(guess, connections) {
+export function guessCategory(guess: string, connections: ConnectionsResponse): Guess {
+    let words: string[] = []
     if (typeof (guess) === 'string') {
-        guess = guess.split(',').map(x => x.replace(/\W/g, '').trim());
+        words = guess.split(',').map(x => x.replace(/\W/g, '').trim());
+    } else {
+        words = []
     }
 
-    if (guess == null || guess.length !== 4) {
-        return { invalid: "guess does not contain 4 comma separated words", guess };
+    if (words == null || words.length !== 4) {
+        let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 comma separated words", guess: words };
+        return invalid_guess;
     }
 
     let categories = []
-    for (const word of guess) {
+    for (const word of words) {
         const category = connections.categories.find(x => x.cards.some(y => y.content === word));
         if (!category) {
-            return { invalid: `The word ${word} is not part of the puzzle, use a valid word.`, guess };
+            let invalid_guess: InvalidGuess = { invalid: `The word ${word} is not part of the puzzle, use a valid word.`, guess: words };
+            return invalid_guess
         }
         categories.push(category.title);
     }
@@ -183,7 +206,7 @@ export function guessCategory(guess, connections) {
         }
     }
     if (maxCategoryCount === 4) {
-        let remaining = []
+        let remaining: string[] = []
         for (const category of connections.categories) {
             if (category.title !== maxCategory) {
                 remaining = remaining.concat(category.cards.map(x => x.content));
@@ -191,11 +214,14 @@ export function guessCategory(guess, connections) {
         }
         // shuffle
         remaining = remaining.sort(() => Math.random() - 0.5);
-        return { correct: true, one_away: false, category: maxCategory, guess, remaining };
+        let valid_guess: ValidGuess = { one_away: false, category: maxCategory, guess: words, remaining };
+        return valid_guess;
     } else if (maxCategoryCount === 3) {
-        return { correct: false, one_away: true, category: null, guess };
+        let valid_guess: ValidGuess = { one_away: true, guess: words, category: null };
+        return valid_guess;
     } else {
-        return { correct: false, one_away: false, category: null, guess };
+        let valid_guess: ValidGuess = { one_away: false, guess: words, category: null };
+        return valid_guess;
     }
 }
 
@@ -206,19 +232,20 @@ export function guessCategory(guess, connections) {
 // 🟨🟨🟨🟨
 // 🟦🟦🟦🟦
 // 🟪🟪🟪🟪
-export function generateConnectionsShareable(state, connections) {
+export function generateConnectionsShareable(state: ConnectionsKnowledgeState, connections: ConnectionsResponse) {
     let shareable = 'Connections\n';
     shareable += `Puzzle ${connections.id} \n`;
     // give each category a color in order from green,orange through blue and purple:
     const colors = ['🟩', '🟨', '🟦', '🟪'];
-    let category_to_color = {};
-    for (const category of connections.categories) {
-        category_to_color[category.title] = colors.shift();
-    }
+    let category_to_color = connections.categories.reduce(
+        (acc: { [key: string]: string }, x, i) => { acc[x.title] = colors[i]; return acc; },
+        {}
+    );
 
     for (const guesses of state.guesses) {
         for (const word of guesses.guess) {
             const category = connections.categories.find(x => x.cards.some(y => y.content === word));
+            if (!category) throw new Error('word not found in categories: ' + word);
             shareable += category_to_color[category.title];
         }
         shareable += '\n';
@@ -226,12 +253,8 @@ export function generateConnectionsShareable(state, connections) {
     return shareable;
 }
 
-// parses a shereable and returns either null if it's not a connections shareable or json with:
-// {
-//    "id": 440,
-//    "mistakes": 4
-// }
-export function parseConnectionsScoreFromShareable(message) {
+
+export function parseConnectionsScoreFromShareable(message: string): ParsedConnectionsShareable | null {
     const lines = message.split('\n');
     if (lines.length < 4 || !lines[0].includes("Connections")) {
         return null;

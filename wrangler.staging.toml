@@ -1,9 +1,9 @@
-name = "hardly-know-her-telegram-bot"
+name = "hardly-know-her-telegram-bot-staging"
 main = "src/main.ts"
 compatibility_date = "2024-01-01"
 send_metrics = true
 kv_namespaces = [
-  { binding = "KV_STORE", id = "5f1b958a44be4df5b768ddb5e420da1e" },
+  { binding = "KV_STORE", id = "7e31a629221b49b7a9ad3b30b3516e13" },
 ]
 node_compat = true
 rules = [
@@ -14,9 +14,9 @@ rules = [
 ]
 
 [triggers]
-crons = ["*/5 * * * *", "0 8 * * *"]
+crons = ["0 8 * * *"]
 
 [[d1_databases]]
 binding = "DB"                                       # i.e. available in your Worker on env.DB
-database_name = "davebase"
-database_id = "2e365f03-579a-4576-a81f-8faee4d6057c"
+database_name = "davebase-staging"
+database_id = "8ef22207-9673-4fe6-a6e6-b578a7e6ea52"

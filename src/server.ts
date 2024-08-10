@@ -7,7 +7,6 @@ import axios from 'axios'
 export function makeMockServer() {
     return setupServer(...[
         http.get('*', async (info) => {
-            console.log("REQUEST MOCKED: ", info.request.url)
             if (info.request.headers.has('X-Bypass-Mock')) {
                 return passthrough()
             }
@@ -21,7 +20,6 @@ export function makeMockServer() {
             try {
                 // record the request
                 if (process.env.RECORD_REQUESTS) {
-                    console.log("sending record request to: ", info.request.url)
                     const axios_response = await axios.get(info.request.url, {
                         headers: {
                             'X-Bypass-Mock': true
@@ -33,7 +31,6 @@ export function makeMockServer() {
                     } else {
                         data = axios_response.data;
                     }
-                    console.log("Writing to: ", folderPath)
                     if (!fs.existsSync(path.dirname(folderPath))) {
                         fs.mkdirSync(path.dirname(folderPath), { recursive: true });
                     }
@@ -48,7 +45,7 @@ export function makeMockServer() {
                 }
                 const file = fs.readFileSync(folderPath);
                 if (path.extname(folderPath) === '.json') {
-                    response = HttpResponse.json(JSON.parse(file));
+                    response = HttpResponse.json(JSON.parse(file.toString()));
                 } else {
                     response = new HttpResponse(file.toString());
                 }

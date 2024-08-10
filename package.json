@@ -2,21 +2,32 @@
   "name": "dave-bot",
   "version": "0.0.0",
   "devDependencies": {
-    "chai": "^5.1.1",
-    "mocha": "^10.7.0",
+    "@babel/preset-env": "^7.25.3",
+    "@cloudflare/workers-types": "^4.20240729.0",
+    "@types/chai": "^4.3.17",
+    "@types/expect": "^24.3.0",
+    "@types/jest": "^29.5.12",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^22.1.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
     "msw": "^2.3.4",
+    "nyc": "^17.0.0",
+    "ts-jest": "^29.2.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
     "wrangler": "3.63.2"
   },
   "private": true,
   "scripts": {
-    "start": "wrangler dev src/main.js",
+    "start": "wrangler dev src/main.ts --port 3000",
     "deploy": "wrangler deploy src/main.js",
-    "test": "mocha",
-    "test_connections": "mocha test/connections.test.js"
+    "test": "jest"
   },
   "type": "module",
   "dependencies": {
     "axios": "^1.7.2",
+    "openai": "^4.54.0",
     "string-width": "^7.2.0"
   }
 }
