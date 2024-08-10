@@ -25,6 +25,11 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
         }
         return false
     }
+    if (included_ids[message.message.from.id] !== true) {
+        console.log("user not in inclusion list, ignoring message");
+        return false
+    }
+
     return true
 }
 
