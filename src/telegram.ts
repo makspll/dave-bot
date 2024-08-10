@@ -4,7 +4,7 @@ import { call_tts } from "./openai.js"
 
 export async function sendMessage(request: TelegramSendMessageRequest): Promise<number> {
     let audio_chance = request.audio_chance != undefined ? request.audio_chance : AUDIO_MESSAGE_CHANCE
-    let delay = request.delay ? request.delay : DEFAULT_MSG_DELAY
+    let delay = request.delay != undefined ? request.delay : DEFAULT_MSG_DELAY
 
     console.log("sending telegram message", { ...request, api_key: "REDACTED", open_ai_key: "REDACTED" })
 
