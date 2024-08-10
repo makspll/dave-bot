@@ -7,6 +7,27 @@ import { sendMessage } from "./telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 
 
+export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
+    let included_ids = await get_included_ids(settings.kv_namespace)
+    if (message.message.text.startsWith("/")) {
+        console.log("it's a command")
+        let split_cmd = message.message.text.split('@')[0].split(' ')
+        console.log(split_cmd)
+        let cmd_word = split_cmd[0].replace("/", "")
+        if (included_ids[message.message.from.id] !== true && !["info", "optin", "optout"].includes(cmd_word)) {
+            return false
+        }
+
+        let cmd = COMMANDS[cmd_word]
+        split_cmd.shift()
+        if (cmd) {
+            await cmd(message, settings, split_cmd)
+        }
+        return false
+    }
+    return true
+}
+
 // very funi roasts aimed at sender
 export let sickomode: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
     let firing = Math.random() < SICKOMODE_PROBABILITY;
