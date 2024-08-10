@@ -5,7 +5,7 @@ send_metrics = true
 kv_namespaces = [
   { binding = "KV_STORE", id = "7e31a629221b49b7a9ad3b30b3516e13" },
 ]
-
+node_compat = true
 rules = [
   { type = "ESModule", globs = [
     "**/*.js",
