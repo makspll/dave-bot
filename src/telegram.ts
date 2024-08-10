@@ -48,7 +48,11 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     })
 
     console.log("sending telegram message", endpoint, method, data)
-    const url = `https://api.telegram.org/bot${request.api_key}/${endpoint}`
+    let url = `https://api.telegram.org/bot${request.api_key}/${endpoint}`
+    if (method === "GET") {
+        url += "?" + data.toString()
+        data = undefined
+    }
 
     const message_id = await fetch(url, {
         method,
