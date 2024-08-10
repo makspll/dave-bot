@@ -30,16 +30,12 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     // send either text or voice message
     let endpoint = "sendMessage"
     let method = "GET"
-    if (request.payload.voice) {
-        console.log("sending voice message")
+    let form_data = undefined
+    let parameters = ""
+    if (request.payload.voice !== undefined) {
         endpoint = "sendVoice"
         delete request.payload.text
         method = "POST"
-    }
-
-    let form_data: FormData | undefined = undefined
-    let parameters = ""
-    if (method === "POST") {
         form_data = new FormData()
         Object.entries(request.payload).forEach(([key, value]) => {
             if (value instanceof Blob) {
@@ -49,7 +45,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
             }
         })
     } else {
-        parameters = "?" + Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
+        parameters = '?' + Object.entries(request.payload).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&")
     }
 
     console.log("sending telegram message", endpoint, method, parameters, form_data)

@@ -2,8 +2,7 @@ import { sendMessage } from "./telegram.js";
 import { connections_slur, hardlyfier, keywords, screamo, sickomode, wordle_slur } from "./actions.js";
 import { COMMANDS } from "./commands.js";
 import { TRIGGERS } from "./data.js";
-
-
+import { util } from "util";
 
 export interface Env {
     MAIN_CHAT_ID: number,
@@ -104,7 +103,7 @@ export default {
             await sendMessage({
                 payload: {
                     chat_id: env.GOD_ID,
-                    text: `Error: ${error}, stringified: ${JSON.stringify(error)}`,
+                    text: `${util.inspect(error)}`,
                 },
                 api_key: env.TELEGRAM_API_KEY,
                 open_ai_key: env.OPEN_AI_KEY,
