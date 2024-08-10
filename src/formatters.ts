@@ -17,23 +17,32 @@ import { stringPad } from "./utils.js";
 //      }
 // }
 
-function sort_scores(scores: LeaderboardScores, sort_by: MetricId) {
-    let ascending = (scores.scorekinds.get(sort_by) ?? { ascending: true }).ascending;
-    let missing_score_value = ascending ? Infinity : -Infinity;
+function compare_scores(a: MetricBody | undefined, b: MetricBody | undefined, ascending: boolean) {
+    let compA = a !== undefined ? a.value : (ascending ? Infinity : -Infinity);
+    let compB = b !== undefined ? b.value : (ascending ? Infinity : -Infinity);
+    if (ascending) {
+        return compA - compB;
+    } else {
+        return compB - compA;
+    }
+}
 
+function sort_scores(scores: LeaderboardScores, sort_by_order: MetricId[]) {
     let all_scores = Array.from(scores.scores.entries());
     all_scores.sort(([_a, metricsA], [_b, metricsB]) => {
-        let compA = (metricsA.get(sort_by) ?? { value: missing_score_value }).value
-        let compB = (metricsB.get(sort_by) ?? { value: missing_score_value }).value
-        if (ascending) {
-            return compA - compB;
-        } else {
-            return compB - compA;
+        for (const sort_metric of sort_by_order) {
+            let ascending = scores.scorekinds.get(sort_metric)?.ascending ?? false;
+            let diff = compare_scores(metricsA.get(sort_metric), metricsB.get(sort_metric), ascending)
+
+            if (Math.abs(diff) >= 0.01) {
+                return diff
+            }
         }
+        return 0
     });
 
     all_scores.forEach(([a, b], i) => {
-        let m = b.get(sort_by);
+        let m = b.get(sort_by_order[0]);
         if (m) {
             m.rank = i + 1;
         }
@@ -52,10 +61,10 @@ export interface LeaderboardScores {
 export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null) {
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     // sort scores.scores by sort_by
-    sort_scores(scores, sort_by);
+    sort_scores(scores, [sort_by, "games", "avg_delta"]);
     if (previous_scores) {
         // sort previous_scores.scores by sort_by
-        sort_scores(previous_scores, sort_by);
+        sort_scores(previous_scores, [sort_by, "games", "avg_delta"]);
     }
 
     // generate leaderboard string, make it aligned and pretty
@@ -183,8 +192,8 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
     // generate leaderoard dictionary
     let metric_definitions: Map<MetricId, MetricDefinition> = new Map()
     metric_definitions.set("avg", { title: "Avg", ascending: true })
-    metric_definitions.set("games", { title: "N", ascending: true })
-    metric_definitions.set("games_3_plus", { title: "Games (3+)", ascending: true })
+    metric_definitions.set("games", { title: "N", ascending: false })
+    metric_definitions.set("games_3_plus", { title: "Games (3+)", ascending: false })
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
 
     let leaderboard = {

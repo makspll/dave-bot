@@ -244,7 +244,7 @@ export function generateConnectionsShareable(state: ConnectionsKnowledgeState, c
 
 export function parseConnectionsScoreFromShareable(message: string): ParsedConnectionsShareable | null {
     const lines = message.split('\n');
-    if (lines.length < 2) {
+    if (lines.length < 4 || !lines[0].includes("Connections")) {
         return null;
     }
     const puzzleMatch = message.match(/#(\d+)/);
@@ -256,7 +256,7 @@ export function parseConnectionsScoreFromShareable(message: string): ParsedConne
     const emojiRegex = /\p{Emoji_Presentation}/gu;
     // find all emojis in the multiline string
     const allEmojis = [...message.matchAll(emojiRegex)].map(x => x[0]);
-    if (allEmojis.length % 4 !== 0) {
+    if ((allEmojis.length % 4 !== 0) || allEmojis.length < 16) {
         return null;
     }
 
