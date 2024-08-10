@@ -13,18 +13,6 @@ declare global {
         invalid: string;
     }
 
-    function isInvalidGuess(guess: Guess): guess is InvalidGuess {
-        return (guess as InvalidGuess).invalid === undefined;
-    }
-
-    function isValidGuess(guess: Guess): guess is ValidGuess {
-        return (guess as ValidGuess).category !== undefined;
-    }
-    function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGuess {
-        return { invalid, guess: guess.guess };
-    }
-
-
     interface ConnectionsKnowledgeState {
         categorised: { [key: string]: string[]; };
         tiles: string[];
@@ -60,10 +48,16 @@ declare global {
     }
 }
 
-const _global = (window /* browser */ || global /* node */) as any
 
-_global.isInvalidGuess = isInvalidGuess;
-_global.isValidGuess = isValidGuess;
-_global.makeInvalidGuess = makeInvalidGuess;
+export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
+    return (guess as InvalidGuess).invalid === undefined;
+}
+
+export function isValidGuess(guess: Guess): guess is ValidGuess {
+    return (guess as ValidGuess).category !== undefined;
+}
+export function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGuess {
+    return { invalid, guess: guess.guess };
+}
 
 export { }

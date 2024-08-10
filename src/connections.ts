@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { formatDateToYYYYMMDD } from './utils.js';
+import { isInvalidGuess, isValidGuess, makeInvalidGuess } from './types/connections.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
