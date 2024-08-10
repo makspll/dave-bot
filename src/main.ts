@@ -72,6 +72,10 @@ export default {
         try {
             if (request.method === "POST") {
                 const payload: TelegramMessage = await request.json()
+                if (payload.message.from.is_bot) {
+                    console.log("Ignoring bot message")
+                    return new Response("OK")
+                }
                 // Getting the POST request JSON payload
                 if ('message' in payload && payload.message.text) {
                     let settings: ChatbotSettings = get_settings(env)
