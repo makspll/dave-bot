@@ -20,7 +20,7 @@
   },
   "private": true,
   "scripts": {
-    "start": "wrangler dev src/main.js",
+    "start": "wrangler dev src/main.ts",
     "deploy": "wrangler deploy src/main.js",
     "test": "jest"
   },
