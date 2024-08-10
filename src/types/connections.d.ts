@@ -49,15 +49,4 @@ declare global {
 }
 
 
-export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
-    return (guess as InvalidGuess).invalid === undefined;
-}
-
-export function isValidGuess(guess: Guess): guess is ValidGuess {
-    return (guess as ValidGuess).category !== undefined;
-}
-export function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGuess {
-    return { invalid, guess: guess.guess };
-}
-
 export { }

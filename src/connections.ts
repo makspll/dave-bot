@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { formatDateToYYYYMMDD } from './utils.js';
-import { isInvalidGuess, isValidGuess, makeInvalidGuess } from './types/connections.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
@@ -24,6 +23,18 @@ import { isInvalidGuess, isValidGuess, makeInvalidGuess } from './types/connecti
 //         "cards": [{ "content": "ARE", "position": 14 }, { "content": "RADIUS", "position": 2 }, { "content": "REVERSE", "position": 6 }, { "content": "RIGHT", "position": 11 }]
 //     }]
 //}
+
+
+export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
+    return (guess as InvalidGuess).invalid === undefined;
+}
+
+export function isValidGuess(guess: Guess): guess is ValidGuess {
+    return (guess as ValidGuess).category !== undefined;
+}
+export function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGuess {
+    return { invalid, guess: guess.guess };
+}
 
 export function printDateToConnectionsNumber(printDate: string | Date): number {
     const days = Math.round((+new Date(printDate) - +new Date('2023-06-12')) / (1000 * 60 * 60 * 24));
