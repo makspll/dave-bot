@@ -13,22 +13,26 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         score = score[payload.message.from.id] ? score[payload.message.from.id] : 0
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: "Your total sentiment is: " + score
             },
             audio_chance: 0,
+            delay: 0
         })
     },
     "listtriggers": async (payload, settings, args) => {
         let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: "My triggers are: " + text
             },
             audio_chance: 0,
+            delay: 0
         })
     },
     "optout": async (payload, settings, args) => {
@@ -42,11 +46,13 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
 
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: "You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying."
             },
             audio_chance: 0,
+            delay: 0
         })
     },
     "optin": async (payload, settings, args) => {
@@ -61,32 +67,38 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         await store_included_ids(settings.kv_namespace, ids)
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: "You have been opted in, to opt out use /optout."
             },
             audio_chance: 0,
+            delay: 0
         })
     },
     "info": async (payload, settings, args) => {
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: "I am Dave, I am here to help you with your messages, to opt in use /optin, to opt out use /optout"
             },
             audio_chance: 0,
+            delay: 0
         })
     },
     "attack": async (payload, settings, args) => {
         if (payload.message.from.id == settings.god_id) {
             await sendMessage({
                 api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: payload.message.chat.id,
                     text: "Yes sir"
                 },
                 audio_chance: 0,
+                delay: 0
             })
             let gpt_answer = await call_gpt({
                 api_key: settings.openai_api_key,
@@ -96,32 +108,38 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                         role: "system",
                         content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits ${args.slice(1).join(" ")}`,
                     }],
-                }
+                },
             })
             let target = parseInt(args[0])
             await sendMessage({
                 api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: settings.god_id,
                     text: `sending: '${gpt_answer}'`
                 },
                 audio_chance: 0,
+                delay: 0
             })
 
             await sendMessage({
                 api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: target,
                     text: gpt_answer
-                }
+                },
+                delay: 0
             })
         } else {
             await sendMessage({
                 api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: payload.message.chat.id,
                     text: "Fuck you."
-                }
+                },
+                delay: 0
             })
         }
     },
@@ -163,12 +181,14 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "avg", "Top Wordlers", convertDailyScoresToLeaderboard(previous_scores))
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: `<pre>\n${leaderboard}\n</pre>`,
                 parse_mode: "HTML"
             },
-            audio_chance: 0
+            audio_chance: 0,
+            delay: 0
         })
     },
     "connectionsboard": async (payload, settings, args) => {
@@ -205,12 +225,14 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "avg", "Top Connectors", convertDailyScoresToLeaderboard(previous_scores))
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: `<pre>\n${leaderboard}\n</pre>`,
                 parse_mode: "HTML"
             },
-            audio_chance: 0
+            audio_chance: 0,
+            delay: 0
         })
     },
     "wordle": async (payload, settings, args) => {
@@ -240,12 +262,14 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
 
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: message,
                 parse_mode: "MarkdownV2"
             },
-            audio_chance: 0
+            audio_chance: 0,
+            delay: 0
         })
         return { "solution": solution, "wordle_no": wordle.wordle_no }
     },
@@ -290,12 +314,14 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         const shareable = generateConnectionsShareable(state, connections)
         await sendMessage({
             api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: shareable,
                 parse_mode: "MarkdownV2"
             },
-            audio_chance: 0
+            audio_chance: 0,
+            delay: 0
         })
         scores[connections.id]["bot"] = 4 - state.attempts
         await store_connections_scores(settings.kv_namespace, scores)
