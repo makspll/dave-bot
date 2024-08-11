@@ -81,7 +81,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
 
     let score_column_lengths: Map<MetricId, number> = new Map();
     for (const [metricId, definition] of scores.scorekinds) {
-        let max = Math.max(stringWidth(definition.title.toString()), 4);
+        let max = Math.max(stringWidth(definition.title.toString()), 5);
         score_column_lengths.set(metricId, max);
     }
 
