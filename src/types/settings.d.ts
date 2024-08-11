@@ -5,6 +5,7 @@ declare global {
         main_chat_id: number,
         god_id: number,
         kv_namespace: KVNamespace,
+        db: D1Database
     }
 }
 

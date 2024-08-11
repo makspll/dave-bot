@@ -1,4 +1,3 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios"
 import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
 import { call_tts } from "./openai.js"
 

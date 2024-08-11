@@ -35,6 +35,12 @@ const testSettings: ChatbotSettings = {
         put: jest.fn(),
         getWithMetadata: jest.fn(),
         delete: jest.fn()
+    },
+    db: {
+        prepare: jest.fn(),
+        exec: jest.fn(),
+        dump: jest.fn(),
+        batch: jest.fn(),
     }
 }
 

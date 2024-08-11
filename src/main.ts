@@ -10,6 +10,7 @@ export interface Env {
     KV_STORE: KVNamespace,
     TELEGRAM_API_KEY: string,
     OPEN_AI_KEY: string,
+    DB: D1Database;
 }
 
 function get_settings(env: Env): ChatbotSettings {
@@ -18,7 +19,8 @@ function get_settings(env: Env): ChatbotSettings {
         openai_api_key: env.OPEN_AI_KEY,
         main_chat_id: env.MAIN_CHAT_ID,
         god_id: env.GOD_ID,
-        kv_namespace: env.KV_STORE
+        kv_namespace: env.KV_STORE,
+        db: env.DB
     }
 }
 

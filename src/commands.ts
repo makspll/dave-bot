@@ -2,10 +2,11 @@ import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, PlayerCallback, solveConnections } from "./connections.js";
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./kv_store.js";
+import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./data/kv_store.js";
 import { call_gpt } from "./openai.js";
 import { sendMessage } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, solveWordle } from "./wordle.js";
+import { register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 
 export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: ChatbotSettings, args: string[]) => Promise<any> } = {
     "score": async (payload, settings, args) => {
@@ -36,41 +37,52 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         })
     },
     "optout": async (payload, settings, args) => {
-        let ids = await get_included_ids(settings.kv_namespace)
-        delete ids[payload.message.from.id]
-        await store_included_ids(settings.kv_namespace, ids)
-
-        let data = await get_affection_data(settings.kv_namespace)
-        delete data[payload.message.from.id]
-        await store_affection_data(settings.kv_namespace, data)
+        let message = "You have been opted out, to opt back in use '/optin'"
+        try {
+            await unregister_user(settings.db, { user_id: payload.message.from.id, alias: payload.message.from.username, consent_date: new Date() })
+        } catch (e) {
+            console.error("Error unregistering user: ", e)
+            message = "There was an error unregistering you, please try again later :C"
+        }
 
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: "You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying."
+                text: message
             },
             audio_chance: 0,
             delay: 0
         })
     },
     "optin": async (payload, settings, args) => {
-        if (payload.message.chat.id != settings.main_chat_id) {
-            console.log("can't opt int from", payload.message.chat.id)
-            return
+
+        let user = {
+            user_id: payload.message.from.id,
+            alias: payload.message.from.username,
+            consent_date: new Date()
         }
-        console.log("opting in")
-        let ids = await get_included_ids(settings.kv_namespace)
-        console.log("ids: " + ids)
-        ids[payload.message.from.id] = true
-        await store_included_ids(settings.kv_namespace, ids)
+
+        let chat = {
+            chat_id: payload.message.chat.id,
+            alias: payload.message.chat.title
+        }
+
+        let message = "You have been opted in, to opt out use /optout."
+        try {
+            await register_consenting_user_and_chat(settings.db, user, chat)
+        } catch (e) {
+            console.error("Error registering user and chat: ", e)
+            message = "There was an error registering you, please try again later :C"
+        }
+
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: "You have been opted in, to opt out use /optout."
+                text: message
             },
             audio_chance: 0,
             delay: 0

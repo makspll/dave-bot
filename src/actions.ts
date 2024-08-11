@@ -1,7 +1,7 @@
 import { COMMANDS } from "./commands.js"
 import { parseConnectionsScoreFromShareable } from "./connections.js"
 import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, MAX_AFFECTION_LEVEL, NEGATIVE_AFFECTION_PROMPTS, POSITIVE_AFFECTION_PROMPTS, SENTIMENT_PER_AFFECTION_LEVEL, SICKOMODE_PROBABILITY, SYSTEM_PROMPT, TRIGGERS } from "./data.js"
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./kv_store.js"
+import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./data/kv_store.js"
 import { call_gpt } from "./openai.js"
 import { sendMessage } from "./telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"

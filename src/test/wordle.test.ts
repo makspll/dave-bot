@@ -1,4 +1,4 @@
-import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleWord, WordleIndices } from '../wordle.js';
+import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleIndices } from '../wordle.js';
 import { makeMockServer } from '../server.js';
 
 const TEST_TIMEOUT_SECONDS = 120;

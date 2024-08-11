@@ -27,7 +27,13 @@
             "@src/*": [
                 "src/*"
             ]
-        }
+        },
+        "plugins": [
+            {
+                "transform": "ts-nameof",
+                "type": "raw"
+            }
+        ],
     },
     "include": [
         "src/**/*",
