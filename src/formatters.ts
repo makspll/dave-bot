@@ -75,7 +75,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     }
     let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
     let longest_change_emoji = Math.max(...change_emojis.map(x => stringWidth(x)));
-    let longest_name = Math.max(...Object.keys(scores.scores).map(x => stringWidth(x)));
+    let longest_name = Math.max(...scores.scores.entries().map(x => stringWidth(x)));
     let title_column_length = Math.max(title.length, longest_name + longest_emoji + longest_change_emoji + 2);
     let missing_score_value = "N/A";
 
