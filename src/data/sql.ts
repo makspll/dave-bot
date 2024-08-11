@@ -78,8 +78,8 @@ export async function register_consenting_user_and_chat(db: D1Database, user: Us
     console.log(`Registering user ${user.user_id} with alias ${user.alias} and chat ${chat.chat_id} with alias ${chat.alias}. Consent date: ${user.consent_date.toISOString()}`)
     await execute_or_throw_batch(() => db.batch([
         // insert the chat if it doesn't exist or update
-        db.prepare("INSERT INTO chats (chat_id) VALUES (?) ON CONFLICT(chat_id) DO UPDATE SET alias = ?")
-            .bind(chat.chat_id, chat.alias),
+        db.prepare("INSERT INTO chats (chat_id, alias) VALUES (?, ?) ON CONFLICT(chat_id) DO UPDATE SET alias = ?")
+            .bind(chat.chat_id, chat.alias, chat.alias),
         // insert the user if it doesn't exist or update
         db.prepare("INSERT INTO users (user_id, alias, consent_date) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET alias = ?, consent_date = ?")
             .bind(user.user_id, user.alias, user.consent_date.toISOString(), user.alias, user.consent_date.toISOString()),
