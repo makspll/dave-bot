@@ -72,3 +72,19 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     return message_id
 
 }
+
+/// converts a telegram message to a user, extracting the user_id, alias and creating a new consent date
+export function user_from_message(message: TelegramMessage): User {
+    return {
+        user_id: message.message.from.id,
+        alias: message.message.from.username || message.message.from.first_name || message.message.from.last_name || message.message.from.id.toString(),
+        consent_date: new Date()
+    }
+}
+
+export function chat_from_message(message: TelegramMessage): Chat {
+    return {
+        chat_id: message.message.chat.id,
+        alias: message.message.chat.title || message.message.chat.id.toString()
+    }
+}

@@ -4,7 +4,7 @@ import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
 import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./data/kv_store.js";
 import { call_gpt } from "./openai.js";
-import { sendMessage } from "./telegram.js";
+import { chat_from_message, sendMessage, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, solveWordle } from "./wordle.js";
 import { register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 
@@ -39,7 +39,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     "optout": async (payload, settings, args) => {
         let message = "You have been opted out, to opt back in use '/optin'"
         try {
-            await unregister_user(settings.db, { user_id: payload.message.from.id, alias: payload.message.from.username, consent_date: new Date() })
+            await unregister_user(settings.db, user_from_message(payload))
         } catch (e) {
             console.error("Error unregistering user: ", e)
             message = "There was an error unregistering you, please try again later :C"
@@ -58,16 +58,8 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     },
     "optin": async (payload, settings, args) => {
 
-        let user = {
-            user_id: payload.message.from.id,
-            alias: payload.message.from.username,
-            consent_date: new Date()
-        }
-
-        let chat = {
-            chat_id: payload.message.chat.id,
-            alias: payload.message.chat.title
-        }
+        let user = user_from_message(payload)
+        let chat = chat_from_message(payload)
 
         let message = "You have been opted in, to opt out use /optout."
         try {
