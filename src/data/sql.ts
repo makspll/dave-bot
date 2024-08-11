@@ -17,11 +17,18 @@ export function isChat(obj: any): obj is Chat {
 }
 
 export async function execute_or_throw<T>(callable: () => Promise<D1Result<Record<string, unknown>> | null>, type_resolver: typeVerifier<T> = isAny, allow_empty: boolean = true): Promise<T[]> {
-    const result = await callable()
+    let result;
+    try {
+        result = await callable()
+    } catch (e: any) {
+        console.error(`Error when executing statement: ${e.message}`)
+        throw e
+    }
+
     let success = (result != undefined && result?.success && !result?.error) ?? false
     let empty = (result?.results.length == 0 || result == null) ?? false
     if (!success || (empty && !allow_empty)) {
-        throw result?.error ?? "No results found"
+        throw result?.error ?? "Could not execute statement"
     }
 
     let non_null = result?.results ?? []
@@ -36,7 +43,15 @@ export async function execute_or_throw<T>(callable: () => Promise<D1Result<Recor
 }
 
 export async function execute_or_throw_batch(callable: () => Promise<D1Result<Record<string, unknown>>[]>): Promise<void> {
-    const result = await callable()
+
+    let result
+    try {
+        result = await callable()
+    } catch (e: any) {
+        console.error(`Error when executing batch statement: ${e.message}`)
+        throw e
+    }
+
     for (const res of result) {
         let success = (res != undefined && res?.success && !res?.error) ?? false
         if (!success) {
@@ -70,6 +85,7 @@ export async function register_consenting_user_and_chat(db: D1Database, user: Us
             .bind(user.user_id, user.alias, user.consent_date.toISOString(), user.alias, user.consent_date.toISOString()),
         // insert the chat_user if it isn't already there
         db.prepare("INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING")
+            .bind(chat.chat_id, user.user_id)
     ]))
 }
 
