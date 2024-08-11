@@ -70,7 +70,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     // generate leaderboard string, make it aligned and pretty
     let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
     let change_emojis = ['🔻', '🔺', '✨', '🔴']
-    while (emojis.length < Object.keys(scores.scores).length) {
+    while (emojis.length < scores.scores.length) {
         emojis.push('💩');
     }
     let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
