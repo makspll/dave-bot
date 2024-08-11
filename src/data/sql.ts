@@ -60,6 +60,7 @@ export async function get_bot_users_for_chat(db: D1Database, chat_id: number): P
 /// If the user already exists, update their alias and consent date.
 export async function register_consenting_user_and_chat(db: D1Database, user: User, chat: Chat): Promise<void> {
 
+    console.log(`Registering user ${user.user_id} with alias ${user.alias} and chat ${chat.chat_id} with alias ${chat.alias}. Consent date: ${user.consent_date}`)
     await execute_or_throw_batch(() => db.batch([
         // insert the chat if it doesn't exist or update
         db.prepare("INSERT INTO chats (chat_id) VALUES (?) ON CONFLICT(chat_id) DO UPDATE SET alias = ?")
