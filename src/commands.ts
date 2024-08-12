@@ -217,6 +217,8 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         }
         const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores)
         const current_leaderboard = convertDailyScoresToLeaderboard(scores)
+
+        console.log("current leaderboard: ", current_leaderboard, "previous leaderboard: ", previous_leaderboard)
         const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}'ers`, previous_leaderboard)
 
         await sendMessage({
