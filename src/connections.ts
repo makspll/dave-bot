@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { formatDateToYYYYMMDD } from './utils.js';
+import { formatDateToYYYYMMDD, printDateToNYTGameId } from './utils.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
@@ -36,17 +36,13 @@ export function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGue
     return { invalid, guess: guess.guess };
 }
 
-export function printDateToConnectionsNumber(printDate: string | Date): number {
-    const days = Math.round((+new Date(printDate) - +new Date('2023-06-12')) / (1000 * 60 * 60 * 24));
-    return days + 1;
-}
 
 export async function getConnectionsForDay(date: Date): Promise<ConnectionsResponse> {
     try {
         let response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
         // calculate days between June 12, 2023 and the print date
         let data = response.data
-        let newId = printDateToConnectionsNumber(data.print_date);
+        let newId = printDateToNYTGameId(data.print_date, new Date('2023-06-12'));
         data.id = newId
         return data;
     } catch (error) {

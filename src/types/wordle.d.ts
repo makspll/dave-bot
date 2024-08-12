@@ -30,6 +30,11 @@ declare global {
         wordle: WordleWord,
         wordle_no: number
     }
+
+    interface WordleScore {
+        guesses: number,
+        hard_mode: boolean
+    }
 }
 
 

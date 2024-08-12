@@ -2,8 +2,9 @@ import { COMMANDS } from "./commands.js"
 import { parseConnectionsScoreFromShareable } from "./connections.js"
 import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, MAX_AFFECTION_LEVEL, NEGATIVE_AFFECTION_PROMPTS, POSITIVE_AFFECTION_PROMPTS, SENTIMENT_PER_AFFECTION_LEVEL, SICKOMODE_PROBABILITY, SYSTEM_PROMPT, TRIGGERS } from "./data.js"
 import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./data/kv_store.js"
+import { insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"
-import { sendMessage } from "./telegram.js"
+import { sendMessage, setReaction, user_from_message } from "./telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 
 
@@ -230,82 +231,49 @@ export let keywords: (triggers: KeywordTrigger[]) => Action =
     }
 
 
-// waits for messages of the form: Connections\nPuzzle #413
-export let connections_slur: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let parse = parseConnectionsScoreFromShareable(message.message.text);
 
-    if (parse) {
-        const { id, mistakes } = parse;
-        const connections_no = id;
-        console.log("Connections match: ", message.message.text, "id: ", id, "mistakes: ", mistakes)
-        let scores = await get_connections_scores(settings.kv_namespace)
-        if (!("names" in scores)) {
-            scores["names"] = {}
-        }
-        scores["names"]![message.message.from.id] = message.message.from.first_name
 
-        if (!(connections_no in scores)) {
-            scores[connections_no] = {}
-        }
-        let bot_score = scores[connections_no]["bot"] ? scores[connections_no]["bot"] : 999
-        console.log("bot score: ", bot_score)
-        scores[connections_no][message.message.from.id] = mistakes
-        await store_connections_scores(settings.kv_namespace, scores)
+export let nyt_games_submission: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
+    // capture group game_id is required
+    // capture group game_score is optional (if present the score is processed via callback, and used for immediate feedback)
+    // capture group hard_mode is optional (if present the game is in hard mode)
+    let regex_and_game_types: [RegExp, GameType][] = [
+        [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
+        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"]
+    ]
 
-        if (bot_score < mistakes) {
-            await sendMessage({
-                payload: {
-                    text: sample([...COMMON_RIPOSTES, "It's connectin time"]),
-                    chat_id: message.message.chat.id,
-                    reply_to_message_id: message.message.message_id
-                },
-                api_key: settings.telegram_api_key,
-                open_ai_key: settings.openai_api_key
+    for (let [regex, game_type] of regex_and_game_types) {
+        let match = message.message.text.match(regex)
+        if (match) {
+            let game_id = parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
+
+            let user = user_from_message(message)
+
+            await insert_game_submission(settings.db, {
+                game_id: game_id,
+                game_type: game_type,
+                user_id: user.user_id,
+                submission: message.message.text,
+                submission_date: new Date(),
+                bot_entry: message.message.from.is_bot
             })
+
+            // let game_score = match.groups!.game_score
+            let hard_mode = match.groups!.hard_mode
+            let reaction: TelegramEmoji = hard_mode ? '❤‍🔥' : '👍'
+            await setReaction({
+                api_key: settings.telegram_api_key,
+                payload: {
+                    chat_id: message.message.chat.id,
+                    message_id: message.message.message_id,
+                    reaction: [{ type: "emoji", emoji: reaction }]
+                }
+            })
+
         }
     }
-    return true
-}
 
-
-
-// waits for messages of the form: Wordle 1,134 5/6* ...
-// and parses them to determine a response and possibly store the score
-export let wordle_slur: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    const wordle_regex = /Wordle ([\d,\.]+) ([\dX]+\/\d+).*/
-    const match = message.message.text.match(wordle_regex)
-    if (match) {
-        console.log("Wordle match: ", message.message.text)
-        const wordle_no = parseInt(match[1].replace(",", "").replace('.', ""))
-        const guesses = match[2].split("/")
-        const count = parseInt(guesses[0])
-
-        let scores = await get_wordle_scores(settings.kv_namespace)
-        if (!("names" in scores)) {
-            scores["names"] = {}
-        }
-        scores["names"]![message.message.from.id] = message.message.from.first_name
-
-        if (!(wordle_no in scores)) {
-            scores[wordle_no] = {}
-        }
-        let bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 999
-        scores[wordle_no][message.message.from.id] = count
-        await store_wordle_scores(settings.kv_namespace, scores)
-
-        if (bot_score < count) {
-            await sendMessage({
-                payload: {
-                    text: sample([...COMMON_RIPOSTES, "It's wordlin time"]),
-                    chat_id: message.message.chat.id,
-                    reply_to_message_id: message.message.message_id
-                },
-                api_key: settings.telegram_api_key,
-                open_ai_key: settings.openai_api_key
-            })
-        }
-    }
-    return true
+    return false
 }
 
 

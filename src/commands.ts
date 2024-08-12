@@ -1,12 +1,14 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, PlayerCallback, solveConnections } from "./connections.js";
+import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, parseConnectionsScoreFromShareable, PlayerCallback, solveConnections } from "./connections.js";
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
 import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./data/kv_store.js";
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, user_from_message } from "./telegram.js";
-import { generateWordleShareable, getWordleForDay, getWordleList, solveWordle } from "./wordle.js";
-import { register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
+import { get_bot_users_for_chat, get_game_submissions_since_game_id, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
+import moment from "moment-timezone";
 
 export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: ChatbotSettings, args: string[]) => Promise<any> } = {
     "score": async (payload, settings, args) => {
@@ -146,6 +148,70 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 delay: 0
             })
         }
+    },
+    "leaderboard": async (payload, settings, args) => {
+        let game_type: GameType
+        if (!isGameType(args[0])) {
+            throw "Valid game type required as the first argument: connections, wordle"
+        } else {
+            game_type = args[0]
+        }
+
+        // get all games for this month, the game id can be converted to a date
+        const now = moment.tz('Europe/London')
+        const first_date_this_month = now.clone().set("date", 1).toDate()
+
+        let first_id: number
+        let latest_id: number | undefined = undefined
+        switch (game_type) {
+            case "connections":
+                first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
+                break
+            case "wordle":
+                first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
+                break
+            default:
+                throw new Error("Invalid game type")
+        }
+
+        const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
+        let scores: Scores = { "names": {} }
+        submissions.forEach(s => {
+            latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
+            switch (s.game_type) {
+                case "connections":
+                    scores[s.game_id][s.user_id] = parseConnectionsScoreFromShareable(s.submission)!.mistakes
+                case "wordle":
+                    scores[s.game_id][s.user_id] = score_from_wordle_shareable(s.submission).guesses
+                    break
+            }
+        })
+
+        const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
+
+        users.forEach(u => {
+            scores["names"]![u.user_id] = u.alias ?? u.user_id.toString()
+        })
+
+        let previous_scores = structuredClone(scores)
+        if (latest_id != undefined) {
+            delete previous_scores[latest_id]
+        }
+        const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores)
+        const current_leaderboard = convertDailyScoresToLeaderboard(scores)
+        const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}'ers`, previous_leaderboard)
+
+        await sendMessage({
+            api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
+            payload: {
+                chat_id: payload.message.chat.id,
+                text: `<pre>\n${leaderboard}\n</pre>`,
+                parse_mode: "HTML"
+            },
+            audio_chance: 0,
+            delay: 0
+        })
     },
     "wordleboard": async (payload, settings, args) => {
         const stats = await get_wordle_scores(settings.kv_namespace)

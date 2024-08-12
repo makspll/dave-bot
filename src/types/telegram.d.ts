@@ -29,6 +29,21 @@ declare global {
         payload: TelegramSendPayload
     }
 
+    type TelegramEmoji = '👍' | '👎' | '❤' | '🔥' | '🥰' | '👏' | '😁' | '🤔' | '🤯' | '😱' | '🤬' | '😢' | '🎉' | '🤩' | '🤮' | '💩' | '🙏' | '👌' | '🕊' | '🤡' | '🥱' | '🥴' | '😍' | '🐳' | '❤‍🔥' | '🌚' | '🌭' | '💯' | '🤣' | '⚡' | '🍌' | '🏆' | '💔' | '🤨' | '😐' | '🍓' | '🍾' | '💋' | '🖕' | '😈' | '😴' | '😭' | '🤓' | '👻' | '👨‍💻' | '👀' | '🎃' | '🙈' | '😇' | '😨' | '🤝' | '✍' | '🤗' | '🫡' | '🎅' | '🎄' | '☃' | '💅' | '🤪' | '🗿' | '🆒' | '💘' | '🙉' | '🦄' | '😘' | '💊' | '🙊' | '😎' | '👾' | '🤷‍♂' | '🤷' | '🤷‍♀' | '😡'
+
+    interface TelegramReactionType {
+        type: "emoji",
+        emoji: TelegramEmoji
+    }
+    interface TelegramSetReactionRequest {
+        api_key: string,
+        payload: {
+            chat_id: number
+            message_id: number
+            reaction: TelegramReactionType[]
+        }
+    }
+
     interface TelegramSendPayload {
         parse_mode?: string
         reply_to_message_id?: number

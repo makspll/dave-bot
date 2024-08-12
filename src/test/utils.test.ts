@@ -1,4 +1,4 @@
-import { stringPad } from "../utils.js";
+import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId, stringPad } from "../utils.js";
 import stringWidth from "string-width";
 
 
@@ -37,4 +37,19 @@ it('various padded emojis and letters pad to the same string width', () => {
     expect(stringWidth(stringPad(input1, 15, '*'))).toBe(stringWidth(stringPad(input2, 15, '*')))
     expect(stringWidth(stringPad(input2, 15, '*'))).toBe(stringWidth(stringPad(input3, 15, '*')))
 
+})
+// "connections": printDateToNYTGameId(first_date_this_month, new Date('2023-06-12')),
+// "wordle": printDateToNYTGameId(first_date_this_month, new Date('2021-06-19'))
+it('first connections puzzle date converts to 1', () => {
+    const first_connections_date = new Date('2023-06-12')
+    const result = printDateToNYTGameId(FIRST_CONNECTIONS_DATE, FIRST_CONNECTIONS_DATE)
+
+    expect(result).toBe(1)
+})
+
+it('first wordle puzzle date converts to 0', () => {
+    const first_wordle_date = new Date('2021-06-19')
+    const result = printDateToNYTGameId(FIRST_WORDLE_DATE, FIRST_WORDLE_DATE, true)
+
+    expect(result).toBe(0)
 })

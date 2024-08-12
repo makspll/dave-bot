@@ -73,6 +73,28 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
 
 }
 
+export async function setReaction(request: TelegramSetReactionRequest): Promise<void> {
+    console.log("sending telegram reaction", { ...request, api_key: "REDACTED" })
+
+    let url = `https://api.telegram.org/bot${request.api_key}/setMessageReaction`
+    let parameters = new URLSearchParams({
+        chat_id: request.payload.chat_id.toString(),
+        message_id: request.payload.message_id.toString(),
+        reaction: JSON.stringify(request.payload.reaction)
+    })
+
+    console.log("sending telegram reaction", url, parameters)
+
+    await fetch(`${url}?${parameters.toString()}`, {
+        method: "GET",
+    }).then(res => res.json())
+        .then(res => {
+            const data: any = res
+            console.log("Successfully sent telegram reaction", data)
+        }).catch((err: Error) => {
+            console.error("Error in sending telegram reaction", err)
+        })
+}
 /// converts a telegram message to a user, extracting the user_id, alias and creating a new consent date
 export function user_from_message(message: TelegramMessage): User {
     return {

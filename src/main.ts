@@ -1,5 +1,5 @@
 import { sendMessage } from "./telegram.js";
-import { commands_and_filter_optins, connections_slur, hardlyfier, keywords, screamo, sickomode, wordle_slur } from "./actions.js";
+import { commands_and_filter_optins, hardlyfier, keywords, nyt_games_submission, screamo, sickomode } from "./actions.js";
 import { COMMANDS } from "./commands.js";
 import { TRIGGERS } from "./data.js";
 import * as util from "node:util";
@@ -80,8 +80,7 @@ export default {
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
                     let actions: [string, Action][] = [
                         ["commands and optin filters", commands_and_filter_optins],
-                        ["connections", connections_slur],
-                        ["wordle", wordle_slur],
+                        ["nyt game submissions", nyt_games_submission],
                         ["hardly know her", hardlyfier],
                         ["dave sickomode", sickomode],
                         ["keyword triggers", keywords(TRIGGERS)],
