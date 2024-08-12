@@ -10,6 +10,13 @@ import { get_bot_users_for_chat, get_game_submissions_since_game_id, isGameType,
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment from "moment-timezone";
 
+export class InvalidInputException extends Error {
+    constructor(user_message: string) {
+        super(user_message);
+        this.name = "CustomException";
+    }
+}
+
 export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: ChatbotSettings, args: string[]) => Promise<any> } = {
     "score": async (payload, settings, args) => {
         let score = await get_affection_data(settings.kv_namespace);
@@ -106,28 +113,23 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 audio_chance: 0,
                 delay: 0
             })
-            let answer;
-            if (!args[1]) {
-                answer = await call_gpt({
-                    api_key: settings.openai_api_key,
-                    payload: {
-                        model: "gpt-3.5-turbo",
-                        messages: [{
-                            role: "system",
-                            content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits`,
-                        }],
-                    },
-                })
-            } else {
-                answer = args.slice(1).join(" ")
-            }
+            let gpt_answer = await call_gpt({
+                api_key: settings.openai_api_key,
+                payload: {
+                    model: "gpt-3.5-turbo",
+                    messages: [{
+                        role: "system",
+                        content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits ${args.slice(1).join(" ")}`,
+                    }],
+                },
+            })
             let target = parseInt(args[0])
             await sendMessage({
                 api_key: settings.telegram_api_key,
                 open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: settings.god_id,
-                    text: `sending: '${answer}'`
+                    text: `sending: '${gpt_answer}'`
                 },
                 audio_chance: 0,
                 delay: 0
@@ -138,7 +140,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: target,
-                    text: answer
+                    text: gpt_answer
                 },
                 delay: 0
             })
@@ -157,7 +159,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     "leaderboard": async (payload, settings, args) => {
         let game_type: GameType
         if (!isGameType(args[0])) {
-            throw "Valid game type required as the first argument: connections, wordle"
+            throw new InvalidInputException("Valid game type required as the first argument: connections, wordle")
         } else {
             game_type = args[0]
         }
@@ -176,9 +178,10 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
                 break
             default:
-                throw new Error("Invalid game type")
+                throw new InvalidInputException("Valid game type required as the first argument: connections, wordle")
         }
 
+        console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
         let scores: Scores = { "names": {} }
         submissions.forEach(s => {

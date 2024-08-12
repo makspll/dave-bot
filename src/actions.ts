@@ -1,4 +1,4 @@
-import { COMMANDS } from "./commands.js"
+import { COMMANDS, InvalidInputException } from "./commands.js"
 import { parseConnectionsScoreFromShareable } from "./connections.js"
 import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, MAX_AFFECTION_LEVEL, NEGATIVE_AFFECTION_PROMPTS, POSITIVE_AFFECTION_PROMPTS, SENTIMENT_PER_AFFECTION_LEVEL, SICKOMODE_PROBABILITY, SYSTEM_PROMPT, TRIGGERS } from "./data.js"
 import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./data/kv_store.js"
@@ -22,16 +22,38 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
         let cmd = COMMANDS[cmd_word]
         split_cmd.shift()
         if (cmd) {
-            await cmd(message, settings, split_cmd)
-        }
-        return false
-    }
-    if (included_ids[message.message.from.id] !== true) {
-        console.log("user not in inclusion list, ignoring message");
-        return false
-    }
+            try {
+                await cmd(message, settings, split_cmd)
+            } catch (e) {
+                if (e instanceof InvalidInputException) {
+                    await sendMessage({
+                        payload: {
+                            text: e.message,
+                            chat_id: message.message.chat.id,
+                            reply_to_message_id: message.message.message_id
+                        },
+                        api_key: settings.telegram_api_key,
+                        open_ai_key: settings.openai_api_key,
+                        delay: 0,
+                        audio_chance: 0,
+                    })
+                } else {
+                    throw e
+                }
+            }
 
-    return true
+            return false
+        }
+
+        if (included_ids[message.message.from.id] !== true) {
+            console.log("user not in inclusion list, ignoring message");
+            return false
+        }
+
+        return false
+    } else {
+        return true
+    }
 }
 
 // very funi roasts aimed at sender
