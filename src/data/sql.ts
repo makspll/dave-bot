@@ -36,8 +36,12 @@ export async function execute_or_throw<T>(callable: () => Promise<D1Result<Recor
 
     let success = (result != undefined && result?.success && !result?.error) ?? false
     let empty = (result?.results.length == 0 || result == null) ?? false
-    if (!success || (empty && !allow_empty)) {
-        throw result?.error ?? "Could not execute statement"
+    if (!success) {
+        console.error(`Error when executing statement: ${result?.error}`)
+        throw result?.error ?? "DB execution failed"
+    } else if (empty && !allow_empty) {
+        console.error(`Results were empty when executing statement: ${result}, expected at least one result with type resolver: ${type_resolver.name}`)
+        throw result?.error ?? "Expected a result when executing sql operation but got none"
     }
 
     let non_null = result?.results ?? []
