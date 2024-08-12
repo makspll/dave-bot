@@ -203,7 +203,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             }
         })
 
-
+        console.log("scores: ", scores)
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
 
         users.forEach(u => {
