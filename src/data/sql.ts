@@ -1,4 +1,5 @@
 import { D1Database, D1Result } from "@cloudflare/workers-types"
+import { resourceLimits } from "node:worker_threads";
 type typeVerifier<T> = (obj: any) => obj is T
 
 export function isUser(obj: any): obj is User {
@@ -25,126 +26,140 @@ export function isGameType(obj: any): obj is GameType {
     return obj == "wordle" || obj == "connections"
 }
 
-export async function execute_or_throw<T>(callable: () => Promise<D1Result<Record<string, unknown>> | null>, type_resolver: typeVerifier<T> = isAny, allow_empty: boolean = true): Promise<T[]> {
-    let result: D1Result<Record<string, unknown>> | null;
-    try {
-        result = await callable()
-    } catch (e: any) {
-        console.error(`Error when executing statement: ${e.message}`)
-        throw e
-    }
-    console.log(result)
 
-    let success = result == null || (result.success && !result.error)
-    let empty = (result == null || result?.results.length == 0) ?? false
-    if (!success) {
-        console.error(`Error when executing statement: ${result?.error}`)
-        throw result?.error ?? "DB execution failed"
-    } else if (empty && !allow_empty) {
-        console.error(`Results were empty when executing statement: ${result}, expected at least one result with type resolver: ${type_resolver.name}`)
-        throw result?.error ?? "Expected a result when executing sql operation but got none"
+/**
+ * Stores a query and its arguments
+ */
+export class Query<T> {
+    public query: string;
+    public args: any[] = [];
+
+    constructor(query: string, ...args: any[]) {
+        this.query = query;
+        this.args = args;
     }
 
-    let non_null = result?.results ?? []
+    public toString() {
+        return this.query
+    }
 
-    for (const row of non_null) {
-        if (!type_resolver(row)) {
-            throw `Error when mapping row: '${JSON.stringify(row)}' with resolver: '${type_resolver.name}'`
+    /**
+     * Unwraps a D1Result into a list of results or throws an error if the result was not successful
+     */
+    public static async unwrapD1Result<T>(result: D1Result<T>): Promise<T[]> {
+        if (!result.success || result.error) {
+            throw result.error ?? `Error when executing query`
+        }
+        return result.results
+    }
+
+
+    public getBound(db: D1Database): D1PreparedStatement {
+        return db.prepare(this.query).bind(...this.args);
+    }
+
+    public async getMany(db: D1Database): Promise<T[]> {
+        const result = await this.getBound(db).all<T>()
+        return Query.unwrapD1Result(result)
+    }
+
+    public async getFirst(db: D1Database): Promise<T | null> {
+        let results = await this.getMany(db)
+
+        if (results.length == 0) {
+            return null
+        } else {
+            return results[0]
         }
     }
 
-    return non_null as T[]
+    public async run(db: D1Database): Promise<void> {
+        await this.getBound(db).run()
+    }
 }
 
-export async function execute_or_throw_batch(callable: () => Promise<D1Result<Record<string, unknown>>[]>): Promise<void> {
+type Tuple<TItem, TLength extends number> = [TItem, ...TItem[]] & { length: TLength };
 
-    let result
-    try {
-        result = await callable()
-    } catch (e: any) {
-        console.error(`Error when executing batch statement: ${e.message}`)
-        throw e
+/**
+ * Stores a batch of queries to be executed in order
+ */
+export class QueryBatch {
+    public queries: Query<any>[]
+
+    constructor(...queries: Query<any>[]) {
+        this.queries = queries
     }
 
-    for (const res of result) {
-        let success = (res != undefined && res?.success && !res?.error) ?? false
-        if (!success) {
-            throw res?.error ?? "Could not execute batch statement"
-        }
+
+    public toString() {
+        return this.queries.map(q => q.toString()).join(";\n")
+    }
+
+    public async execute(db: D1Database): Promise<void> {
+        const result = await db.batch(this.queries.map(x => x.getBound(db)))
+        result.forEach(res => {
+            Query.unwrapD1Result<any>(res)
+        })
     }
 }
 
 /// Get all consenting users for a chat
 export async function get_bot_users_for_chat(db: D1Database, chat_id: number): Promise<User[]> {
-    // join the users table with the chat_users table to get all users for a chat
-    return await execute_or_throw(() =>
-        db.prepare("SELECT * FROM users JOIN chat_users ON users.user_id = chat_users.user_id WHERE chat_users.chat_id = ?")
-            .bind(chat_id)
-            .first(),
-        isUser
-    )
+    return await new Query<User>(`
+        SELECT * FROM users 
+        JOIN chat_users ON users.user_id = chat_users.user_id 
+        WHERE chat_users.chat_id = ?
+        `, chat_id).getMany(db)
 }
 
 /// Add a user and their chat to the db.
 /// If the user already exists, update their alias and consent date.
 export async function register_consenting_user_and_chat(db: D1Database, user: User, chat: Chat): Promise<void> {
-
     console.log(`Registering user ${user.user_id} with alias ${user.alias} and chat ${chat.chat_id} with alias ${chat.alias}. Consent date: ${user.consent_date.toISOString()}`)
-    await execute_or_throw_batch(() => db.batch([
-        // insert the chat if it doesn't exist or update
-        db.prepare("INSERT INTO chats (chat_id, alias) VALUES (?, ?) ON CONFLICT DO UPDATE SET alias = ?")
-            .bind(chat.chat_id, chat.alias, chat.alias),
-        // insert the user if it doesn't exist or update
-        db.prepare("INSERT INTO users (user_id, alias, consent_date) VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET alias = ?, consent_date = ?")
-            .bind(user.user_id, user.alias, user.consent_date.toISOString(), user.alias, user.consent_date.toISOString()),
-        // insert the chat_user if it isn't already there
-        db.prepare("INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING")
-            .bind(chat.chat_id, user.user_id)
-    ]))
+    return await new QueryBatch(
+        new Query(`
+            INSERT INTO chats (chat_id, alias) VALUES (?, ?) ON CONFLICT DO UPDATE SET alias = ?
+        `, chat.chat_id, chat.alias, chat.alias),
+        new Query(`
+            INSERT INTO users (user_id, alias, consent_date) VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET alias = ?, consent_date = ?
+        `, user.user_id, user.alias, user.consent_date.toISOString(), user.alias, user.consent_date.toISOString()),
+        new Query(`
+            INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING
+        `, chat.chat_id, user.user_id)
+    ).execute(db)
 }
 
 // Get a chat by its id
-export async function get_chat(db: D1Database, chat_id: number): Promise<Chat | undefined> {
-    const chats = await execute_or_throw(() =>
-        db.prepare("SELECT * FROM chats WHERE chat_id = ?")
-            .bind(chat_id)
-            .first(),
-        isChat
-    )
-
-    return chats[0]
+export async function get_chat(db: D1Database, chat_id: number): Promise<Chat | null> {
+    return await new Query<Chat>(`
+        SELECT * FROM chats WHERE chat_id = ?
+        `, chat_id).getFirst(db)
 }
 
 /// Delete a user by id and all referencing tables
 export async function unregister_user(db: D1Database, user: User): Promise<void> {
-    await execute_or_throw(() =>
-        db.prepare("DELETE FROM users WHERE user_id = ?")
-            .bind(user.user_id)
-            .run()
-    )
+    return await new Query<Chat>(`
+        DELETE FROM users WHERE user_id = ?
+        `, user.user_id).run(db)
 }
 
 /// inserts or updates a game submission
 export async function insert_game_submission(db: D1Database, submission: GameSubmission): Promise<void> {
-    await execute_or_throw(() =>
-        db.prepare("INSERT INTO game_submissions (game_id, game_type, user_id, submission, submission_date, bot_entry) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO UPDATE SET submission = ?, submission_date = ?, bot_entry = ?")
-            .bind(submission.game_id, submission.game_type, submission.user_id, submission.submission, submission.submission_date.toISOString(), submission.bot_entry,
-                submission.submission, submission.submission_date.toISOString(), submission.bot_entry)
-            .run()
-    )
+    return await new Query(`
+        INSERT INTO game_submissions (game_id, game_type, user_id, submission, submission_date, bot_entry) 
+        VALUES (?, ?, ?, ?, ?, ?) 
+        ON CONFLICT DO UPDATE 
+        SET submission = ?, submission_date = ?, bot_entry = ?
+        `, submission.game_id, submission.game_type, submission.user_id, submission.submission, submission.submission_date.toISOString(), submission.bot_entry,
+        submission.submission, submission.submission_date.toISOString(), submission.bot_entry).run(db)
 }
 
 
 export async function get_game_submissions_since_game_id(db: D1Database, game_id: number, game_type: GameType, chat_id: number): Promise<GameSubmission[]> {
-    return await execute_or_throw(() =>
-        db.prepare(`
-            SELECT gs.*
-            FROM game_submissions gs
-            JOIN chat_users cu ON gs.user_id = cu.user_id
-            WHERE gs.game_id >= ? AND gs.game_type = ? AND cu.chat_id = ?
-        `)
-            .bind(game_id, game_type, chat_id)
-            .all(),
-        isGameSubmission
-    )
+    return await new Query<GameSubmission>(`
+        SELECT gs.*
+        FROM game_submissions gs
+        JOIN chat_users cu ON gs.user_id = cu.user_id
+        WHERE gs.game_id >= ? AND gs.game_type = ? AND cu.chat_id = ?
+        `, game_id, game_type, chat_id).getMany(db)
 }
