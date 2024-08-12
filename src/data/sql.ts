@@ -35,7 +35,7 @@ export async function execute_or_throw<T>(callable: () => Promise<D1Result<Recor
     }
     console.log(result)
 
-    let success = (result != undefined && result?.success && !result?.error) ?? false
+    let success = result != undefined && result.success && !result.error
     let empty = (result?.results.length == 0 || result == null) ?? false
     if (!success) {
         console.error(`Error when executing statement: ${result?.error}`)
