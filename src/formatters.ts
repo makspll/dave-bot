@@ -70,13 +70,13 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     // generate leaderboard string, make it aligned and pretty
     let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
     let change_emojis = ['🔻', '🔺', '✨', '🔴']
-    while (emojis.length < Object.keys(scores.scores).length) {
+    while (emojis.length < scores.scores.size) {
         emojis.push('💩');
     }
     let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
     let longest_change_emoji = Math.max(...change_emojis.map(x => stringWidth(x)));
-    let longest_name = Math.max(...Object.keys(scores.scores).map(x => stringWidth(x)));
-    let title_column_length = Math.max(title.length, longest_name + longest_emoji + longest_change_emoji + 2);
+    let longest_name = Math.max(...scores.scores.keys().map(x => stringWidth(x)));
+    let title_column_length = Math.max(title.length, longest_name + longest_emoji + longest_change_emoji + 2 + 1);
     let missing_score_value = "N/A";
 
     let score_column_lengths: Map<MetricId, number> = new Map();

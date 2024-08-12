@@ -106,23 +106,28 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 audio_chance: 0,
                 delay: 0
             })
-            let gpt_answer = await call_gpt({
-                api_key: settings.openai_api_key,
-                payload: {
-                    model: "gpt-3.5-turbo",
-                    messages: [{
-                        role: "system",
-                        content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits ${args.slice(1).join(" ")}`,
-                    }],
-                },
-            })
+            let answer;
+            if (!args[1]) {
+                answer = await call_gpt({
+                    api_key: settings.openai_api_key,
+                    payload: {
+                        model: "gpt-3.5-turbo",
+                        messages: [{
+                            role: "system",
+                            content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits`,
+                        }],
+                    },
+                })
+            } else {
+                answer = args.slice(1).join(" ")
+            }
             let target = parseInt(args[0])
             await sendMessage({
                 api_key: settings.telegram_api_key,
                 open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: settings.god_id,
-                    text: `sending: '${gpt_answer}'`
+                    text: `sending: '${answer}'`
                 },
                 audio_chance: 0,
                 delay: 0
@@ -133,7 +138,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: target,
-                    text: gpt_answer
+                    text: answer
                 },
                 delay: 0
             })
