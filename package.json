@@ -4,6 +4,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.3",
     "@cloudflare/workers-types": "^4.20240729.0",
+    "@telegraf/types": "^7.1.0",
     "@types/chai": "^4.3.17",
     "@types/expect": "^24.3.0",
     "@types/jest": "^29.5.12",

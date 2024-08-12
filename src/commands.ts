@@ -164,6 +164,10 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             game_type = args[0]
         }
 
+        if (payload.message.chat.type == "private") {
+            throw new InvalidInputException("Leaderboards are only available from groupchats with dave :)")
+        }
+
         // get all games for this month, the game id can be converted to a date
         const now = moment.tz('Europe/London')
         const first_date_this_month = now.clone().set("date", 1).toDate()

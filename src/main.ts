@@ -40,12 +40,12 @@ export default {
                         text: `Good morning! It's wordlin time!`
                     },
                 })
-                let message = {
+                let message: TelegramMessage = {
                     message: {
                         chat: {
                             id: settings.main_chat_id,
                             title: "",
-                            type: ""
+                            type: "private"
                         },
                         message_id: 0,
                         from: {

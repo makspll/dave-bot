@@ -1,4 +1,5 @@
 declare global {
+    type TelegramChatType = "private" | "group" | "supergroup" | "channel"
     interface TelegramMessage {
         message: {
             message_id: number
@@ -13,7 +14,7 @@ declare global {
             chat: {
                 id: number
                 title: string
-                type: string
+                type: TelegramChatType
             }
             date: number
             text: string

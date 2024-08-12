@@ -112,6 +112,14 @@ export async function get_bot_users_for_chat(db: D1Database, chat_id: number): P
         `, chat_id).getMany(db)
 }
 
+export async function get_user_chats(db: D1Database, user_id: number): Promise<Chat[]> {
+    return await new Query<Chat>(`
+        SELECT * FROM chats 
+        JOIN chat_users ON chats.chat_id = chat_users.chat_id 
+        WHERE chat_users.user_id = ?
+        `, user_id).getMany(db)
+}
+
 /// Add a user and their chat to the db.
 /// If the user already exists, update their alias and consent date.
 export async function register_consenting_user_and_chat(db: D1Database, user: User, chat: Chat): Promise<void> {
