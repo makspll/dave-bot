@@ -109,7 +109,8 @@ export default {
                 },
                 api_key: env.TELEGRAM_API_KEY,
                 open_ai_key: env.OPEN_AI_KEY,
-                audio_chance: 0
+                audio_chance: 0,
+                delay: 0,
             })
         }
 
