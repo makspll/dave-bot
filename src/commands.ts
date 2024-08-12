@@ -186,6 +186,10 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         let scores: Scores = { "names": {} }
         submissions.forEach(s => {
             latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
+            if (!(s.game_id in scores)) {
+                scores[s.game_id] = {}
+            }
+
             switch (s.game_type) {
                 case "connections":
                     scores[s.game_id][s.user_id] = parseConnectionsScoreFromShareable(s.submission)!.mistakes
@@ -195,7 +199,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             }
         })
 
-        console.log("scores: ", scores)
 
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
 
@@ -203,7 +206,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             scores["names"]![u.user_id] = u.alias ?? u.user_id.toString()
         })
 
-        console.log("scores: ", scores)
         let previous_scores = structuredClone(scores)
         if (latest_id != undefined) {
             delete previous_scores[latest_id]
