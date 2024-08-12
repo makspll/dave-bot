@@ -195,12 +195,15 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             }
         })
 
+        console.log("scores: ", scores)
+
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
 
         users.forEach(u => {
             scores["names"]![u.user_id] = u.alias ?? u.user_id.toString()
         })
 
+        console.log("scores: ", scores)
         let previous_scores = structuredClone(scores)
         if (latest_id != undefined) {
             delete previous_scores[latest_id]
