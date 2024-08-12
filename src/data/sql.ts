@@ -26,7 +26,7 @@ export function isGameType(obj: any): obj is GameType {
 }
 
 export async function execute_or_throw<T>(callable: () => Promise<D1Result<Record<string, unknown>> | null>, type_resolver: typeVerifier<T> = isAny, allow_empty: boolean = true): Promise<T[]> {
-    let result;
+    let result: D1Result<Record<string, unknown>> | null;
     try {
         result = await callable()
     } catch (e: any) {
@@ -36,7 +36,7 @@ export async function execute_or_throw<T>(callable: () => Promise<D1Result<Recor
     console.log(result)
 
     let success = result != undefined && result.success && !result.error
-    console.log(result, result?.success, result!.error, success)
+    console.log(result, result?.success, result?.error, success)
     let empty = (result?.results.length == 0 || result == null) ?? false
     if (!success) {
         console.error(`Error when executing statement: ${result?.error}`)
