@@ -100,8 +100,8 @@ export default {
                     console.log(JSON.stringify(payload || {}))
                 }
             }
-        } catch (error) {
-            console.error("Error in fetch callback", error)
+        } catch (error: any) {
+            console.error("Error in fetch callback", error, error.message)
             await sendMessage({
                 payload: {
                     chat_id: env.GOD_ID,
