@@ -298,7 +298,7 @@ export function isWordleWord(word: string): word is WordleWord {
 // ⬛⬛🟩🟩⬛
 // 🟩⬛🟩🟩⬛
 // 🟩🟩🟩🟩🟩
-export function generateWordleShareable(solution: WordleResponse, solve_output: WordleSolveOutput) {
+export function generateWordleShareable(solution: WordleResponse, solve_output: WordleSolveOutput, include_stats = false) {
     let guesses_length = solve_output.guesses.length == 7 ? 'X' : solve_output.guesses.length.toString();
 
     let shareable = escapeMarkdown(`Wordle ${solution.wordle_no} ${guesses_length}/6*\n\n`);
@@ -308,7 +308,11 @@ export function generateWordleShareable(solution: WordleResponse, solve_output: 
         const words_before = (solve_output.available_words[guess_idx - 1] || []).length || 0;
         const words_now = solve_output.available_words[guess_idx].length;
         const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
-        shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}`);
+
+        if (include_stats) {
+            shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}`);
+        }
+
         if (solve_output.available_words[guess_idx].length < 0) {
             for (const word of solve_output.available_words[guess_idx]) {
                 shareable += emojify_guess(word, solution.wordle) + `||${word}||` + ',';

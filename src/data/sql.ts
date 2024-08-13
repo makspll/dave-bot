@@ -171,3 +171,9 @@ export async function get_game_submissions_since_game_id(db: D1Database, game_id
         WHERE gs.game_id >= ? AND gs.game_type = ? AND cu.chat_id = ?
         `, game_id, game_type, chat_id).getMany(db)
 }
+
+export async function get_game_submission(db: D1Database, game_id: number, game_type: GameType, user_id: number): Promise<GameSubmission | null> {
+    return await new Query<GameSubmission>(`
+        SELECT * FROM game_submissions WHERE game_id = ? AND game_type = ? AND user_id = ?
+        `, game_id, game_type, user_id).getFirst(db)
+}

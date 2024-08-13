@@ -6,9 +6,10 @@ import { get_affection_data, get_connections_scores, get_included_ids, get_wordl
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
-import { get_bot_users_for_chat, get_game_submissions_since_game_id, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment from "moment-timezone";
+import { assert } from "node:console";
 
 export class InvalidInputException extends Error {
     constructor(user_message: string) {
@@ -245,25 +246,30 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
-        let message = generateWordleShareable(wordle, solution) + '\n';
-        let scores = await get_wordle_scores(settings.kv_namespace);
-        if (!(wordle.wordle_no in scores)) {
-            scores[wordle.wordle_no] = {}
-        }
+        let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
+        assert(bot_user_id > 0)
 
-        if ("bot" in scores[wordle.wordle_no]) {
+        let previous_score = await get_game_submission(settings.db, wordle.wordle_no, "wordle", bot_user_id);
+
+        if (previous_score) {
             return { "solution": solution, "wordle_no": wordle.wordle_no }
         }
 
-        scores[wordle.wordle_no]["bot"] = solution.guesses_count
-        await store_wordle_scores(settings.kv_namespace, scores);
+        await insert_game_submission(settings.db, {
+            game_id: wordle.wordle_no,
+            game_type: "wordle",
+            user_id: bot_user_id,
+            submission: generateWordleShareable(wordle, solution) + '\n',
+            submission_date: date_today,
+            bot_entry: true
+        })
 
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: message,
+                text: generateWordleShareable(wordle, solution, true) + '\n',
                 parse_mode: "MarkdownV2"
             },
             audio_chance: 0,
@@ -273,17 +279,19 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     },
     "connections": async (payload, settings, args) => {
 
-        let scores = await get_connections_scores(settings.kv_namespace);
+        let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
+        assert(bot_user_id > 0)
+
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
 
         const connections_ = await getConnectionsForDay(date_today)
-        if (!(connections_.id in scores)) {
-            scores[connections_.id] = {}
-        }
+
+        let previous_submission = await get_game_submission(settings.db, connections_.id, "connections", bot_user_id);
+
         console.log("conenctions: ", connections_)
 
-        if ("bot" in scores[connections_.id]) {
+        if (previous_submission) {
             return [null, null]
         }
 
@@ -309,7 +317,20 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             return response
         }
         const [state, connections] = await solveConnections(date_today, playerCallback);
+        let score = 4 - state.attempts
+
         const shareable = generateConnectionsShareable(state, connections)
+
+        await insert_game_submission(settings.db, {
+            game_id: connections_.id,
+            game_type: "connections",
+            user_id: bot_user_id,
+            submission: shareable,
+            submission_date: date_today,
+            bot_entry: true
+        })
+
+
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
@@ -321,8 +342,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             audio_chance: 0,
             delay: 0
         })
-        scores[connections.id]["bot"] = 4 - state.attempts
-        await store_connections_scores(settings.kv_namespace, scores)
+
         return [state, connections]
     }
 }
