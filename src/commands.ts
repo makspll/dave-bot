@@ -9,7 +9,6 @@ import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wor
 import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment from "moment-timezone";
-import { assert } from "node:console";
 
 export class InvalidInputException extends Error {
     constructor(user_message: string) {
@@ -188,7 +187,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
 
         console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
-        
+
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
 
         let scores: Scores = { "names": {} }
@@ -210,7 +209,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         })
 
         let previous_scores = structuredClone(scores)
-        
+
         if (latest_id != undefined) {
             delete previous_scores[latest_id]
         }
@@ -247,7 +246,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         const solution = solveWordle(wordle.wordle, words);
         console.log("solved: ", solution)
         let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
-        assert(bot_user_id > 0)
 
         let previous_score = await get_game_submission(settings.db, wordle.wordle_no, "wordle", bot_user_id);
 
@@ -280,7 +278,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     "connections": async (payload, settings, args) => {
 
         let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
-        assert(bot_user_id > 0)
 
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
