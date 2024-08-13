@@ -65,6 +65,12 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             delay: 0
         })
     },
+    "optindave": async (payload, settings, args) => {
+        let user_id = parseInt(settings.telegram_api_key.split(':')[0])
+        await register_consenting_user_and_chat(settings.db, {
+            user_id, alias: "Dave", consent_date: new Date()
+        }, chat_from_message(payload))
+    },
     "optin": async (payload, settings, args) => {
 
         let user = user_from_message(payload)
