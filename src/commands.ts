@@ -201,7 +201,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 scores[s.game_id] = {}
             }
 
-            let user_name = users.find(x => x user_id == s.user_id)?.alias ?? "unknown"
+            let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
 
             switch (s.game_type) {
                 case "connections":
