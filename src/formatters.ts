@@ -158,7 +158,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
             if (day_players_count >= 3) {
                 player_metrics.get("games_3_plus")!.value += 1
             } 
-            console.log(player_metrics)
+            console.log(player_metrics.entries())
             all_player_daily_average += player_id == "bot" ? 0 : score
         }
         if (day_players_count > 0) {
@@ -190,7 +190,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
             metrics.delete("games_3_plus")
         }
     }
-    console.log(name_to_metrics)
+    console.log(name_to_metrics.entries())
     // generate leaderoard dictionary
     let metric_definitions: Map<MetricId, MetricDefinition> = new Map()
     metric_definitions.set("avg", { title: "Avg", ascending: true })
