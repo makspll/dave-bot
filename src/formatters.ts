@@ -152,6 +152,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
                 name_to_metrics.set(player_id, player_metrics)
             }
             let player_metrics = name_to_metrics.get(player_id)!
+            console.log(player_id, game_id,score)
             player_metrics.get("avg")!.value += score
             player_metrics.get("games")!.value += 1
             if (day_players_count >= 3) {
