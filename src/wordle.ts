@@ -330,9 +330,9 @@ export function score_from_wordle_shareable(shareable: string): WordleScore {
     // the 3rd word
     const score_string = shareable.split(' ')[2];
     const hard_mode = shareable.includes('*');
-    const guesses = score_string.split('/')[0];
+    const guesses = score_string.split('/')[0].replace(/[xX]/,'7');
     return {
-        'guesses': 'X' ? 7 : parseInt(guesses),
+        'guesses': parseInt(guesses),
         'hard_mode': hard_mode
     };
 }

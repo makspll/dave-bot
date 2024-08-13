@@ -188,6 +188,9 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
 
         console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
+        
+        const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
+
         let scores: Scores = { "names": {} }
         submissions.forEach(s => {
             latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
@@ -195,27 +198,24 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 scores[s.game_id] = {}
             }
 
+            let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
+
             switch (s.game_type) {
                 case "connections":
-                    scores[s.game_id][s.user_id] = parseConnectionsScoreFromShareable(s.submission)!.mistakes
+                    scores[s.game_id][user_name] = parseConnectionsScoreFromShareable(s.submission)!.mistakes
                 case "wordle":
-                    scores[s.game_id][s.user_id] = score_from_wordle_shareable(s.submission).guesses
+                    scores[s.game_id][user_name] = score_from_wordle_shareable(s.submission).guesses
                     break
             }
         })
 
-        const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
-
-        users.forEach(u => {
-            scores["names"]![u.user_id] = u.alias ?? u.user_id.toString()
-        })
-
         let previous_scores = structuredClone(scores)
-        console.log("scores: ", scores, "previous_scores: ", previous_scores)
-
+        
         if (latest_id != undefined) {
             delete previous_scores[latest_id]
         }
+        console.log("scores: ", scores, "previous_scores: ", previous_scores)
+
         const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores)
         const current_leaderboard = convertDailyScoresToLeaderboard(scores)
 
