@@ -190,10 +190,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
 
-        users.forEach(u => {
-            scores["names"]![u.user_id] = u.alias ?? u.user_id.toString()
-        })
-
         let scores: Scores = { "names": {} }
         submissions.forEach(s => {
             latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
