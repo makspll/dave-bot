@@ -210,11 +210,12 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         })
 
         let previous_scores = structuredClone(scores)
-        console.log("scores: ", scores, "previous_scores: ", previous_scores)
-
+        
         if (latest_id != undefined) {
             delete previous_scores[latest_id]
         }
+        console.log("scores: ", scores, "previous_scores: ", previous_scores)
+
         const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores)
         const current_leaderboard = convertDailyScoresToLeaderboard(scores)
 
