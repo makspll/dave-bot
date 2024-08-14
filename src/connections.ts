@@ -122,7 +122,7 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
     all_tiles = all_tiles.sort(() => Math.random() - 0.5);
     let state = await initializeConnectionsKnowledgeState(all_tiles);
 
-    while (state.attempts > 0) {
+    while (state.attempts > 0 && state.tiles.length > 0) {
         // attempt to get valid input twice before failing
         let input_attempts = 0;
         let last_guess = guessCategory(await playerCallback(state, null), connections);
