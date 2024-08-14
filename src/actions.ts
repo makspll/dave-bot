@@ -1,21 +1,22 @@
 import { COMMANDS, InvalidInputException } from "./commands.js"
 import { parseConnectionsScoreFromShareable } from "./connections.js"
-import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, MAX_AFFECTION_LEVEL, NEGATIVE_AFFECTION_PROMPTS, POSITIVE_AFFECTION_PROMPTS, SENTIMENT_PER_AFFECTION_LEVEL, SICKOMODE_PROBABILITY, SYSTEM_PROMPT, TRIGGERS } from "./data.js"
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./data/kv_store.js"
-import { insert_game_submission } from "./data/sql.js"
+import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SYSTEM_PROMPT } from "./data.js"
+import { get_user_chats, insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"
 import { sendMessage, setReaction, user_from_message } from "./telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 
 
 export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let included_ids = await get_included_ids(settings.kv_namespace)
+    let chats = await get_user_chats(settings.db, message.message.from.id)
+    let opted_in = chats.find(c => message.message.chat.id == c.chat_id) !== undefined
+
     if (message.message.text.startsWith("/")) {
         console.log("it's a command")
         let split_cmd = message.message.text.split('@')[0].split(' ')
         console.log(split_cmd)
         let cmd_word = split_cmd[0].replace("/", "")
-        if (included_ids[message.message.from.id] !== true && !["info", "optin", "optout"].includes(cmd_word)) {
+        if (opted_in !== true && !["info", "optin", "optout"].includes(cmd_word)) {
             return false
         }
 
@@ -45,10 +46,19 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
             return false
         }
 
-        if (included_ids[message.message.from.id] !== true) {
+        if (opted_in !== true) {
             console.log("user not in inclusion list, ignoring message");
             return false
         }
+
+        await setReaction({
+            api_key: settings.telegram_api_key,
+            payload: {
+                chat_id: message.message.chat.id,
+                message_id: message.message.message_id,
+                reaction: [{ type: "emoji", emoji: "🙉" }]
+            }
+        })
 
         return false
     } else {
@@ -207,35 +217,20 @@ export let keywords: (triggers: KeywordTrigger[]) => Action =
         if (Math.random() >= trigger.chance) { return true }
 
         let gpt_chance = trigger.gpt_chance ? trigger.gpt_chance : KEYWORD_GPT_CHANCE
-        let affection_data = await get_affection_data(settings.kv_namespace);
         let text;
         if (trigger.gpt_prompt && (Math.random() < gpt_chance)) {
-            let relationship_prompt = "no previous relationship";
-            let affection_value = affection_data[message.message.from.id]
-            let affection_level = Math.min(Math.floor(Math.abs(affection_value) / SENTIMENT_PER_AFFECTION_LEVEL), MAX_AFFECTION_LEVEL)
-
-            relationship_prompt = affection_value > 0 ?
-                POSITIVE_AFFECTION_PROMPTS[affection_level - 1] :
-                NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
-
             text = await call_gpt({
                 api_key: settings.openai_api_key,
                 payload: {
                     model: "gpt-3.5-turbo",
                     messages: [
-                        { role: "system", content: SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt) },
+                        { role: "system", content: SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: normal" + ". PROMPT: " + sample(trigger.gpt_prompt) },
                     ]
                 }
             });
         } else {
             // analyse sentiment and pick appropriate variation from the sentiment variations
             let sentiment = calculate_sentiment(words)
-            if (affection_data[message.message.from.id] == null) {
-                affection_data[message.message.from.id] = sentiment
-            } else {
-                affection_data[message.message.from.id] += sentiment
-            }
-            await store_affection_data(settings.kv_namespace, affection_data);
             text = sentiment >= 0 ? sample(trigger.pos_sent_variations ?? []) : sample(trigger.neg_sent_variations ?? [])
         }
 
@@ -296,31 +291,4 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     }
 
     return false
-}
-
-
-export let command_processor: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let included_ids = await get_included_ids(settings.kv_namespace)
-    if (message.message.text.startsWith("/")) {
-        console.log("it's a command")
-        let split_cmd = message.message.text.split('@')[0].split(' ')
-        console.log(split_cmd)
-        let cmd_word = split_cmd[0].replace("/", "")
-        if (included_ids[message.message.from.id] !== true && !["info", "optin", "optout"].includes(cmd_word)) {
-            return false
-        }
-
-        let cmd = COMMANDS[cmd_word]
-        split_cmd.shift()
-        if (cmd) {
-            await cmd(message, settings, split_cmd)
-        }
-        return false
-    }
-
-    if (included_ids[message.message.from.id] !== true) {
-        console.log("user not in inclusion list, ignoring message");
-        return false
-    }
-    return true
 }

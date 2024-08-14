@@ -2,7 +2,6 @@ import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, parseConnectionsScoreFromShareable, PlayerCallback, solveConnections } from "./connections.js";
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./data/kv_store.js";
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
@@ -18,20 +17,6 @@ export class InvalidInputException extends Error {
 }
 
 export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: ChatbotSettings, args: string[]) => Promise<any> } = {
-    "score": async (payload, settings, args) => {
-        let score = await get_affection_data(settings.kv_namespace);
-        score = score[payload.message.from.id] ? score[payload.message.from.id] : 0
-        await sendMessage({
-            api_key: settings.telegram_api_key,
-            open_ai_key: settings.openai_api_key,
-            payload: {
-                chat_id: payload.message.chat.id,
-                text: "Your total sentiment is: " + score
-            },
-            audio_chance: 0,
-            delay: 0
-        })
-    },
     "listtriggers": async (payload, settings, args) => {
         let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
         await sendMessage({

@@ -120,6 +120,8 @@ export async function get_user_chats(db: D1Database, user_id: number): Promise<C
         `, user_id).getMany(db)
 }
 
+
+
 /// Add a user and their chat to the db.
 /// If the user already exists, update their alias and consent date.
 export async function register_consenting_user_and_chat(db: D1Database, user: User, chat: Chat): Promise<void> {
