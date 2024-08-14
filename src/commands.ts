@@ -347,7 +347,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 },
             })
             console.log("chat gpt response: ", response);
-            return JSON.parse(response) as string[]
+            return JSON.parse(response).connections_guess as string[]
         }
 
 
