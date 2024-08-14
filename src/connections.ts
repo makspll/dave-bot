@@ -230,7 +230,7 @@ export function guessCategory(guess: string, connections: ConnectionsResponse): 
 // 🟪🟪🟪🟪
 export function generateConnectionsShareable(state: ConnectionsKnowledgeState, connections: ConnectionsResponse) {
     let shareable = 'Connections\n';
-    shareable += `Puzzle ${connections.id} \n`;
+    shareable += `Puzzle #${connections.id}\n`;
     // give each category a color in order from green,orange through blue and purple:
     const colors = ['🟩', '🟨', '🟦', '🟪'];
     let category_to_color = connections.categories.reduce(
@@ -276,6 +276,7 @@ export function parseConnectionsScoreFromShareable(message: string): ParsedConne
             mistakes++;
         }
     }
+    mistakes = Math.max(Math.min(mistakes, 0), 4);
 
     return { id, mistakes };
 

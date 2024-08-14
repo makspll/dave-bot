@@ -58,6 +58,7 @@ export interface LeaderboardScores {
     scorekinds: Map<MetricId, MetricDefinition>
 }
 
+
 export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null) {
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     // sort scores.scores by sort_by
@@ -136,30 +137,30 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
 // accepts a dictionary from game id to name to score i.e. {game_id: {name: score}}
 // and converts it into a leaderboard format by calculating metrics based on the score
 // the score must be a number and the larger number is treated as a worse score. a 0 is the perfect score
-export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plus = false): LeaderboardScores {
-    let name_to_metrics: Map<string, Map<MetricId, MetricBody>> = new Map()
+export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<number>, player_names: Map<number, string>): LeaderboardScores {
+    let player_to_metrics: Map<number, Map<MetricId, MetricBody>> = new Map()
 
-    for (const [game_id, player_scores] of Object.entries(scores)) {
+    for (const [game_id, player_scores] of scores.entries()) {
         let all_player_daily_average = 0
-        const day_players_count = Object.keys(player_scores).filter(x => x != "bot").length
-        for (const [player_id, score] of Object.entries(player_scores)) {
-            if (!(name_to_metrics.has(player_id))) {
+        const day_players_count = [...player_scores.keys()].filter(x => !bot_ids.has(x)).length
+        for (const [player_id, score] of player_scores.entries()) {
+            if (!(player_to_metrics.has(player_id))) {
                 let player_metrics: Map<MetricId, MetricBody> = new Map()
                 player_metrics.set("avg", { value: 0, rank: 0 })
                 player_metrics.set("games", { value: 0, rank: 0 })
                 player_metrics.set("games_3_plus", { value: 0, rank: 0 })
                 player_metrics.set("avg_delta", { value: 0, rank: 0 })
-                name_to_metrics.set(player_id, player_metrics)
+                player_to_metrics.set(player_id, player_metrics)
             }
-            let player_metrics = name_to_metrics.get(player_id)!
-            console.log(player_id, game_id,score)
+            let player_metrics = player_to_metrics.get(player_id)!
+
             player_metrics.get("avg")!.value += score
             player_metrics.get("games")!.value += 1
             if (day_players_count >= 3) {
                 player_metrics.get("games_3_plus")!.value += 1
-            } 
+            }
             console.log([...player_metrics.entries()])
-            all_player_daily_average += player_id == "bot" ? 0 : score
+            all_player_daily_average += bot_ids.has(player_id) ? 0 : score
         }
         if (day_players_count > 0) {
             all_player_daily_average /= day_players_count
@@ -169,14 +170,14 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
             continue // we need at least 3 players to calculate a reasonable delta, so ignore days when not enough players played
         }
 
-        for (const [player_id, score] of Object.entries(player_scores)) {
-            let player_metrics = name_to_metrics.get(player_id)!
+        for (const [player_id, score] of player_scores.entries()) {
+            let player_metrics = player_to_metrics.get(player_id)!
             player_metrics.get("avg_delta")!.value += score - all_player_daily_average
         }
     }
 
     // finalize the metrics
-    for (const [player_id, metrics] of name_to_metrics.entries()) {
+    for (const [player_id, metrics] of player_to_metrics.entries()) {
         let avg = metrics.get("avg")!
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
@@ -186,25 +187,18 @@ export function convertDailyScoresToLeaderboard(scores: Scores, show_games_3_plu
             avg_delta.value = avg_delta.value / games_3_plus.value
         }
 
-        if (!show_games_3_plus) {
-            metrics.delete("games_3_plus")
-        }
+        metrics.delete("games_3_plus")
     }
-    console.log([...name_to_metrics.entries()])
+
     // generate leaderoard dictionary
     let metric_definitions: Map<MetricId, MetricDefinition> = new Map()
     metric_definitions.set("avg", { title: "Avg", ascending: true })
     metric_definitions.set("games", { title: "N", ascending: false })
-    metric_definitions.set("games_3_plus", { title: "Games (3+)", ascending: false })
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
 
     let leaderboard = {
-        "scores": name_to_metrics,
+        "scores": new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics])),
         "scorekinds": metric_definitions
-    }
-
-    if (!show_games_3_plus) {
-        leaderboard.scorekinds.delete("games_3_plus")
     }
 
     return leaderboard

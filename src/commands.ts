@@ -195,23 +195,27 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
 
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
-
-        let scores: Scores = { "names": {} }
+        const bot_ids = new Set<number>()
+        const player_ids_to_names = new Map<number, string>()
+        let scores: Scores = new Map();
         submissions.forEach(s => {
             latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
-            if (!(s.game_id in scores)) {
-                scores[s.game_id] = {}
-            }
+            let score_map = scores.get(s.game_id) ?? new Map()
 
             let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
-
+            if (s.bot_entry) {
+                bot_ids.add(s.user_id)
+            }
+            player_ids_to_names.set(s.user_id, user_name)
             switch (s.game_type) {
                 case "connections":
-                    scores[s.game_id][user_name] = parseConnectionsScoreFromShareable(s.submission)!.mistakes
+                    score_map.set(user_name, parseConnectionsScoreFromShareable(s.submission)!.mistakes)
                 case "wordle":
-                    scores[s.game_id][user_name] = score_from_wordle_shareable(s.submission).guesses
+                    score_map.set(user_name, score_from_wordle_shareable(s.submission).guesses)
                     break
             }
+
+            scores.set(s.game_id, score_map)
         })
 
         let previous_scores = structuredClone(scores)
@@ -220,9 +224,8 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             delete previous_scores[latest_id]
         }
         console.log("scores: ", scores, "previous_scores: ", previous_scores)
-
-        const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores)
-        const current_leaderboard = convertDailyScoresToLeaderboard(scores)
+        const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
+        const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
 
         console.log("current leaderboard: ", current_leaderboard, "previous leaderboard: ", previous_leaderboard)
         const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}'ers`, previous_leaderboard)
@@ -273,8 +276,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: generateWordleShareable(wordle, solution, true) + '\n',
-                parse_mode: "MarkdownV2"
+                text: generateWordleShareable(wordle, solution) + '\n',
             },
             audio_chance: 0,
             delay: 0
