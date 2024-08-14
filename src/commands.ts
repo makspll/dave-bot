@@ -324,7 +324,8 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                         }
                     }
                 },
-                required: ["connections_guess"]
+                required: ["connections_guess"],
+                additionalProperties: false
             };
 
             let response_format: ResponseFormatJSONSchema = {
