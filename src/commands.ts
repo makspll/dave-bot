@@ -286,7 +286,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
 
         let previous_submission = await get_game_submission(settings.db, connections_.id, "connections", bot_user_id);
 
-        console.log("conenctions: ", connections_)
+        console.log("conenctions: ", connections_, "previous_submission: ", previous_submission)
 
         if (previous_submission) {
             return [null, null]
@@ -332,6 +332,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             console.log("chat gpt response: ", response);
             return JSON.parse(response) as [string, string, string, string]
         }
+
 
         const [state, connections] = await solveConnections(date_today, playerCallback);
         let score = 4 - state.attempts
