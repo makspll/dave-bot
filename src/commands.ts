@@ -3,7 +3,7 @@ import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDa
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
 import { call_gpt } from "./openai.js";
-import { chat_from_message, sendMessage, user_from_message } from "./telegram.js";
+import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
 import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
@@ -289,6 +289,17 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         console.log("conenctions: ", connections_, "previous_submission: ", previous_submission)
 
         if (previous_submission) {
+            await setReaction({
+                api_key: settings.telegram_api_key,
+                payload: {
+                    chat_id: payload.message.chat.id,
+                    message_id: payload.message.message_id,
+                    reaction: [{
+                        "type": "emoji",
+                        "emoji": "🖕",
+                    }]
+                }
+            })
             return [null, null]
         }
 
