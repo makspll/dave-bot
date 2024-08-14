@@ -293,6 +293,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         }
 
         const playerCallback: PlayerCallback = async (state, invalid_guess) => {
+            console.log("Player Callback")
             let messages: ChatCompletionMessageParam[] = []
             messages.push({ role: 'system', content: convertGuessToPrompt(null) })
             messages.push({ role: 'user', content: "Welcome to connections bot, here are your 16 words: '" + state.tiles.join(",") + "'" })
@@ -302,7 +303,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 messages.push({ role: 'user', content: convertGuessToPrompt(guess) }) // user message
             }
 
-            console.log("calling chat gpt with messages: ", messages)
             let response_format: ResponseFormatJSONSchema = {
                 "type": "json_schema",
                 "json_schema": {
