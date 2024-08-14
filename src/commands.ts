@@ -363,8 +363,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: shareable.replace('#', '\\#'),
-                parse_mode: "MarkdownV2"
+                text: shareable,
             },
             audio_chance: 0,
             delay: 0
