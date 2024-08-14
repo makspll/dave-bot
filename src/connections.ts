@@ -66,7 +66,7 @@ export function generateInitialPrompt() {
     you are a chatbot playing the connections game. The user is the game master and will give you hints and guidance throughout the game.
     The game master will provide you with a list of 16 words, each word belongs to a category. Your goal is to categorise these words into 4 groups.
     Each group should contain 4 words, the words in each group are connected in some way. You only need to name the words which are connected, not the category itself.
-    You will make guesses by providing 4 COMMA SEPARATED AND CAPITALISED WORDS. The game master will tell you if your guess is correct, one word away or incorrect.
+    You will make guesses by providing 4 words in a JSON array of strings. The game master will tell you if your guess is correct, one word away or incorrect.
     If you make a mistake you will lose a life, you have 4 lives. If you guess correctly you will have to guess another 4 words from the remaining words.
     Here is an example game: 
     '''
@@ -82,8 +82,7 @@ export function generateInitialPrompt() {
     Bot: 'ARE,RADIUS,REVERSE,RIGHT'
     GM: Correct! Your guess belongs to the category: 'WORDS REPRESENTED BY THE LETTER "R"'. You have successfully categorised all words.
     '''
-    ONLY RESPOND WITH 4 COMMA SEPARATED AND CAPITALISED WORDS. AND NOTHING ELSE.
-    I REPEAT ONLY RESPOND WITH 4 COMMA SEPARATED AND CAPITALISED WORDS. AND NOTHING ELSE. NO EMOJIS, NO PUNCTUATION, NO SPACES, NO COMMENTS.
+    ONLY RESPOND WITH A JSON LIST OF 4 STRINGS. AND NOTHING ELSE.
     `;
 }
 
@@ -111,7 +110,7 @@ export function convertGuessToPrompt(guess: Guess | null) {
 }
 
 export interface PlayerCallback {
-    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): Promise<[string, string, string, string]>
+    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): Promise<string[]>
 }
 
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
@@ -167,11 +166,10 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
 //   guess: ["word1", "word2", "word3", "word4"]
 //   remaining: ["word1", "word2", "word3", "word4", ...] // if the guess was correct
 // }
-export function guessCategory(words: [string, string, string, string], connections: ConnectionsResponse): Guess {
+export function guessCategory(words: string[], connections: ConnectionsResponse): Guess {
 
-
-    if (words == null || words.length !== 4) {
-        let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 comma separated words", guess: words };
+    if (words.length !== 4) {
+        let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 words", guess: words };
         return invalid_guess;
     }
 

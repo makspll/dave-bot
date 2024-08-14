@@ -318,11 +318,9 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 properties: {
                     connections_guess: {
                         type: "array",
-                        minItems: 4,
-                        maxItems: 4,
-                        uniqueItems: true,
                         items: {
-                            type: "string" // or whatever type the items in the array should be
+                            type: "string",
+                            "enum": state.tiles
                         }
                     }
                 },
@@ -348,7 +346,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 },
             })
             console.log("chat gpt response: ", response);
-            return JSON.parse(response) as [string, string, string, string]
+            return JSON.parse(response) as string[]
         }
 
 
