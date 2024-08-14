@@ -313,6 +313,21 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 messages.push({ role: 'assistant', content: guess.guess.join(",") }) // assistant message
                 messages.push({ role: 'user', content: convertGuessToPrompt(guess) }) // user message
             }
+            const schema = {
+                type: "object",
+                properties: {
+                    connections_guess: {
+                        type: "array",
+                        minItems: 4,
+                        maxItems: 4,
+                        uniqueItems: true,
+                        items: {
+                            type: "string" // or whatever type the items in the array should be
+                        }
+                    }
+                },
+                required: ["connections_guess"]
+            };
 
             let response_format: ResponseFormatJSONSchema = {
                 "type": "json_schema",
@@ -320,15 +335,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                     "strict": true,
                     "description": "A guess for the category in connections consisting of 4 words",
                     "name": "connections_guess",
-                    "schema": {
-                        "type": "array",
-                        "minItems": 4,
-                        "maxItems": 4,
-                        "uniqueItems": true,
-                        "items": {
-                            "type": "string",
-                        },
-                    }
+                    schema
                 }
             }
 
