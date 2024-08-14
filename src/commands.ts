@@ -185,7 +185,11 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         let scores: Scores = new Map();
         submissions.forEach(s => {
             latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
-            let score_map = scores.get(s.game_id) ?? new Map()
+
+            if (!scores.has(s.game_id)) {
+                scores.set(s.game_id, new Map())
+            }
+            let score_map = scores.get(s.game_id)!
 
             let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
             if (s.bot_entry) {
@@ -194,13 +198,15 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             player_ids_to_names.set(s.user_id, user_name)
             switch (s.game_type) {
                 case "connections":
-                    score_map.set(user_name, parseConnectionsScoreFromShareable(s.submission)!.mistakes)
-                case "wordle":
-                    score_map.set(user_name, score_from_wordle_shareable(s.submission).guesses)
+                    score_map.set(s.user_id, parseConnectionsScoreFromShareable(s.submission)!.mistakes)
                     break
+                case "wordle":
+                    score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
+                    break
+                default:
+                    console.error("Unknown game type: ", s.game_type)
             }
 
-            scores.set(s.game_id, score_map)
         })
 
         let previous_scores = structuredClone(scores)
