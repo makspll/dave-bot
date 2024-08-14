@@ -356,14 +356,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
 
         const shareable = generateConnectionsShareable(state, connections)
 
-        await insert_game_submission(settings.db, {
-            game_id: connections_.id,
-            game_type: "connections",
-            user_id: bot_user_id,
-            submission: shareable,
-            submission_date: date_today,
-            bot_entry: true
-        })
 
 
         await sendMessage({
@@ -371,11 +363,20 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: shareable,
+                text: shareable.replace('#', '\\#'),
                 parse_mode: "MarkdownV2"
             },
             audio_chance: 0,
             delay: 0
+        })
+
+        await insert_game_submission(settings.db, {
+            game_id: connections_.id,
+            game_type: "connections",
+            user_id: bot_user_id,
+            submission: shareable,
+            submission_date: date_today,
+            bot_entry: true
         })
 
         return [state, connections]
