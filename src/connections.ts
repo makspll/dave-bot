@@ -26,7 +26,7 @@ import { formatDateToYYYYMMDD, printDateToNYTGameId } from './utils.js';
 
 
 export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
-    return (guess as InvalidGuess).invalid === undefined;
+    return (guess as InvalidGuess).invalid !== undefined;
 }
 
 export function isValidGuess(guess: Guess): guess is ValidGuess {
