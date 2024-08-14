@@ -111,7 +111,7 @@ export function convertGuessToPrompt(guess: Guess | null) {
 }
 
 export interface PlayerCallback {
-    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): any
+    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): Promise<[string, string, string, string]>
 }
 
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
@@ -167,13 +167,8 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
 //   guess: ["word1", "word2", "word3", "word4"]
 //   remaining: ["word1", "word2", "word3", "word4", ...] // if the guess was correct
 // }
-export function guessCategory(guess: string, connections: ConnectionsResponse): Guess {
-    let words: string[] = []
-    if (typeof (guess) === 'string') {
-        words = guess.split(',').map(x => x.replace(/\W/g, '').trim());
-    } else {
-        words = []
-    }
+export function guessCategory(words: [string, string, string, string], connections: ConnectionsResponse): Guess {
+
 
     if (words == null || words.length !== 4) {
         let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 comma separated words", guess: words };

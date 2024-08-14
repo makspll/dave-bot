@@ -8,6 +8,7 @@ import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wor
 import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment from "moment-timezone";
+import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
 
 export class InvalidInputException extends Error {
     constructor(user_message: string) {
@@ -302,16 +303,36 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             }
 
             console.log("calling chat gpt with messages: ", messages)
+            let response_format: ResponseFormatJSONSchema = {
+                "type": "json_schema",
+                "json_schema": {
+                    "strict": true,
+                    "description": "A guess for the category in connections consisting of 4 words",
+                    "name": "connections_guess",
+                    "schema": {
+                        "type": "array",
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string",
+                        },
+                    }
+                }
+            }
+
             const response = await call_gpt({
                 api_key: settings.openai_api_key,
                 payload: {
-                    model: "gpt-4o",
-                    messages
-                }
+                    model: "gpt-4o-2024-08-06",
+                    messages,
+                    response_format: response_format
+                },
             })
             console.log("chat gpt response: ", response);
-            return response
+            return JSON.parse(response) as [string, string, string, string]
         }
+
         const [state, connections] = await solveConnections(date_today, playerCallback);
         let score = 4 - state.attempts
 
