@@ -1,6 +1,7 @@
 import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
 import { call_tts } from "./openai.js"
 
+
 export async function sendMessage(request: TelegramSendMessageRequest): Promise<number> {
     let audio_chance = request.audio_chance != undefined ? request.audio_chance : AUDIO_MESSAGE_CHANCE
     let delay = request.delay != undefined ? request.delay : DEFAULT_MSG_DELAY

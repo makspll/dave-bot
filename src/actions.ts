@@ -1,6 +1,5 @@
-import { COMMANDS, InvalidInputException } from "./commands.js"
-import { parseConnectionsScoreFromShareable } from "./connections.js"
-import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SYSTEM_PROMPT } from "./data.js"
+import { COMMANDS, UserErrorException } from "./commands.js"
+import { HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SYSTEM_PROMPT } from "./data.js"
 import { get_user_chats, insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"
 import { sendMessage, setReaction, user_from_message } from "./telegram.js"
@@ -26,7 +25,7 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
             try {
                 await cmd(message, settings, split_cmd)
             } catch (e) {
-                if (e instanceof InvalidInputException) {
+                if (e instanceof UserErrorException) {
                     await sendMessage({
                         payload: {
                             text: e.message,

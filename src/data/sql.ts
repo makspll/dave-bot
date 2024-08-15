@@ -27,6 +27,13 @@ export function isGameType(obj: any): obj is GameType {
 }
 
 
+class DBException extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = "DBException"
+    }
+}
+
 /**
  * Stores a query and its arguments
  */
@@ -55,26 +62,46 @@ export class Query<T> {
 
 
     public getBound(db: D1Database): D1PreparedStatement {
-        return db.prepare(this.query).bind(...this.args);
+        try {
+            return db.prepare(this.query).bind(...this.args);
+        } catch (e) {
+            console.error(`Error in query`, this.query, this.args, e)
+            throw new DBException(`Error in query '${this}': '${e}'`)
+        }
     }
 
     public async getMany(db: D1Database): Promise<T[]> {
-        const result = await this.getBound(db).all<T>()
-        return Query.unwrapD1Result(result)
+        try {
+            const result = await this.getBound(db).all<T>()
+            return Query.unwrapD1Result(result)
+        } catch (e) {
+            console.error(`Error in query`, this.query, this.args, e)
+            throw new DBException(`Error in query '${this}': '${e}'`)
+        }
     }
 
     public async getFirst(db: D1Database): Promise<T | null> {
-        let results = await this.getMany(db)
+        try {
+            let results = await this.getMany(db)
 
-        if (results.length == 0) {
-            return null
-        } else {
-            return results[0]
+            if (results.length == 0) {
+                return null
+            } else {
+                return results[0]
+            }
+        } catch (e) {
+            console.error(`Error in query`, this.query, this.args, e)
+            throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
 
     public async run(db: D1Database): Promise<void> {
-        await this.getBound(db).run()
+        try {
+            await this.getBound(db).run()
+        } catch (e) {
+            console.error(`Error in query`, this.query, this.args, e)
+            throw new DBException(`Error in query '${this}': '${e}'`)
+        }
     }
 }
 
@@ -96,10 +123,15 @@ export class QueryBatch {
     }
 
     public async execute(db: D1Database): Promise<void> {
-        const result = await db.batch(this.queries.map(x => x.getBound(db)))
-        result.forEach(res => {
-            Query.unwrapD1Result<any>(res)
-        })
+        try {
+            const result = await db.batch(this.queries.map(x => x.getBound(db)))
+            result.forEach(res => {
+                Query.unwrapD1Result<any>(res)
+            })
+        } catch (e) {
+            console.error(`Error in batch`, this.toString(), e)
+            throw new DBException(`Error in batch '${this}': '${e}'`)
+        }
     }
 }
 

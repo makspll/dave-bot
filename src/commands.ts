@@ -7,13 +7,13 @@ import { chat_from_message, sendMessage, setReaction, user_from_message } from "
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
 import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
-import moment from "moment-timezone";
+import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
 
-export class InvalidInputException extends Error {
+export class UserErrorException extends Error {
     constructor(user_message: string) {
         super(user_message);
-        this.name = "CustomException";
+        this.name = "UserErrorException";
     }
 }
 
@@ -151,13 +151,13 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     "leaderboard": async (payload, settings, args) => {
         let game_type: GameType
         if (!isGameType(args[0])) {
-            throw new InvalidInputException("Valid game type required as the first argument: connections, wordle")
+            throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
         } else {
             game_type = args[0]
         }
 
         if (payload.message.chat.type == "private") {
-            throw new InvalidInputException("Leaderboards are only available from groupchats with dave :)")
+            throw new UserErrorException("Leaderboards are only available from groupchats with dave :)")
         }
 
         // get all games for this month, the game id can be converted to a date
@@ -174,7 +174,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
                 break
             default:
-                throw new InvalidInputException("Valid game type required as the first argument: connections, wordle")
+                throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
         }
 
         console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
@@ -233,31 +233,40 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         })
     },
     "wordle": async (payload, settings, args) => {
-        const words = await getWordleList();
-        console.log("words count: ", words.length)
-        let date_today = new Date();
-        date_today.setHours(date_today.getHours() + 1)
-        const wordle = await getWordleForDay(date_today);
-
-        if (!wordle) throw new Error("Wordle not found for today")
-
-        console.log("solution: ", wordle)
-        const solution = solveWordle(wordle.wordle, words);
-        console.log("solved: ", solution)
+        const now = moment.tz('Europe/London').toDate()
+        let todays_wordle_no = printDateToNYTGameId(now, FIRST_WORDLE_DATE, true)
         let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
+        let previous_score = await get_game_submission(settings.db, todays_wordle_no, "wordle", bot_user_id);
 
-        let previous_score = await get_game_submission(settings.db, wordle.wordle_no, "wordle", bot_user_id);
 
         if (previous_score) {
-            return { "solution": solution, "wordle_no": wordle.wordle_no }
+            await setReaction({
+                api_key: settings.telegram_api_key,
+                payload: {
+                    chat_id: payload.message.chat.id,
+                    message_id: payload.message.message_id,
+                    reaction: [{
+                        "type": "emoji",
+                        "emoji": "🖕",
+                    }]
+                }
+            })
+            return
         }
+
+        const words = await getWordleList();
+        const wordle = await getWordleForDay(now);
+        if (!wordle) throw new Error("Wordle not found for today")
+
+        const solution = solveWordle(wordle.wordle, words);
+
 
         await insert_game_submission(settings.db, {
             game_id: wordle.wordle_no,
             game_type: "wordle",
             user_id: bot_user_id,
             submission: generateWordleShareable(wordle, solution) + '\n',
-            submission_date: date_today,
+            submission_date: now,
         })
 
         await sendMessage({
@@ -297,7 +306,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                     }]
                 }
             })
-            return [null, null]
+            return
         }
 
         const playerCallback: PlayerCallback = async (state, invalid_guess) => {
@@ -373,7 +382,5 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             submission: shareable,
             submission_date: date_today,
         })
-
-        return [state, connections]
     }
 }
