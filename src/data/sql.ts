@@ -47,7 +47,7 @@ export class Query<T> {
     }
 
     public toString() {
-        return this.query
+        return `${this.query}; with arguments: ${this.args}`
     }
 
     /**
