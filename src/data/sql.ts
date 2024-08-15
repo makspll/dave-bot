@@ -188,12 +188,12 @@ export async function unregister_user(db: D1Database, user: User): Promise<void>
 /// inserts or updates a game submission
 export async function insert_game_submission(db: D1Database, submission: GameSubmission): Promise<void> {
     return await new Query(`
-        INSERT INTO game_submissions (game_id, game_type, user_id, submission, submission_date, bot_entry) 
-        VALUES (?, ?, ?, ?, ?, ?) 
+        INSERT INTO game_submissions (game_id, game_type, user_id, submission, submission_date) 
+        VALUES (?, ?, ?, ?, ?) 
         ON CONFLICT DO UPDATE 
-        SET submission = ?, submission_date = ?, bot_entry = ?
-        `, submission.game_id, submission.game_type, submission.user_id, submission.submission, submission.submission_date.toISOString(), submission.bot_entry,
-        submission.submission, submission.submission_date.toISOString(), submission.bot_entry).run(db)
+        SET submission = ?, submission_date = ?
+        `, submission.game_id, submission.game_type, submission.user_id, submission.submission, submission.submission_date.toISOString(),
+        submission.submission, submission.submission_date.toISOString()).run(db)
 }
 
 
