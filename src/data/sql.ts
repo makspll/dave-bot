@@ -160,11 +160,11 @@ export async function register_consenting_user_and_chat(db: D1Database, user: Us
     console.log(`Registering user ${user.user_id} with alias ${user.alias} and chat ${chat.chat_id} with alias ${chat.alias}. Consent date: ${user.consent_date.toISOString()}`)
     return await new QueryBatch(
         new Query(`
-            INSERT INTO chats (chat_id, alias) VALUES (?, ?) ON CONFLICT DO UPDATE SET alias = ?
+            INSERT INTO chats (chat_id, alias) VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET alias = ?
         `, chat.chat_id, chat.alias, chat.alias),
         new Query(`
-            INSERT INTO users (user_id, alias, consent_date) VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET alias = ?, consent_date = ?
-        `, user.user_id, user.alias, user.consent_date.toISOString(), user.alias, user.consent_date.toISOString()),
+            INSERT INTO users (user_id, alias, consent_date, bot) VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET alias = ?, consent_date = ?
+        `, user.user_id, user.alias, user.consent_date.toISOString(), user.bot, user.alias, user.consent_date.toISOString()),
         new Query(`
             INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING
         `, chat.chat_id, user.user_id)
