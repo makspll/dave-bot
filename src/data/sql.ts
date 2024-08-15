@@ -123,15 +123,10 @@ export class QueryBatch {
     }
 
     public async execute(db: D1Database): Promise<void> {
-        try {
-            const result = await db.batch(this.queries.map(x => x.getBound(db)))
-            result.forEach(res => {
-                Query.unwrapD1Result<any>(res)
-            })
-        } catch (e) {
-            console.error(`Error in batch`, this.toString(), e)
-            throw new DBException(`Error in batch '${this}': '${e}'`)
-        }
+        const result = await db.batch(this.queries.map(x => x.getBound(db)))
+        result.forEach(res => {
+            Query.unwrapD1Result<any>(res)
+        })
     }
 }
 
