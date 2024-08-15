@@ -284,9 +284,9 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
                     reaction: [{ type: "emoji", emoji: reaction }]
                 }
             })
-
+            return false
         }
     }
 
-    return false
+    return true
 }
