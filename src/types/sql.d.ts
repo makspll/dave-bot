@@ -4,6 +4,7 @@ declare global {
         user_id: number,
         alias?: string,
         consent_date: Date,
+        bot: boolean
     }
 
     //  Added in Migration number: 0001 
@@ -20,8 +21,7 @@ declare global {
         game_type: GameType,
         user_id: number,
         submission: string,
-        submission_date: Date,
-        bot_entry: boolean
+        submission_date: Date
     }
 }
 

@@ -272,7 +272,6 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
                 user_id: user.user_id,
                 submission: message.message.text,
                 submission_date: new Date(),
-                bot_entry: message.message.from.is_bot
             })
 
             // let game_score = match.groups!.game_score

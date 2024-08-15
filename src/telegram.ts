@@ -100,7 +100,8 @@ export function user_from_message(message: TelegramMessage): User {
     return {
         user_id: message.message.from.id,
         alias: message.message.from.username || message.message.from.first_name || message.message.from.last_name || message.message.from.id.toString(),
-        consent_date: new Date()
+        consent_date: new Date(),
+        bot: message.message.from.is_bot
     }
 }
 

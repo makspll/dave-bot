@@ -54,7 +54,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     "optindave": async (payload, settings, args) => {
         let user_id = parseInt(settings.telegram_api_key.split(':')[0])
         await register_consenting_user_and_chat(settings.db, {
-            user_id, alias: "Dave", consent_date: new Date()
+            user_id, alias: "Dave", consent_date: new Date(), bot: true,
         }, chat_from_message(payload))
     },
     "optin": async (payload, settings, args) => {
@@ -181,7 +181,8 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
 
         const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
-        const bot_ids = new Set<number>()
+        const bot_ids = new Set(users.filter(x => x.bot).map(x => x.user_id))
+
         const player_ids_to_names = new Map<number, string>()
         let scores: Scores = new Map();
         submissions.forEach(s => {
@@ -193,9 +194,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             let score_map = scores.get(s.game_id)!
 
             let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
-            if (s.bot_entry) {
-                bot_ids.add(s.user_id)
-            }
             player_ids_to_names.set(s.user_id, user_name)
             switch (s.game_type) {
                 case "connections":
@@ -260,7 +258,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             user_id: bot_user_id,
             submission: generateWordleShareable(wordle, solution) + '\n',
             submission_date: date_today,
-            bot_entry: true
         })
 
         await sendMessage({
@@ -375,7 +372,6 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             user_id: bot_user_id,
             submission: shareable,
             submission_date: date_today,
-            bot_entry: true
         })
 
         return [state, connections]
