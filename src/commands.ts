@@ -176,7 +176,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             default:
                 throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
         }
-
+        first_id = 1
         console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
 
