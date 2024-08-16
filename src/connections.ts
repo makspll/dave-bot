@@ -244,14 +244,15 @@ export function generateConnectionsShareable(state: ConnectionsKnowledgeState, c
 
 
 export function parseConnectionsScoreFromShareable(message: string): ParsedConnectionsShareable | null {
-    const lines = message.split('\n');
-    if (lines.length < 4 || !lines[0].includes("Connections")) {
+    if (!message.includes("Connections")) {
         return null;
     }
+
     const puzzleMatch = message.match(/#(\d+)/);
     if (!puzzleMatch) {
         return null;
     }
+
     const id = parseInt(puzzleMatch[1]);
     // now parse the board, just count the lines which have 4 emojis which aren't the same
     const emojiRegex = /\p{Emoji_Presentation}/gu;

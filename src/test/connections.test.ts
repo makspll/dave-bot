@@ -20,7 +20,7 @@ it("Solves connections for 2024-07-28", async () => {
     const [state, connections] = await solveConnections(new Date("2024-07-28"), async (state, last_guess) => {
         state.tiles.sort()
         const words = state.tiles.slice(0, 4);
-        return words.join(",");
+        return words;
     })
     const shareable = generateConnectionsShareable(state, connections)
     console.log(shareable)
@@ -54,4 +54,11 @@ it('print date calculated correctly for years in the future', async () => {
     }
 
     expect(413).toBe(printDateToNYTGameId(new Date('2024-07-28'), new Date('2023-06-12')))
+})
+
+
+it('parses shareable score from', async () => {
+    let puzzle = "Connections Puzzle #443\n🟨🟪🟨🟩🟪🟨🟨🟦\n🟩🟩🟦🟪\n🟦🟩🟪🟦"
+    let score = parseConnectionsScoreFromShareable(puzzle)
+    expect(score).toEqual({ id: 443, mistakes: 4 })
 })
