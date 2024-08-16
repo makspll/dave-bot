@@ -261,17 +261,16 @@ export function parseConnectionsScoreFromShareable(message: string): ParsedConne
     if ((allEmojis.length % 4 !== 0) || allEmojis.length < 16) {
         return null;
     }
-
     let mistakes = 0;
     while (allEmojis.length >= 4) {
         let emojiRow = allEmojis.splice(0, 4);
         const uniqueEmojis = [...new Set(emojiRow)];
+        console.log(emojiRow, uniqueEmojis)
         if (uniqueEmojis.length !== 1) {
             mistakes++;
         }
     }
-    mistakes = Math.max(Math.min(mistakes, 0), 4);
-
+    mistakes = Math.min(Math.max(mistakes, 0), 4);
     return { id, mistakes };
 
 }

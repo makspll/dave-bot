@@ -62,3 +62,9 @@ it('parses shareable score from', async () => {
     let score = parseConnectionsScoreFromShareable(puzzle)
     expect(score).toEqual({ id: 443, mistakes: 4 })
 })
+
+it('parses shareable score no mistakes', async () => {
+    let puzzle = "Connections Puzzle #443\n🟨🟨🟨🟨🟪🟪🟪🟪\n🟩🟩🟩🟩\n🟦🟦🟦🟦"
+    let score = parseConnectionsScoreFromShareable(puzzle)
+    expect(score).toEqual({ id: 443, mistakes: 0 })
+})
