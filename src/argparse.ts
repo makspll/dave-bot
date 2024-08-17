@@ -36,7 +36,7 @@ export abstract class Arg<T> {
         if (this.position !== null) {
             const value = args[this.position]
             if (value === undefined) {
-                throw new UserErrorException(`Provide value for ${this.long_name} at position ${this.position + 1}. ${this.help}`)
+                return null
             }
             return value;
         } else {
@@ -55,11 +55,18 @@ export abstract class Arg<T> {
         }
     }
 
-    public get_value(args: string[]): T | null {
+    protected handle_missing_argument(): T {
+        if (this.position !== null) {
+            throw new UserErrorException(`Provide value for ${this.long_name} at position ${this.position + 1}. ${this.help}`)
+        } else {
+            throw new UserErrorException(`Provide value for ${this.long_name}. ${this.help}`)
+        }
+    }
+
+    public get_value(args: string[]): T {
         const string = this.get_string_value(args);
-        console.log(`Parsing ${this.long_name} with value ${string}`)
         if (string === null) {
-            return null;
+            return this.handle_missing_argument();
         }
         try {
             return this.parse(string)
@@ -134,6 +141,26 @@ export class DateArg extends Arg<Date> {
 
     public parse(arg: string): Date {
         return new Date(arg);
+    }
+}
+
+export class OptionalArg<T> extends Arg<T | null> {
+    public arg: Arg<T>;
+
+    constructor(arg: Arg<T>) {
+        super(arg.long_name, arg.short_name, arg.help);
+        this.arg = arg;
+    }
+
+    public override handle_missing_argument(): T | null {
+        return null
+    }
+
+    public parse(arg: string): T | null {
+        if (arg === '') {
+            return null;
+        }
+        return this.arg.parse(arg);
     }
 }
 

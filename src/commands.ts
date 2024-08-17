@@ -9,7 +9,7 @@ import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since
 import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
-import { EnumArg, ManyArgs, NumberArg, StringArg } from "./argparse.js";
+import { BoolArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
 import { send } from "process";
 
 export class UserErrorException extends Error {
@@ -79,7 +79,12 @@ export async function list_triggers_command(payload: TelegramMessage, settings: 
     await sendCommandMessage(payload, settings, text)
 }
 
-export async function optout_command(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
+export async function optout_command(payload: TelegramMessage, settings: ChatbotSettings, args: [boolean | null]): Promise<any> {
+    if (!args[0]) {
+        await sendCommandMessage(payload, settings, "Are you sure you want to optout? Use '/optout true' to confirm. This will wipe all your game submission history and other data")
+        return
+    }
+
     let message = "You have been opted out, to opt back in use '/optin'"
     await unregister_user(settings.db, user_from_message(payload))
     await sendCommandMessage(payload, settings, message)
@@ -363,7 +368,7 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
 
 export const COMMANDS: Command<any>[] = [
     new Command("listtriggers", "List all the triggers that Dave responds to", new ManyArgs([]), list_triggers_command),
-    new Command("optout", "Opt out of Dave's services", new ManyArgs([]), optout_command),
+    new Command("optout", "Opt out of Dave's services", new ManyArgs([new OptionalArg(new BoolArg("confirmation", "confirm you want to opt out"))]), optout_command),
     new Command("optin", "Opt in to Dave's services", new ManyArgs([]), optin_command),
     new Command("info", "Get opt in instructions from Dave", new ManyArgs([]), info_command),
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
