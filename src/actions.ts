@@ -19,11 +19,11 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
             return false
         }
 
-        let cmd = COMMANDS[cmd_word]
+        let cmd = COMMANDS.find(c => c.name == cmd_word)
         split_cmd.shift()
         if (cmd) {
             try {
-                await cmd(message, settings, split_cmd)
+                await cmd.run(message, settings, split_cmd)
             } catch (e) {
                 if (e instanceof UserErrorException) {
                     await sendMessage({
