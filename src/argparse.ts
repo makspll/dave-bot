@@ -4,6 +4,12 @@ export class ManyArgs<T extends any[]> {
     public args: { [K in keyof T]: Arg<T[K]> };
 
     constructor(args: { [K in keyof T]: Arg<T[K]> }) {
+        args.forEach((arg, i) => {
+            if (arg.short_name === null) {
+                arg.position = i;
+            }
+        })
+
         this.args = args;
     }
 
@@ -63,7 +69,7 @@ export abstract class Arg<T> {
 }
 
 export class StringArg extends Arg<string> {
-    constructor(long_name: string, short_name: string, help: string) {
+    constructor(long_name: string, help: string, short_name: string | null = null) {
         super(long_name, short_name, help);
     }
 
@@ -75,7 +81,7 @@ export class StringArg extends Arg<string> {
 export class EnumArg<T extends string> extends Arg<T> {
     public values: T[];
 
-    constructor(long_name: string, short_name: string, help: string, values: T[]) {
+    constructor(long_name: string, help: string, values: T[], short_name: string | null = null) {
         super(long_name, short_name, help);
         this.values = values;
     }
@@ -89,7 +95,7 @@ export class EnumArg<T extends string> extends Arg<T> {
 }
 
 export class NumberArg extends Arg<number> {
-    constructor(long_name: string, short_name: string, help: string) {
+    constructor(long_name: string, help: string, short_name: string | null = null) {
         super(long_name, short_name, help);
     }
 
@@ -100,7 +106,7 @@ export class NumberArg extends Arg<number> {
 }
 
 export class BoolArg extends Arg<boolean> {
-    constructor(long_name: string, short_name: string, help: string) {
+    constructor(long_name: string, help: string, short_name: string | null = null) {
         super(long_name, short_name, help);
     }
 
@@ -114,7 +120,7 @@ export class BoolArg extends Arg<boolean> {
 }
 
 export class DateArg extends Arg<Date> {
-    constructor(long_name: string, short_name: string, help: string) {
+    constructor(long_name: string, help: string, short_name: string | null = null) {
         super(long_name, short_name, help);
     }
 

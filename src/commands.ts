@@ -367,8 +367,8 @@ export const COMMANDS: Command<any>[] = [
     new Command("optin", "Opt in to Dave's services", new ManyArgs([]), optin_command),
     new Command("info", "Get opt in instructions from Dave", new ManyArgs([]), info_command),
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
-    new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "u", "Name of the user to attack")]), attack_command),
-    new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([new EnumArg<GameType>("game_type", "g", "The game type to get the leaderboard for", ["wordle", "connections"])]), leaderboard_command),
+    new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
+    new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections"])]), leaderboard_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
 ]
