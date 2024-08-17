@@ -157,8 +157,10 @@ export async function attack_command(payload: TelegramMessage, settings: Chatbot
     })
 }
 
-export async function leaderboard_command(payload: TelegramMessage, settings: ChatbotSettings, args: [GameType]): Promise<any> {
+export async function leaderboard_command(payload: TelegramMessage, settings: ChatbotSettings, args: [GameType, number | null, number | null]): Promise<any> {
     let game_type = args[0]
+    let start = args[1]
+    let end = args[2]
 
     if (payload.message.chat.type == "private") {
         throw new UserErrorException("Leaderboards are only available from groupchats with dave :)")
@@ -182,8 +184,13 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         default:
             throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
     }
+
+    if (start != null) {
+        first_id = start
+    }
+
     console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
-    const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
+    const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id, end ?? undefined)
 
     const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
     const bot_ids = new Set(users.filter(x => x.bot).map(x => x.user_id))
@@ -213,16 +220,19 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     })
 
-    let previous_scores = structuredClone(scores)
 
-    if (latest_id != undefined) {
-        delete previous_scores[latest_id]
+    let previous_leaderboard;
+    if (end != null && (!latest_id || end < latest_id)) {
+    } else {
+        let previous_scores = structuredClone(scores)
+
+        if (latest_id != undefined) {
+            delete previous_scores[latest_id]
+        }
+        previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
     }
-    console.log("scores: ", scores, "previous_scores: ", previous_scores)
-    const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
-    const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
 
-    console.log("current leaderboard: ", current_leaderboard, "previous leaderboard: ", previous_leaderboard)
+    const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
     const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}'ers`, previous_leaderboard)
 
     await sendMessage({
@@ -373,7 +383,11 @@ export const COMMANDS: Command<any>[] = [
     new Command("info", "Get opt in instructions from Dave", new ManyArgs([]), info_command),
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
     new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
-    new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections"])]), leaderboard_command),
+    new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([
+        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections"]),
+        new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
+        new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
+    ]), leaderboard_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
 ]

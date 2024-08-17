@@ -192,13 +192,18 @@ export async function insert_game_submission(db: D1Database, submission: GameSub
 }
 
 
-export async function get_game_submissions_since_game_id(db: D1Database, game_id: number, game_type: GameType, chat_id: number): Promise<GameSubmission[]> {
+export async function get_game_submissions_since_game_id(db: D1Database, game_id: number, game_type: GameType, chat_id: number, last_game_id: number | undefined = undefined): Promise<GameSubmission[]> {
+    let last_id_filter = last_game_id === undefined ? "" : "AND gs.game_id > ?"
+    let args = [game_id, game_type, chat_id]
+    if (last_game_id !== undefined) {
+        args.push(last_game_id)
+    }
     return await new Query<GameSubmission>(`
         SELECT gs.*
         FROM game_submissions gs
         JOIN chat_users cu ON gs.user_id = cu.user_id
-        WHERE gs.game_id >= ? AND gs.game_type = ? AND cu.chat_id = ?
-        `, game_id, game_type, chat_id).getMany(db)
+        WHERE gs.game_id >= ? AND gs.game_type = ? AND cu.chat_id = ? ${last_id_filter}
+        `, args).getMany(db)
 }
 
 export async function get_game_submission(db: D1Database, game_id: number, game_type: GameType, user_id: number): Promise<GameSubmission | null> {
