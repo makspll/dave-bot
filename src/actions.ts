@@ -261,10 +261,12 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     for (let [regex, game_type] of regex_and_game_types) {
         let match = message.message.text.match(regex)
         if (match) {
+            console.log("game submission detected for: ", game_type)
             let game_id = parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
 
             let user = user_from_message(message)
 
+            console.log("inserting game submission:", "game_id:", game_id, "game_type:", game_type, "user_id:", user.user_id, "submission:", message.message.text)
             await insert_game_submission(settings.db, {
                 game_id: game_id,
                 game_type: game_type,
