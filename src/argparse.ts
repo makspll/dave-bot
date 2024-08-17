@@ -96,7 +96,7 @@ export class EnumArg<T extends string> extends Arg<T> {
 
     public parse(arg: string): T {
         if (!this.values.includes(arg as T)) {
-            throw new UserErrorException(`Expected ${this.long_name} to be one of ${this.values.join(', ')} but got ${arg}`)
+            throw new UserErrorException(`Expected ${this.long_name} to be one of '${this.values.join(', ')}' but got ${arg}`)
         }
         return arg as T
     }
