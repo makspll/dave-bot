@@ -58,8 +58,10 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
         method,
         body: data,
     }).then(res => res.json())
-        .then(res => {
-            const data: any = res
+        .then((data: any) => {
+            if (!data.ok) {
+                throw new Error("Failed to send telegram message: " + data.responseText, data.status)
+            }
             console.log("Successfully sent telegram message", data)
             return data.result.message_id as number
         }).catch((err: Error) => {
@@ -89,7 +91,10 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
     await fetch(`${url}?${parameters.toString()}`, {
         method: "GET",
     }).then(res => res.json())
-        .then(res => {
+        .then((res: any) => {
+            if (!res.ok) {
+                throw new Error("Failed to send telegram reaction: " + res.responseText, res.status)
+            }
             const data: any = res
             console.log("Successfully sent telegram reaction", data)
         }).catch((err: Error) => {
