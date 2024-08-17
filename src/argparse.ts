@@ -46,6 +46,7 @@ export abstract class Arg<T> {
 
     public get_value(args: string[]): T | null {
         const string = this.get_string_value(args);
+        console.log(`Parsing ${this.long_name} with value ${string}`)
         if (string === null) {
             return null;
         }
