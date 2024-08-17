@@ -1,6 +1,6 @@
 import { sendMessage } from "./telegram.js";
 import { commands_and_filter_optins, hardlyfier, keywords, nyt_games_submission, screamo, sickomode } from "./actions.js";
-import { COMMANDS } from "./commands.js";
+import { COMMANDS, connections_command, wordle_command } from "./commands.js";
 import { TRIGGERS } from "./data.js";
 import * as util from "node:util";
 
@@ -61,8 +61,8 @@ export default {
                     }
                 }
 
-                await COMMANDS.wordle(message, settings, [])
-                await COMMANDS.connections(message, settings, [])
+                await wordle_command(message, settings)
+                await connections_command(message, settings)
                 break;
         }
     },
