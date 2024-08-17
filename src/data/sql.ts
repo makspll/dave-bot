@@ -193,7 +193,7 @@ export async function insert_game_submission(db: D1Database, submission: GameSub
 
 
 export async function get_game_submissions_since_game_id(db: D1Database, game_id: number, game_type: GameType, chat_id: number, last_game_id: number | undefined = undefined): Promise<GameSubmission[]> {
-    let last_id_filter = last_game_id === undefined ? "" : "AND gs.game_id > ?"
+    let last_id_filter = last_game_id === undefined ? "" : "AND gs.game_id <= ?"
     let args = [game_id, game_type, chat_id]
     if (last_game_id !== undefined) {
         args.push(last_game_id)
