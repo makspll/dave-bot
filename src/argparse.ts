@@ -34,7 +34,11 @@ export abstract class Arg<T> {
 
     public get_string_value(args: string[]): string | null {
         if (this.position !== null) {
-            return args[this.position];
+            const value = args[this.position]
+            if (value === undefined) {
+                throw new UserErrorException(`Provide value for ${this.long_name} at position ${this.position}`)
+            }
+            return value;
         } else {
             for (const arg of args) {
                 const [name, value] = arg.split('=');
@@ -60,8 +64,12 @@ export abstract class Arg<T> {
         try {
             return this.parse(string)
         } catch (e) {
-            console.error(`Error parsing argument ${this.long_name} with value ${string}`, e)
-            throw new UserErrorException(`Expected ${this.long_name} to be of type ${this.constructor.name} but got ${string}`)
+            if (e instanceof UserErrorException) {
+                throw e
+            } else {
+                console.error(`Error parsing argument ${this.long_name} with value ${string}`, e)
+                throw new UserErrorException(`Expected ${this.long_name} to be of type ${this.constructor.name} but got ${string}`)
+            }
         }
     }
 
