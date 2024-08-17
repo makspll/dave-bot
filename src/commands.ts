@@ -189,7 +189,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         first_id = start
     }
 
-    console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
+    console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id, "end: ", end, "latest_id:", latest_id)
     const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id, end ?? undefined)
 
     const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
@@ -222,8 +222,8 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
 
     let previous_leaderboard;
-    if (end != null && (!latest_id || end < latest_id)) {
-    } else {
+    const dontUsePrevious = end != null && (!latest_id || end < latest_id)
+    if (!dontUsePrevious) {
         let previous_scores = structuredClone(scores)
 
         if (latest_id != undefined) {
@@ -299,8 +299,6 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
 
     let previous_submission = await get_game_submission(settings.db, connections_.id, "connections", bot_user_id);
 
-    console.log("conenctions: ", connections_, "previous_submission: ", previous_submission)
-
     if (previous_submission) {
         await setReaction({
             api_key: settings.telegram_api_key,
@@ -317,7 +315,6 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
     }
 
     const playerCallback: PlayerCallback = async (state, invalid_guess) => {
-        console.log("Player Callback")
         let messages: ChatCompletionMessageParam[] = []
         messages.push({ role: 'system', content: convertGuessToPrompt(null) })
         messages.push({ role: 'user', content: "Welcome to connections bot, here are your 16 words: '" + state.tiles.join(",") + "'" })

@@ -44,7 +44,6 @@ export abstract class Arg<T> {
                 const [name, value] = arg.split('=');
 
                 const trimmed_arg = name.trim().replace('-', '');
-                console.log(`Checking ${trimmed_arg} against ${this.long_name} and ${this.short_name}`)
                 const matches = trimmed_arg.startsWith(this.long_name) ||
                     (this.short_name !== null && trimmed_arg.startsWith(this.short_name));
                 if (matches) {
