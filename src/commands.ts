@@ -169,14 +169,15 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         switch (game_type) {
             case "connections":
                 first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
+                first_id = 413
                 break
             case "wordle":
                 first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
+                first_id = 1134
                 break
             default:
                 throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
         }
-        first_id = 1
         console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
         const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
 
