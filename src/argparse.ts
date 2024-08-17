@@ -36,7 +36,7 @@ export abstract class Arg<T> {
         if (this.position !== null) {
             const value = args[this.position]
             if (value === undefined) {
-                throw new UserErrorException(`Provide value for ${this.long_name} at position ${this.position}`)
+                throw new UserErrorException(`Provide value for ${this.long_name} at position ${this.position + 1}. ${this.help}`)
             }
             return value;
         } else {
