@@ -36,7 +36,9 @@ export class Command<T extends any[]> {
 
     public async run(payload: TelegramMessage, settings: ChatbotSettings, args: string[]) {
         try {
+            console.log("Running command: ", this.name, "with args: ", args)
             const parsed_args = this.args.get_values(args);
+            console.log("Parsed args: ", parsed_args)
             await this.callback(payload, settings, parsed_args);
         } catch (e) {
             if (e instanceof UserErrorException) {
