@@ -203,7 +203,7 @@ export async function get_game_submissions_since_game_id(db: D1Database, game_id
         FROM game_submissions gs
         JOIN chat_users cu ON gs.user_id = cu.user_id
         WHERE gs.game_id >= ? AND gs.game_type = ? AND cu.chat_id = ? ${last_id_filter}
-        `, args).getMany(db)
+        `, ...args).getMany(db)
 }
 
 export async function get_game_submission(db: D1Database, game_id: number, game_type: GameType, user_id: number): Promise<GameSubmission | null> {
