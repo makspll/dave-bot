@@ -80,9 +80,9 @@ it('correctly converts daily scores to leaderboard', async () => {
             ])]
         ]),
         "scorekinds": new Map([
-            ["avg", { "title": "Avg.", "ascending": true }],
-            ["games", { "title": "N", "ascending": true }],
-            ["avg_delta", { "title": "Avg. Diff", "ascending": true }]
+            ["avg", { "title": "Avg", "ascending": true }],
+            ["games", { "title": "N", "ascending": false }],
+            ["avg_delta", { "title": "Avg-", "ascending": true }]
         ])
     })
 })

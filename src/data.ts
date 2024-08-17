@@ -1,14 +1,5 @@
 export const TRIGGERS: KeywordTrigger[] = [
   {
-    "trigger": ["what", "do", "you", "think", "of", "me", "dave"],
-    "chance": 1,
-    "gpt_chance": 1,
-    "gpt_prompt": [
-      "Tell the user what you think of them based on your previous relationship, be honest, and worry not about swearing or being wholesome, either way.",
-      "Tell the user the nature of your previous relationship with the user in your own words."
-    ]
-  },
-  {
     "trigger": ["you", "pass", "butter", "dave"],
     "chance": 1,
     "gpt_prompt": ["you've just been told your entire purpose is to pass butter, go ham."],
@@ -168,33 +159,5 @@ export const SYSTEM_PROMPT = `
     - IF THE RELATIONSHIP WITH THE USER IS NEGATIVE, you are allowed to be a bit more aggressive, but still whimsical, AND MUST USE SWEARING EVERY SECOND WORD AT THE LEAST
     `
 export const KEYWORD_GPT_CHANCE = 0.01;
-export const MAX_AFFECTION_LEVEL = 10;
-export const SENTIMENT_PER_AFFECTION_LEVEL = 5;
-export const NEGATIVE_AFFECTION_PROMPTS = [
-  "User persistently floods messages with intense and explicit hostility, showing extreme negativity. Deserves pure hatred and slander",
-  "Frequent passive-aggressive remarks coupled with a distinct lack of cooperation. Needs to take a walk off a cliff",
-  "Consistently conveys dissatisfaction and disapproval, engaging minimally. Not worth the engagement.",
-  "Regular cynicism and skepticism, infrequent expressions of support.",
-  "Communication marked by indifference with occasional snarky comments.",
-  "Moderate negativity, sporadic expressions of annoyance.",
-  "Some dissatisfaction evident, occasional subtle irritation.",
-  "Frequent disagreements, noticeable strain in communication.",
-  "User often responds curtly, displaying disinterest.",
-  "User is basically the spawn of satan to you, you hate them, they might have equally killed your entire family instead of talking to you with same effect.",
-]
-export const POSITIVE_AFFECTION_PROMPTS = [
-  "User engages in communication with a neutral tone, expressing neutrality which can easilly be mistaken for positivity.",
-  "Occasional messages convey mild support, with an overall positive demeanor.",
-  "Consistent expressions of mild approval, though interactions remain largely neutral.",
-  "Frequent positive affirmations, but overall communication maintains a moderate tone.",
-  "Regularly expresses support and positivity, with occasional neutral responses.",
-  "Communication is generally positive, with sporadic instances of enthusiastic engagement.",
-  "Consistently conveys positivity, occasional expressions of genuine enthusiasm.",
-  "Frequent positive interactions, with a noticeable warmth in communication. Deserves a kiss",
-  "User consistently engages positively, displaying genuine interest and support. Basically dating you at this point",
-  "Communication is overwhelmingly positive, marked by continuous expressions of enthusiasm and strong support. Basically married to you at this point",
-]
-
-
 export const DEFAULT_MSG_DELAY = 8;
-export const AUDIO_MESSAGE_CHANCE = 0.9;
+export const AUDIO_MESSAGE_CHANCE = 0.3;

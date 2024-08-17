@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { formatDateToYYYYMMDD } from './utils.js';
+import { formatDateToYYYYMMDD, printDateToNYTGameId } from './utils.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{
@@ -26,7 +26,7 @@ import { formatDateToYYYYMMDD } from './utils.js';
 
 
 export function isInvalidGuess(guess: Guess): guess is InvalidGuess {
-    return (guess as InvalidGuess).invalid === undefined;
+    return (guess as InvalidGuess).invalid !== undefined;
 }
 
 export function isValidGuess(guess: Guess): guess is ValidGuess {
@@ -36,17 +36,13 @@ export function makeInvalidGuess(invalid: string, guess: ValidGuess): InvalidGue
     return { invalid, guess: guess.guess };
 }
 
-export function printDateToConnectionsNumber(printDate: string | Date): number {
-    const days = Math.round((+new Date(printDate) - +new Date('2023-06-12')) / (1000 * 60 * 60 * 24));
-    return days + 1;
-}
 
 export async function getConnectionsForDay(date: Date): Promise<ConnectionsResponse> {
     try {
         let response = await axios.get(`https://www.nytimes.com/svc/connections/v2/${formatDateToYYYYMMDD(date)}.json`);
         // calculate days between June 12, 2023 and the print date
         let data = response.data
-        let newId = printDateToConnectionsNumber(data.print_date);
+        let newId = printDateToNYTGameId(data.print_date, new Date('2023-06-12'));
         data.id = newId
         return data;
     } catch (error) {
@@ -70,7 +66,7 @@ export function generateInitialPrompt() {
     you are a chatbot playing the connections game. The user is the game master and will give you hints and guidance throughout the game.
     The game master will provide you with a list of 16 words, each word belongs to a category. Your goal is to categorise these words into 4 groups.
     Each group should contain 4 words, the words in each group are connected in some way. You only need to name the words which are connected, not the category itself.
-    You will make guesses by providing 4 COMMA SEPARATED AND CAPITALISED WORDS. The game master will tell you if your guess is correct, one word away or incorrect.
+    You will make guesses by providing 4 words in a JSON array of strings. The game master will tell you if your guess is correct, one word away or incorrect.
     If you make a mistake you will lose a life, you have 4 lives. If you guess correctly you will have to guess another 4 words from the remaining words.
     Here is an example game: 
     '''
@@ -86,8 +82,7 @@ export function generateInitialPrompt() {
     Bot: 'ARE,RADIUS,REVERSE,RIGHT'
     GM: Correct! Your guess belongs to the category: 'WORDS REPRESENTED BY THE LETTER "R"'. You have successfully categorised all words.
     '''
-    ONLY RESPOND WITH 4 COMMA SEPARATED AND CAPITALISED WORDS. AND NOTHING ELSE.
-    I REPEAT ONLY RESPOND WITH 4 COMMA SEPARATED AND CAPITALISED WORDS. AND NOTHING ELSE. NO EMOJIS, NO PUNCTUATION, NO SPACES, NO COMMENTS.
+    ONLY RESPOND WITH A JSON LIST OF 4 STRINGS. AND NOTHING ELSE.
     `;
 }
 
@@ -115,7 +110,7 @@ export function convertGuessToPrompt(guess: Guess | null) {
 }
 
 export interface PlayerCallback {
-    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): any
+    (state: ConnectionsKnowledgeState, invalid_guess: InvalidGuess | null): Promise<string[]>
 }
 
 // solves connections using a callback function that takes the current state of the game and outputs the list of 4 words to guess
@@ -127,7 +122,7 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
     all_tiles = all_tiles.sort(() => Math.random() - 0.5);
     let state = await initializeConnectionsKnowledgeState(all_tiles);
 
-    while (state.attempts > 0) {
+    while (state.attempts > 0 && state.tiles.length > 0) {
         // attempt to get valid input twice before failing
         let input_attempts = 0;
         let last_guess = guessCategory(await playerCallback(state, null), connections);
@@ -171,16 +166,10 @@ export async function solveConnections(date: Date, playerCallback: PlayerCallbac
 //   guess: ["word1", "word2", "word3", "word4"]
 //   remaining: ["word1", "word2", "word3", "word4", ...] // if the guess was correct
 // }
-export function guessCategory(guess: string, connections: ConnectionsResponse): Guess {
-    let words: string[] = []
-    if (typeof (guess) === 'string') {
-        words = guess.split(',').map(x => x.replace(/\W/g, '').trim());
-    } else {
-        words = []
-    }
+export function guessCategory(words: string[], connections: ConnectionsResponse): Guess {
 
-    if (words == null || words.length !== 4) {
-        let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 comma separated words", guess: words };
+    if (words.length !== 4) {
+        let invalid_guess: InvalidGuess = { invalid: "guess does not contain 4 words", guess: words };
         return invalid_guess;
     }
 
@@ -234,7 +223,7 @@ export function guessCategory(guess: string, connections: ConnectionsResponse): 
 // 🟪🟪🟪🟪
 export function generateConnectionsShareable(state: ConnectionsKnowledgeState, connections: ConnectionsResponse) {
     let shareable = 'Connections\n';
-    shareable += `Puzzle ${connections.id} \n`;
+    shareable += `Puzzle #${connections.id}\n`;
     // give each category a color in order from green,orange through blue and purple:
     const colors = ['🟩', '🟨', '🟦', '🟪'];
     let category_to_color = connections.categories.reduce(
@@ -255,14 +244,15 @@ export function generateConnectionsShareable(state: ConnectionsKnowledgeState, c
 
 
 export function parseConnectionsScoreFromShareable(message: string): ParsedConnectionsShareable | null {
-    const lines = message.split('\n');
-    if (lines.length < 4 || !lines[0].includes("Connections")) {
+    if (!message.includes("Connections")) {
         return null;
     }
+
     const puzzleMatch = message.match(/#(\d+)/);
     if (!puzzleMatch) {
         return null;
     }
+
     const id = parseInt(puzzleMatch[1]);
     // now parse the board, just count the lines which have 4 emojis which aren't the same
     const emojiRegex = /\p{Emoji_Presentation}/gu;
@@ -271,16 +261,16 @@ export function parseConnectionsScoreFromShareable(message: string): ParsedConne
     if ((allEmojis.length % 4 !== 0) || allEmojis.length < 16) {
         return null;
     }
-
     let mistakes = 0;
     while (allEmojis.length >= 4) {
         let emojiRow = allEmojis.splice(0, 4);
         const uniqueEmojis = [...new Set(emojiRow)];
+        console.log(emojiRow, uniqueEmojis)
         if (uniqueEmojis.length !== 1) {
             mistakes++;
         }
     }
-
+    mistakes = Math.min(Math.max(mistakes, 0), 4);
     return { id, mistakes };
 
 }

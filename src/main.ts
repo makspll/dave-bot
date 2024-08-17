@@ -1,5 +1,5 @@
 import { sendMessage } from "./telegram.js";
-import { commands_and_filter_optins, connections_slur, hardlyfier, keywords, screamo, sickomode, wordle_slur } from "./actions.js";
+import { commands_and_filter_optins, hardlyfier, keywords, nyt_games_submission, screamo, sickomode } from "./actions.js";
 import { COMMANDS } from "./commands.js";
 import { TRIGGERS } from "./data.js";
 import * as util from "node:util";
@@ -10,6 +10,7 @@ export interface Env {
     KV_STORE: KVNamespace,
     TELEGRAM_API_KEY: string,
     OPEN_AI_KEY: string,
+    DB: D1Database;
 }
 
 function get_settings(env: Env): ChatbotSettings {
@@ -18,7 +19,8 @@ function get_settings(env: Env): ChatbotSettings {
         openai_api_key: env.OPEN_AI_KEY,
         main_chat_id: env.MAIN_CHAT_ID,
         god_id: env.GOD_ID,
-        kv_namespace: env.KV_STORE
+        kv_namespace: env.KV_STORE,
+        db: env.DB
     }
 }
 
@@ -38,12 +40,12 @@ export default {
                         text: `Good morning! It's wordlin time!`
                     },
                 })
-                let message = {
+                let message: TelegramMessage = {
                     message: {
                         chat: {
                             id: settings.main_chat_id,
                             title: "",
-                            type: ""
+                            type: "private"
                         },
                         message_id: 0,
                         from: {
@@ -78,8 +80,7 @@ export default {
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
                     let actions: [string, Action][] = [
                         ["commands and optin filters", commands_and_filter_optins],
-                        ["connections", connections_slur],
-                        ["wordle", wordle_slur],
+                        ["nyt game submissions", nyt_games_submission],
                         ["hardly know her", hardlyfier],
                         ["dave sickomode", sickomode],
                         ["keyword triggers", keywords(TRIGGERS)],
@@ -99,8 +100,8 @@ export default {
                     console.log(JSON.stringify(payload || {}))
                 }
             }
-        } catch (error) {
-            console.error("Error in fetch callback", error)
+        } catch (error: any) {
+            console.error("Error in fetch callback", error, error.message)
             await sendMessage({
                 payload: {
                     chat_id: env.GOD_ID,
@@ -108,7 +109,8 @@ export default {
                 },
                 api_key: env.TELEGRAM_API_KEY,
                 open_ai_key: env.OPEN_AI_KEY,
-                audio_chance: 0
+                audio_chance: 0,
+                delay: 0,
             })
         }
 

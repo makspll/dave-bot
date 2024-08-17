@@ -16,7 +16,7 @@ export function makeTestMessage(override: DeepPartial<TelegramMessage> | undefin
             chat: {
                 id: 0,
                 title: '',
-                type: '',
+                type: 'private',
                 ...(override?.message?.chat || {})
             },
             date: override?.message?.date || 0,

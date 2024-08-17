@@ -291,7 +291,7 @@ export function isWordleWord(word: string): word is WordleWord {
 // generate emoji based wordle shareable
 // of the form:
 // Wordle 1,133 6/6*
-
+//
 // ⬛🟨⬛⬛⬛
 // ⬛⬛🟩⬛⬛
 // 🟨⬛🟩⬛⬛
@@ -301,22 +301,26 @@ export function isWordleWord(word: string): word is WordleWord {
 export function generateWordleShareable(solution: WordleResponse, solve_output: WordleSolveOutput) {
     let guesses_length = solve_output.guesses.length == 7 ? 'X' : solve_output.guesses.length.toString();
 
-    let shareable = escapeMarkdown(`Wordle ${solution.wordle_no} ${guesses_length}/6*\n\n`);
+    let shareable = `Wordle ${solution.wordle_no} ${guesses_length}/6*\n\n`;
     for (const guess of solve_output.guesses) {
-        const guess_idx = solve_output.guesses.indexOf(guess);
-        shareable += emojify_guess(guess, solution.wordle);
-        const words_before = (solve_output.available_words[guess_idx - 1] || []).length || 0;
-        const words_now = solve_output.available_words[guess_idx].length;
-        const change = words_before == 0 ? "" : `(↓${(((words_before - words_now) / words_before) * 100).toFixed(2)}%)`;
-        shareable += ` ||${guess}||` + escapeMarkdown(` Words: ${String(words_now).padEnd(7, ' ')}${change}`);
-        if (solve_output.available_words[guess_idx].length < 0) {
-            for (const word of solve_output.available_words[guess_idx]) {
-                shareable += emojify_guess(word, solution.wordle) + `||${word}||` + ',';
-            }
-        }
-        shareable += '\n';
+        shareable += emojify_guess(guess, solution.wordle) + '\n';
     }
+
     return shareable;
+}
+
+
+
+
+export function score_from_wordle_shareable(shareable: string): WordleScore {
+    // the 3rd word
+    const score_string = shareable.split(' ')[2];
+    const hard_mode = shareable.includes('*');
+    const guesses = score_string.split('/')[0].replace(/[xX]/, '7');
+    return {
+        'guesses': Math.min(Math.max(parseInt(guesses), 1), 7),
+        'hard_mode': hard_mode
+    };
 }
 
 function emojify_guess(guess: WordleWord, solution: WordleWord) {

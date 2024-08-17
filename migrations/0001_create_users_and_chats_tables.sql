@@ -13,7 +13,7 @@ CREATE TABLE chats (
 CREATE TABLE chat_users (
     chat_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    FOREIGN KEY (chat_id) REFERENCES chats(chat_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (chat_id) REFERENCES chats(chat_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     PRIMARY KEY (chat_id, user_id)
 );

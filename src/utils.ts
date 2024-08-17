@@ -1,6 +1,16 @@
 import stringWidth from "string-width";
 import { AFINN } from "./sem.js";
 
+
+export const FIRST_WORDLE_DATE = new Date('2021-06-19')
+export const FIRST_CONNECTIONS_DATE = new Date('2023-06-12')
+
+export function printDateToNYTGameId(printDate: string | Date, firstPrintDate: Date, starts_with_zero = false): number {
+    const days = Math.round((+new Date(printDate) - +new Date(firstPrintDate)) / (1000 * 60 * 60 * 24));
+    return starts_with_zero ? days : days + 1;
+}
+
+
 export function formatDateToYYYYMMDD(date: Date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based

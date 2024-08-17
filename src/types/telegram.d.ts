@@ -1,4 +1,5 @@
 declare global {
+    type TelegramChatType = "private" | "group" | "supergroup" | "channel"
     interface TelegramMessage {
         message: {
             message_id: number
@@ -13,7 +14,7 @@ declare global {
             chat: {
                 id: number
                 title: string
-                type: string
+                type: TelegramChatType
             }
             date: number
             text: string
@@ -27,6 +28,21 @@ declare global {
         audio_chance?: number
         delay?: number
         payload: TelegramSendPayload
+    }
+
+    type TelegramEmoji = '👍' | '👎' | '❤' | '🔥' | '🥰' | '👏' | '😁' | '🤔' | '🤯' | '😱' | '🤬' | '😢' | '🎉' | '🤩' | '🤮' | '💩' | '🙏' | '👌' | '🕊' | '🤡' | '🥱' | '🥴' | '😍' | '🐳' | '❤‍🔥' | '🌚' | '🌭' | '💯' | '🤣' | '⚡' | '🍌' | '🏆' | '💔' | '🤨' | '😐' | '🍓' | '🍾' | '💋' | '🖕' | '😈' | '😴' | '😭' | '🤓' | '👻' | '👨‍💻' | '👀' | '🎃' | '🙈' | '😇' | '😨' | '🤝' | '✍' | '🤗' | '🫡' | '🎅' | '🎄' | '☃' | '💅' | '🤪' | '🗿' | '🆒' | '💘' | '🙉' | '🦄' | '😘' | '💊' | '🙊' | '😎' | '👾' | '🤷‍♂' | '🤷' | '🤷‍♀' | '😡'
+
+    interface TelegramReactionType {
+        type: "emoji",
+        emoji: TelegramEmoji
+    }
+    interface TelegramSetReactionRequest {
+        api_key: string,
+        payload: {
+            chat_id: number
+            message_id: number
+            reaction: TelegramReactionType[]
+        }
     }
 
     interface TelegramSendPayload {

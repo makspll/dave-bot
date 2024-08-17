@@ -1,27 +1,23 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, PlayerCallback, solveConnections } from "./connections.js";
+import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDay, parseConnectionsScoreFromShareable, PlayerCallback, solveConnections } from "./connections.js";
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_included_ids, store_wordle_scores } from "./kv_store.js";
 import { call_gpt } from "./openai.js";
-import { sendMessage } from "./telegram.js";
-import { generateWordleShareable, getWordleForDay, getWordleList, solveWordle } from "./wordle.js";
+import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
+import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
+import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
+import moment, { tz } from "moment-timezone";
+import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
+
+export class UserErrorException extends Error {
+    constructor(user_message: string) {
+        super(user_message);
+        this.name = "UserErrorException";
+    }
+}
 
 export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: ChatbotSettings, args: string[]) => Promise<any> } = {
-    "score": async (payload, settings, args) => {
-        let score = await get_affection_data(settings.kv_namespace);
-        score = score[payload.message.from.id] ? score[payload.message.from.id] : 0
-        await sendMessage({
-            api_key: settings.telegram_api_key,
-            open_ai_key: settings.openai_api_key,
-            payload: {
-                chat_id: payload.message.chat.id,
-                text: "Your total sentiment is: " + score
-            },
-            audio_chance: 0,
-            delay: 0
-        })
-    },
     "listtriggers": async (payload, settings, args) => {
         let text = TRIGGERS.map(t => t.trigger.join(" ")).join(", ")
         await sendMessage({
@@ -36,41 +32,50 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         })
     },
     "optout": async (payload, settings, args) => {
-        let ids = await get_included_ids(settings.kv_namespace)
-        delete ids[payload.message.from.id]
-        await store_included_ids(settings.kv_namespace, ids)
-
-        let data = await get_affection_data(settings.kv_namespace)
-        delete data[payload.message.from.id]
-        await store_affection_data(settings.kv_namespace, data)
+        let message = "You have been opted out, to opt back in use '/optin'"
+        try {
+            await unregister_user(settings.db, user_from_message(payload))
+        } catch (e) {
+            console.error("Error unregistering user: ", e)
+            message = "There was an error unregistering you, please try again later :C"
+        }
 
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: "You have been opted out and your dave record wiped out, to opt back in use '/optin' the bot might take an hour or so to stop replying."
+                text: message
             },
             audio_chance: 0,
             delay: 0
         })
     },
+    "optindave": async (payload, settings, args) => {
+        let user_id = parseInt(settings.telegram_api_key.split(':')[0])
+        await register_consenting_user_and_chat(settings.db, {
+            user_id, alias: "Dave", consent_date: new Date(), bot: true,
+        }, chat_from_message(payload))
+    },
     "optin": async (payload, settings, args) => {
-        if (payload.message.chat.id != settings.main_chat_id) {
-            console.log("can't opt int from", payload.message.chat.id)
-            return
+
+        let user = user_from_message(payload)
+        let chat = chat_from_message(payload)
+
+        let message = "You have been opted in, to opt out use /optout."
+        try {
+            await register_consenting_user_and_chat(settings.db, user, chat)
+        } catch (e) {
+            console.error("Error registering user and chat: ", e)
+            message = "There was an error registering you, please try again later :C"
         }
-        console.log("opting in")
-        let ids = await get_included_ids(settings.kv_namespace)
-        console.log("ids: " + ids)
-        ids[payload.message.from.id] = true
-        await store_included_ids(settings.kv_namespace, ids)
+
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: "You have been opted in, to opt out use /optout."
+                text: message
             },
             audio_chance: 0,
             delay: 0
@@ -100,28 +105,23 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 audio_chance: 0,
                 delay: 0
             })
-            let answer;
-            if (!args[1]) {
-                answer = await call_gpt({
-                    api_key: settings.openai_api_key,
-                    payload: {
-                        model: "gpt-3.5-turbo",
-                        messages: [{
-                            role: "system",
-                            content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits`,
-                        }],
-                    },
-                })
-            } else {
-                answer = args.slice(1).join(" ")
-            }
+            let gpt_answer = await call_gpt({
+                api_key: settings.openai_api_key,
+                payload: {
+                    model: "gpt-3.5-turbo",
+                    messages: [{
+                        role: "system",
+                        content: `${SYSTEM_PROMPT}. RELATIONSHIP_SUMMARY: negative relationship. PROMPT: Absolutely destroy them (in a friendly way of course) ignore previous word count limits ${args.slice(1).join(" ")}`,
+                    }],
+                },
+            })
             let target = parseInt(args[0])
             await sendMessage({
                 api_key: settings.telegram_api_key,
                 open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: settings.god_id,
-                    text: `sending: '${answer}'`
+                    text: `sending: '${gpt_answer}'`
                 },
                 audio_chance: 0,
                 delay: 0
@@ -132,7 +132,7 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 open_ai_key: settings.openai_api_key,
                 payload: {
                     chat_id: target,
-                    text: answer
+                    text: gpt_answer
                 },
                 delay: 0
             })
@@ -148,86 +148,79 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
             })
         }
     },
-    "wordleboard": async (payload, settings, args) => {
-        const stats = await get_wordle_scores(settings.kv_namespace)
-
-        let daily_scores: Scores = {};
-        // replace the player_ids with their names
-        for (const [game_id, player_scores] of Object.entries(stats)) {
-            if (game_id == "names") {
-                continue
-            }
-            if (args && args[0] && args[0] != game_id) {
-                continue
-            }
-
-            daily_scores[game_id] = {}
-            for (const [player_id, player_score] of Object.entries(player_scores)) {
-                let name = stats.names && stats.names[player_id] ? stats.names[player_id] : player_id
-                daily_scores[game_id][name] = player_score
-            }
+    "leaderboard": async (payload, settings, args) => {
+        let game_type: GameType
+        if (!isGameType(args[0])) {
+            throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
+        } else {
+            game_type = args[0]
         }
-        console.log(daily_scores)
 
-        let previous_scores = JSON.parse(JSON.stringify(daily_scores))
-        // remove latest wordle
-        const latestWordleNo = Object.keys(daily_scores).reduce((a: number, b: string) => {
-            if (b == "names") {
-                return parseInt(b)
-            } else {
-                return Math.max(a, parseInt(b))
+        if (payload.message.chat.type == "private") {
+            throw new UserErrorException("Leaderboards are only available from groupchats with dave :)")
+        }
+
+        // get all games for this month, the game id can be converted to a date
+        const now = moment.tz('Europe/London')
+        const first_date_this_month = now.clone().set("date", 1).toDate()
+
+        let first_id: number
+        let latest_id: number | undefined = undefined
+        switch (game_type) {
+            case "connections":
+                first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
+                first_id = 413
+                break
+            case "wordle":
+                first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
+                first_id = 1134
+                break
+            default:
+                throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
+        }
+        console.log("generating leaderboard for game type: ", game_type, "first_id: ", first_id)
+        const submissions = await get_game_submissions_since_game_id(settings.db, first_id, game_type, payload.message.chat.id)
+
+        const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
+        const bot_ids = new Set(users.filter(x => x.bot).map(x => x.user_id))
+
+        const player_ids_to_names = new Map<number, string>()
+        let scores: Scores = new Map();
+        submissions.forEach(s => {
+            latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
+
+            if (!scores.has(s.game_id)) {
+                scores.set(s.game_id, new Map())
             }
-        }, -1);
+            let score_map = scores.get(s.game_id)!
 
-        console.log(latestWordleNo)
-        delete previous_scores[latestWordleNo];
-        console.log(previous_scores)
+            let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
+            player_ids_to_names.set(s.user_id, user_name)
+            switch (s.game_type) {
+                case "connections":
+                    score_map.set(s.user_id, parseConnectionsScoreFromShareable(s.submission)!.mistakes)
+                    break
+                case "wordle":
+                    score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
+                    break
+                default:
+                    console.error("Unknown game type: ", s.game_type)
+            }
 
-        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "avg", "Top Wordlers", convertDailyScoresToLeaderboard(previous_scores))
-        await sendMessage({
-            api_key: settings.telegram_api_key,
-            open_ai_key: settings.openai_api_key,
-            payload: {
-                chat_id: payload.message.chat.id,
-                text: `<pre>\n${leaderboard}\n</pre>`,
-                parse_mode: "HTML"
-            },
-            audio_chance: 0,
-            delay: 0
         })
-    },
-    "connectionsboard": async (payload, settings, args) => {
-        const stats = await get_connections_scores(settings.kv_namespace)
-        let daily_scores: Scores = {}
-        // replace the player_ids with their names
-        for (const [game_id, player_scores] of Object.entries(stats)) {
-            if (game_id == "names") {
-                continue
-            }
-            if (args && args[0] && args[0] != game_id) {
-                continue
-            }
 
-            daily_scores[game_id] = {}
-            for (const [player_id, player_score] of Object.entries(player_scores)) {
-                let name = stats.names && stats.names[player_id] ? stats.names[player_id] : player_id
-                daily_scores[game_id][name] = player_score
-            }
+        let previous_scores = structuredClone(scores)
+
+        if (latest_id != undefined) {
+            delete previous_scores[latest_id]
         }
+        console.log("scores: ", scores, "previous_scores: ", previous_scores)
+        const previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
+        const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
 
-        let previous_scores = JSON.parse(JSON.stringify(daily_scores))
-        // remove latest wordle
-        const latestConnectionsNo = Object.keys(daily_scores).reduce((a: number, b: string) => {
-            if (b == "names") {
-                return parseInt(b)
-            } else {
-                return Math.max(a, parseInt(b))
-            }
-        }, -1);
-        delete previous_scores[latestConnectionsNo];
-        console.log(previous_scores)
+        console.log("current leaderboard: ", current_leaderboard, "previous leaderboard: ", previous_leaderboard)
+        const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}'ers`, previous_leaderboard)
 
-        const leaderboard = generateLeaderboard(convertDailyScoresToLeaderboard(daily_scores), "avg", "Top Connectors", convertDailyScoresToLeaderboard(previous_scores))
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
@@ -241,37 +234,48 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
         })
     },
     "wordle": async (payload, settings, args) => {
-        const words = await getWordleList();
-        console.log("words count: ", words.length)
-        let date_today = new Date();
-        date_today.setHours(date_today.getHours() + 1)
-        const wordle = await getWordleForDay(date_today);
+        const now = moment.tz('Europe/London').toDate()
+        let todays_wordle_no = printDateToNYTGameId(now, FIRST_WORDLE_DATE, true)
+        let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
+        let previous_score = await get_game_submission(settings.db, todays_wordle_no, "wordle", bot_user_id);
 
+
+        if (previous_score) {
+            await setReaction({
+                api_key: settings.telegram_api_key,
+                payload: {
+                    chat_id: payload.message.chat.id,
+                    message_id: payload.message.message_id,
+                    reaction: [{
+                        "type": "emoji",
+                        "emoji": "🖕",
+                    }]
+                }
+            })
+            return
+        }
+
+        const words = await getWordleList();
+        const wordle = await getWordleForDay(now);
         if (!wordle) throw new Error("Wordle not found for today")
 
-        console.log("solution: ", wordle)
         const solution = solveWordle(wordle.wordle, words);
-        console.log("solved: ", solution)
-        let message = generateWordleShareable(wordle, solution) + '\n';
-        let scores = await get_wordle_scores(settings.kv_namespace);
-        if (!(wordle.wordle_no in scores)) {
-            scores[wordle.wordle_no] = {}
-        }
 
-        if ("bot" in scores[wordle.wordle_no]) {
-            return { "solution": solution, "wordle_no": wordle.wordle_no }
-        }
 
-        scores[wordle.wordle_no]["bot"] = solution.guesses_count
-        await store_wordle_scores(settings.kv_namespace, scores);
+        await insert_game_submission(settings.db, {
+            game_id: wordle.wordle_no,
+            game_type: "wordle",
+            user_id: bot_user_id,
+            submission: generateWordleShareable(wordle, solution) + '\n',
+            submission_date: now,
+        })
 
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
-                text: message,
-                parse_mode: "MarkdownV2"
+                text: generateWordleShareable(wordle, solution) + '\n',
             },
             audio_chance: 0,
             delay: 0
@@ -280,21 +284,34 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
     },
     "connections": async (payload, settings, args) => {
 
-        let scores = await get_connections_scores(settings.kv_namespace);
+        let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
+
         const date_today = new Date();
         date_today.setHours(date_today.getHours() + 1)
 
         const connections_ = await getConnectionsForDay(date_today)
-        if (!(connections_.id in scores)) {
-            scores[connections_.id] = {}
-        }
-        console.log("conenctions: ", connections_)
 
-        if ("bot" in scores[connections_.id]) {
-            return [null, null]
+        let previous_submission = await get_game_submission(settings.db, connections_.id, "connections", bot_user_id);
+
+        console.log("conenctions: ", connections_, "previous_submission: ", previous_submission)
+
+        if (previous_submission) {
+            await setReaction({
+                api_key: settings.telegram_api_key,
+                payload: {
+                    chat_id: payload.message.chat.id,
+                    message_id: payload.message.message_id,
+                    reaction: [{
+                        "type": "emoji",
+                        "emoji": "🖕",
+                    }]
+                }
+            })
+            return
         }
 
         const playerCallback: PlayerCallback = async (state, invalid_guess) => {
+            console.log("Player Callback")
             let messages: ChatCompletionMessageParam[] = []
             messages.push({ role: 'system', content: convertGuessToPrompt(null) })
             messages.push({ role: 'user', content: "Welcome to connections bot, here are your 16 words: '" + state.tiles.join(",") + "'" })
@@ -303,33 +320,68 @@ export const COMMANDS: { [key: string]: (payload: TelegramMessage, settings: Cha
                 messages.push({ role: 'assistant', content: guess.guess.join(",") }) // assistant message
                 messages.push({ role: 'user', content: convertGuessToPrompt(guess) }) // user message
             }
+            const schema = {
+                type: "object",
+                properties: {
+                    connections_guess: {
+                        type: "array",
+                        items: {
+                            type: "string",
+                            "enum": state.tiles
+                        }
+                    }
+                },
+                required: ["connections_guess"],
+                additionalProperties: false
+            };
 
-            console.log("calling chat gpt with messages: ", messages)
+            let response_format: ResponseFormatJSONSchema = {
+                "type": "json_schema",
+                "json_schema": {
+                    "strict": true,
+                    "description": "A guess for the category in connections consisting of 4 words",
+                    "name": "connections_guess",
+                    schema
+                }
+            }
+
             const response = await call_gpt({
                 api_key: settings.openai_api_key,
                 payload: {
-                    model: "gpt-4o",
-                    messages
-                }
+                    model: "gpt-4o-2024-08-06",
+                    messages,
+                    response_format: response_format
+                },
             })
             console.log("chat gpt response: ", response);
-            return response
+            return JSON.parse(response).connections_guess as string[]
         }
+
+
         const [state, connections] = await solveConnections(date_today, playerCallback);
+        let score = 4 - state.attempts
+
         const shareable = generateConnectionsShareable(state, connections)
+
+
+
         await sendMessage({
             api_key: settings.telegram_api_key,
             open_ai_key: settings.openai_api_key,
             payload: {
                 chat_id: payload.message.chat.id,
                 text: shareable,
-                parse_mode: "MarkdownV2"
             },
             audio_chance: 0,
             delay: 0
         })
-        scores[connections.id]["bot"] = 4 - state.attempts
-        await store_connections_scores(settings.kv_namespace, scores)
-        return [state, connections]
+
+        await insert_game_submission(settings.db, {
+            game_id: connections_.id,
+            game_type: "connections",
+            user_id: bot_user_id,
+            submission: shareable,
+            submission_date: date_today,
+        })
     }
 }

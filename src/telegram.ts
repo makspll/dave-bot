@@ -1,6 +1,6 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios"
 import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
 import { call_tts } from "./openai.js"
+
 
 export async function sendMessage(request: TelegramSendMessageRequest): Promise<number> {
     let audio_chance = request.audio_chance != undefined ? request.audio_chance : AUDIO_MESSAGE_CHANCE
@@ -58,8 +58,10 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
         method,
         body: data,
     }).then(res => res.json())
-        .then(res => {
-            const data: any = res
+        .then((data: any) => {
+            if (!data.ok) {
+                throw new Error("Failed to send telegram message: " + data.responseText, data.status)
+            }
             console.log("Successfully sent telegram message", data)
             return data.result.message_id as number
         }).catch((err: Error) => {
@@ -72,4 +74,46 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
 
     return message_id
 
+}
+
+export async function setReaction(request: TelegramSetReactionRequest): Promise<void> {
+    console.log("sending telegram reaction", { ...request, api_key: "REDACTED" })
+
+    let url = `https://api.telegram.org/bot${request.api_key}/setMessageReaction`
+    let parameters = new URLSearchParams({
+        chat_id: request.payload.chat_id.toString(),
+        message_id: request.payload.message_id.toString(),
+        reaction: JSON.stringify(request.payload.reaction)
+    })
+
+    console.log("sending telegram reaction", url, parameters)
+
+    await fetch(`${url}?${parameters.toString()}`, {
+        method: "GET",
+    }).then(res => res.json())
+        .then((res: any) => {
+            if (!res.ok) {
+                throw new Error("Failed to send telegram reaction: " + res.responseText, res.status)
+            }
+            const data: any = res
+            console.log("Successfully sent telegram reaction", data)
+        }).catch((err: Error) => {
+            console.error("Error in sending telegram reaction", err)
+        })
+}
+/// converts a telegram message to a user, extracting the user_id, alias and creating a new consent date
+export function user_from_message(message: TelegramMessage): User {
+    return {
+        user_id: message.message.from.id,
+        alias: message.message.from.username || message.message.from.first_name || message.message.from.last_name || message.message.from.id.toString(),
+        consent_date: new Date(),
+        bot: message.message.from.is_bot
+    }
+}
+
+export function chat_from_message(message: TelegramMessage): Chat {
+    return {
+        chat_id: message.message.chat.id,
+        alias: message.message.chat.title || message.message.chat.id.toString()
+    }
 }

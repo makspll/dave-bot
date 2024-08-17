@@ -1,36 +1,68 @@
-import { COMMANDS } from "./commands.js"
-import { parseConnectionsScoreFromShareable } from "./connections.js"
-import { COMMON_RIPOSTES, HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, MAX_AFFECTION_LEVEL, NEGATIVE_AFFECTION_PROMPTS, POSITIVE_AFFECTION_PROMPTS, SENTIMENT_PER_AFFECTION_LEVEL, SICKOMODE_PROBABILITY, SYSTEM_PROMPT, TRIGGERS } from "./data.js"
-import { get_affection_data, get_connections_scores, get_included_ids, get_wordle_scores, store_affection_data, store_connections_scores, store_wordle_scores } from "./kv_store.js"
+import { COMMANDS, UserErrorException } from "./commands.js"
+import { HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SYSTEM_PROMPT } from "./data.js"
+import { get_user_chats, insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"
-import { sendMessage } from "./telegram.js"
+import { sendMessage, setReaction, user_from_message } from "./telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 
 
 export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let included_ids = await get_included_ids(settings.kv_namespace)
+    let chats = await get_user_chats(settings.db, message.message.from.id)
+    let opted_in = chats.find(c => message.message.chat.id == c.chat_id) !== undefined
+
     if (message.message.text.startsWith("/")) {
         console.log("it's a command")
         let split_cmd = message.message.text.split('@')[0].split(' ')
         console.log(split_cmd)
         let cmd_word = split_cmd[0].replace("/", "")
-        if (included_ids[message.message.from.id] !== true && !["info", "optin", "optout"].includes(cmd_word)) {
+        if (opted_in !== true && !["info", "optin", "optout"].includes(cmd_word)) {
             return false
         }
 
         let cmd = COMMANDS[cmd_word]
         split_cmd.shift()
         if (cmd) {
-            await cmd(message, settings, split_cmd)
-        }
-        return false
-    }
-    if (included_ids[message.message.from.id] !== true) {
-        console.log("user not in inclusion list, ignoring message");
-        return false
-    }
+            try {
+                await cmd(message, settings, split_cmd)
+            } catch (e) {
+                if (e instanceof UserErrorException) {
+                    await sendMessage({
+                        payload: {
+                            text: e.message,
+                            chat_id: message.message.chat.id,
+                            reply_to_message_id: message.message.message_id
+                        },
+                        api_key: settings.telegram_api_key,
+                        open_ai_key: settings.openai_api_key,
+                        delay: 0,
+                        audio_chance: 0,
+                    })
+                } else {
+                    throw e
+                }
+            }
 
-    return true
+            return false
+        }
+
+        if (opted_in !== true) {
+            console.log("user not in inclusion list, ignoring message");
+            return false
+        }
+
+        await setReaction({
+            api_key: settings.telegram_api_key,
+            payload: {
+                chat_id: message.message.chat.id,
+                message_id: message.message.message_id,
+                reaction: [{ type: "emoji", emoji: "🙉" }]
+            }
+        })
+
+        return false
+    } else {
+        return true
+    }
 }
 
 // very funi roasts aimed at sender
@@ -184,35 +216,20 @@ export let keywords: (triggers: KeywordTrigger[]) => Action =
         if (Math.random() >= trigger.chance) { return true }
 
         let gpt_chance = trigger.gpt_chance ? trigger.gpt_chance : KEYWORD_GPT_CHANCE
-        let affection_data = await get_affection_data(settings.kv_namespace);
         let text;
         if (trigger.gpt_prompt && (Math.random() < gpt_chance)) {
-            let relationship_prompt = "no previous relationship";
-            let affection_value = affection_data[message.message.from.id]
-            let affection_level = Math.min(Math.floor(Math.abs(affection_value) / SENTIMENT_PER_AFFECTION_LEVEL), MAX_AFFECTION_LEVEL)
-
-            relationship_prompt = affection_value > 0 ?
-                POSITIVE_AFFECTION_PROMPTS[affection_level - 1] :
-                NEGATIVE_AFFECTION_PROMPTS[affection_level - 1]
-
             text = await call_gpt({
                 api_key: settings.openai_api_key,
                 payload: {
                     model: "gpt-3.5-turbo",
                     messages: [
-                        { role: "system", content: SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: " + relationship_prompt + ". PROMPT: " + sample(trigger.gpt_prompt) },
+                        { role: "system", content: SYSTEM_PROMPT + "." + "RELATIONSHIP_SUMMARY: normal" + ". PROMPT: " + sample(trigger.gpt_prompt) },
                     ]
                 }
             });
         } else {
             // analyse sentiment and pick appropriate variation from the sentiment variations
             let sentiment = calculate_sentiment(words)
-            if (affection_data[message.message.from.id] == null) {
-                affection_data[message.message.from.id] = sentiment
-            } else {
-                affection_data[message.message.from.id] += sentiment
-            }
-            await store_affection_data(settings.kv_namespace, affection_data);
             text = sentiment >= 0 ? sample(trigger.pos_sent_variations ?? []) : sample(trigger.neg_sent_variations ?? [])
         }
 
@@ -230,107 +247,48 @@ export let keywords: (triggers: KeywordTrigger[]) => Action =
     }
 
 
-// waits for messages of the form: Connections\nPuzzle #413
-export let connections_slur: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let parse = parseConnectionsScoreFromShareable(message.message.text);
 
-    if (parse) {
-        const { id, mistakes } = parse;
-        const connections_no = id;
-        console.log("Connections match: ", message.message.text, "id: ", id, "mistakes: ", mistakes)
-        let scores = await get_connections_scores(settings.kv_namespace)
-        if (!("names" in scores)) {
-            scores["names"] = {}
-        }
-        scores["names"]![message.message.from.id] = message.message.from.first_name
 
-        if (!(connections_no in scores)) {
-            scores[connections_no] = {}
-        }
-        let bot_score = scores[connections_no]["bot"] ? scores[connections_no]["bot"] : 999
-        console.log("bot score: ", bot_score)
-        scores[connections_no][message.message.from.id] = mistakes
-        await store_connections_scores(settings.kv_namespace, scores)
+export let nyt_games_submission: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
+    // capture group game_id is required
+    // capture group game_score is optional (if present the score is processed via callback, and used for immediate feedback)
+    // capture group hard_mode is optional (if present the game is in hard mode)
+    let regex_and_game_types: [RegExp, GameType][] = [
+        [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
+        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"]
+    ]
 
-        if (bot_score < mistakes) {
-            await sendMessage({
-                payload: {
-                    text: sample([...COMMON_RIPOSTES, "It's connectin time"]),
-                    chat_id: message.message.chat.id,
-                    reply_to_message_id: message.message.message_id
-                },
-                api_key: settings.telegram_api_key,
-                open_ai_key: settings.openai_api_key
+    for (let [regex, game_type] of regex_and_game_types) {
+        let match = message.message.text.match(regex)
+        if (match) {
+            console.log("game submission detected for: ", game_type)
+            let game_id = parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
+
+            let user = user_from_message(message)
+
+            console.log("inserting game submission:", "game_id:", game_id, "game_type:", game_type, "user_id:", user.user_id, "submission:", message.message.text)
+            await insert_game_submission(settings.db, {
+                game_id: game_id,
+                game_type: game_type,
+                user_id: user.user_id,
+                submission: message.message.text,
+                submission_date: new Date(),
             })
-        }
-    }
-    return true
-}
 
-
-
-// waits for messages of the form: Wordle 1,134 5/6* ...
-// and parses them to determine a response and possibly store the score
-export let wordle_slur: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    const wordle_regex = /^Wordle ([\d,\.]+) ([\dX]+\/\d+).*/
-    const match = message.message.text.match(wordle_regex)
-    if (match) {
-        console.log("Wordle match: ", message.message.text)
-        const wordle_no = parseInt(match[1].replace(",", "").replace('.', ""))
-        const guesses = match[2].split("/")
-        const count = parseInt(guesses[0])
-
-        let scores = await get_wordle_scores(settings.kv_namespace)
-        if (!("names" in scores)) {
-            scores["names"] = {}
-        }
-        scores["names"]![message.message.from.id] = message.message.from.first_name
-
-        if (!(wordle_no in scores)) {
-            scores[wordle_no] = {}
-        }
-        let bot_score = scores[wordle_no]["bot"] ? scores[wordle_no]["bot"] : 999
-        scores[wordle_no][message.message.from.id] = count
-        await store_wordle_scores(settings.kv_namespace, scores)
-
-        if (bot_score < count) {
-            await sendMessage({
-                payload: {
-                    text: sample([...COMMON_RIPOSTES, "It's wordlin time"]),
-                    chat_id: message.message.chat.id,
-                    reply_to_message_id: message.message.message_id
-                },
+            // let game_score = match.groups!.game_score
+            let hard_mode = match.groups!.hard_mode
+            let reaction: TelegramEmoji = hard_mode ? '❤‍🔥' : '👍'
+            await setReaction({
                 api_key: settings.telegram_api_key,
-                open_ai_key: settings.openai_api_key
+                payload: {
+                    chat_id: message.message.chat.id,
+                    message_id: message.message.message_id,
+                    reaction: [{ type: "emoji", emoji: reaction }]
+                }
             })
-        }
-    }
-    return true
-}
-
-
-export let command_processor: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
-    let included_ids = await get_included_ids(settings.kv_namespace)
-    if (message.message.text.startsWith("/")) {
-        console.log("it's a command")
-        let split_cmd = message.message.text.split('@')[0].split(' ')
-        console.log(split_cmd)
-        let cmd_word = split_cmd[0].replace("/", "")
-        if (included_ids[message.message.from.id] !== true && !["info", "optin", "optout"].includes(cmd_word)) {
             return false
         }
-
-        let cmd = COMMANDS[cmd_word]
-        split_cmd.shift()
-        if (cmd) {
-            await cmd(message, settings, split_cmd)
-        }
-        return false
     }
 
-    if (included_ids[message.message.from.id] !== true) {
-        console.log("user not in inclusion list, ignoring message");
-        return false
-    }
     return true
 }
