@@ -237,7 +237,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     }
 
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
-    const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}'ers`, previous_leaderboard)
+    const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}`, previous_leaderboard)
 
     await sendMessage({
         api_key: settings.telegram_api_key,
