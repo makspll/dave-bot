@@ -206,6 +206,10 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         let score_map = scores.get(s.game_id)!
 
         let user_name = users.find(x => x.user_id == s.user_id)?.alias ?? "unknown"
+        if (user_name.length > 10) {
+            user_name = user_name.split(' ')[0]
+        }
+
         player_ids_to_names.set(s.user_id, user_name)
         switch (s.game_type) {
             case "connections":
