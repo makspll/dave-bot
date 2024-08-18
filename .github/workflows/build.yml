@@ -26,11 +26,12 @@ jobs:
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
+          workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback.yml
         with:
           args: 'telegramApiKey=$TELEGRAM_API_KEY'
-
+          workingDirectory: 'on_deploy'
   pr-deploy:
     name: Deploy To Staging On PR
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
@@ -49,7 +50,9 @@ jobs:
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           configPath: 'wrangler.staging.toml'
+          workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:
-          args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'
+          args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          
+          workingDirectory: 'on_deploy'

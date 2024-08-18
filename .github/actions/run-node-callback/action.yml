@@ -13,6 +13,15 @@ inputs:
     description: 'Arguments'
     required: false
     default: ''
+  workingDirectory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+
+defaults:
+  run:
+    working-directory: ${{ inputs.workingDirectory }}
+    
 runs:
   using: "composite"
   steps:

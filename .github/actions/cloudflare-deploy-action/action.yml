@@ -23,6 +23,15 @@ inputs:
     description: 'Path to wrangler.toml'
     required: false
     default: 'wrangler.toml'
+  workingDirectory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+
+defaults:
+  run:
+    working-directory: ${{ inputs.workingDirectory }}
+    
 runs:
   using: 'composite'
   steps:

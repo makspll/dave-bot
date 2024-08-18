@@ -1,0 +1,15 @@
+{
+  "name": "on_deploy",
+  "version": "1.0.0",
+  "main": "on_deploy.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "dave-bot": "file:../"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

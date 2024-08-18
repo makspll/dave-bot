@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "devDependencies": {
     "@babel/preset-env": "^7.25.3",
-    "@cloudflare/workers-types": "^4.20240729.0",
+    "@cloudflare/workers-types": "^4.20240815.0",
     "@telegraf/types": "^7.1.0",
     "@types/chai": "^4.3.17",
     "@types/expect": "^24.3.0",
     "@types/jest": "^29.5.12",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^22.1.0",
+    "@types/node": "^22.4.0",
     "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
     "msw": "^2.3.4",
@@ -24,8 +24,7 @@
     "start": "wrangler dev src/main.ts --port 3000",
     "deploy": "wrangler deploy src/main.js",
     "test": "jest",
-    "build": "tsc",
-    "on_deploy": "node dist/on_deploy.js"
+    "build": "tsc"
   },
   "type": "module",
   "dependencies": {
