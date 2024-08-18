@@ -33,11 +33,13 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Replace wrangler.toml with ${{ inputs.configPath }}
+      working-directory: ${{ inputs.workingDirectory }}
       if: ${{ inputs.configPath != 'wrangler.toml' }}
       shell: bash
       run: |
         mv ${{ inputs.configPath }} wrangler.toml
     - name: Build & Deploy Worker
+      working-directory: ${{ inputs.workingDirectory }}
       uses: cloudflare/wrangler-action@v3
       with:
         apiToken: ${{ inputs.apiToken }}
