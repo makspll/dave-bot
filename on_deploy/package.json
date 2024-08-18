@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "on_deploy.js",
   "scripts": {
-    "build": "npm install ../dave_bot && tsc -b",
+    "build": "../dave_bot && tsc -b",
     "start": "node dist/on_deploy.js"
   },
   "dependencies": {
