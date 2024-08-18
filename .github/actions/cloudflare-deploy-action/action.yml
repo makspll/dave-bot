@@ -23,7 +23,11 @@ inputs:
     description: 'Path to wrangler.toml'
     required: false
     default: 'wrangler.toml'
-    
+  workingDirectory:
+    description: 'Working Directory'
+    required: false
+    default: '.'
+
 runs:
   using: 'composite'
   steps:
