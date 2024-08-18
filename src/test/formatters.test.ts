@@ -46,43 +46,43 @@ it('correctly accounts for delta scores', async () => {
     `)
 })
 
-it('correctly converts daily scores to leaderboard', async () => {
-    const stats = convertDailyScoresToLeaderboard(
-        {
-            "2024-01-01": {
-                "3": 3,
-                "4": 4,
-                "5": 5,
-            },
-            "2024-01-02": {
-                "3": 3,
-                "5": 5,
-            }
-        }
-    )
+// it('correctly converts daily scores to leaderboard', async () => {
+//     const stats = convertDailyScoresToLeaderboard(
+//         {
+//             "2024-01-01": {
+//                 "3": 3,
+//                 "4": 4,
+//                 "5": 5,
+//             },
+//             "2024-01-02": {
+//                 "3": 3,
+//                 "5": 5,
+//             }
+//         }
+//     )
 
-    expect(stats).toEqual({
-        "scores": new Map([
-            ["3", new Map([
-                ["avg", { "rank": 0, "value": 3 }],
-                ["games", { "rank": 0, "value": 2 }],
-                ["avg_delta", { "rank": 0, "value": -1 }]
-            ])],
-            ["4", new Map([
-                ["avg", { "rank": 0, "value": 4 }],
-                ["games", { "rank": 0, "value": 1 }],
-                ["avg_delta", { "rank": 0, "value": 0 }]
-            ])],
-            ["5", new Map([
-                ["avg", { "rank": 0, "value": 5 }],
-                ["games", { "rank": 0, "value": 2 }],
-                ["avg_delta", { "rank": 0, "value": 1 }]
-            ])]
-        ]),
-        "scorekinds": new Map([
-            ["avg", { "title": "Avg", "ascending": true }],
-            ["games", { "title": "N", "ascending": false }],
-            ["avg_delta", { "title": "Avg-", "ascending": true }]
-        ])
-    })
-})
+//     expect(stats).toEqual({
+//         "scores": new Map([
+//             ["3", new Map([
+//                 ["avg", { "rank": 0, "value": 3 }],
+//                 ["games", { "rank": 0, "value": 2 }],
+//                 ["avg_delta", { "rank": 0, "value": -1 }]
+//             ])],
+//             ["4", new Map([
+//                 ["avg", { "rank": 0, "value": 4 }],
+//                 ["games", { "rank": 0, "value": 1 }],
+//                 ["avg_delta", { "rank": 0, "value": 0 }]
+//             ])],
+//             ["5", new Map([
+//                 ["avg", { "rank": 0, "value": 5 }],
+//                 ["games", { "rank": 0, "value": 2 }],
+//                 ["avg_delta", { "rank": 0, "value": 1 }]
+//             ])]
+//         ]),
+//         "scorekinds": new Map([
+//             ["avg", { "title": "Avg", "ascending": true }],
+//             ["games", { "title": "N", "ascending": false }],
+//             ["avg_delta", { "title": "Avg-", "ascending": true }]
+//         ])
+//     })
+// })

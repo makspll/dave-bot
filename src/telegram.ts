@@ -101,6 +101,22 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
             console.error("Error in sending telegram reaction", err)
         })
 }
+
+export async function setMyCommands(request: TelegramSetCommandRequest): Promise<void> {
+    let url = `https://api.telegram.org/bot${request.api_key}/setMyCommands`
+    let parameters = new FormData()
+    parameters.append("commands", JSON.stringify(request.payload))
+    return fetch(url, { method: "POST", body: parameters })
+        .then(res => res.json())
+        .then((data: any) => {
+            if (!data.ok) {
+                throw new Error("Failed to set telegram commands: " + data.responseText, data.status)
+            }
+            console.log("Successfully set telegram commands", data)
+        }).catch((err: Error) => {
+            console.error("Error in setting telegram commands", err)
+        })
+}
 /// converts a telegram message to a user, extracting the user_id, alias and creating a new consent date
 export function user_from_message(message: TelegramMessage): User {
     return {

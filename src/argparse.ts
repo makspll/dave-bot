@@ -31,6 +31,13 @@ export abstract class Arg<T> {
         this.position = position;
     }
 
+    public describe(): string {
+        if (this.position !== null) {
+            return `${this.long_name} - ${this.help}`
+        } else {
+            return `${this.long_name}=VALUE - ${this.help}`
+        }
+    }
 
     public get_string_value(args: string[]): string | null {
         if (this.position !== null) {

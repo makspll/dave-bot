@@ -1,4 +1,5 @@
 declare global {
+
     type TelegramChatType = "private" | "group" | "supergroup" | "channel"
     interface TelegramMessage {
         message: {
@@ -20,6 +21,15 @@ declare global {
             text: string
         }
 
+    }
+
+
+    interface TelegramSetCommandRequest {
+        api_key: string,
+        payload: {
+            command: string
+            description: string
+        }[]
     }
 
     interface TelegramSendMessageRequest {

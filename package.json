@@ -23,7 +23,9 @@
   "scripts": {
     "start": "wrangler dev src/main.ts --port 3000",
     "deploy": "wrangler deploy src/main.js",
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc",
+    "on_deploy": "node dist/on_deploy.js"
   },
   "type": "module",
   "dependencies": {

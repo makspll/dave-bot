@@ -34,6 +34,10 @@ export class Command<T extends any[]> {
         this.callback = callback;
     }
 
+    public description(): string {
+        return `${this.help}\nArguments: \n${this.args.args.map(a => '\t' + a.describe()).join("\n")}`
+    }
+
     public async run(payload: TelegramMessage, settings: ChatbotSettings, args: string[]) {
         try {
             console.log("Running command: ", this.name, "with args: ", args)

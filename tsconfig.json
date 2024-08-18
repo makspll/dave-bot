@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "noEmit": true,
+        "noEmit": false,
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "lib": [
@@ -28,12 +28,7 @@
                 "src/*"
             ]
         },
-        "plugins": [
-            {
-                "transform": "ts-nameof",
-                "type": "raw"
-            }
-        ],
+        "outDir": "./dist"
     },
     "include": [
         "src/**/*",
