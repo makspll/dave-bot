@@ -96,19 +96,9 @@
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
-    "paths": {
-      "@bot/*": [
-        "../src/*"
-      ]
-    },
-    "rootDirs": [
-      "./src",
-      "../src"
-    ],
     "types": [
       "node",
-      "../"
     ],
-    "outDir": "../dist"
+    "outDir": "./dist"
   }
 }
