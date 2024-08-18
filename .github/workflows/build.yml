@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Deploy to Cloudflare
         working-directory: dave_bot
-        uses: ./.github/actions/cloudflare-deploy-action
+        uses: .github/actions/cloudflare-deploy-action
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -57,7 +57,7 @@ jobs:
           workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
         working-directory: on_deploy
-        uses: ./.github/actions/run-node-callback
+        uses: .github/actions/run-node-callback
         with:
           args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          
           workingDirectory: 'on_deploy'
