@@ -5,6 +5,10 @@ inputs:
     description: 'Node Version File'
     required: true
     default: '.nvmrc'
+  buildScript:
+    description: 'Build Script'
+    required: true
+    default: 'build'
   onDeployScript:
     description: 'On Deploy Script'
     required: true
@@ -31,5 +35,5 @@ runs:
       shell: bash
       run: |
         npm install
-        npm run build
+        npm run ${{ inputs.buildScript }}
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}

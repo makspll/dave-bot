@@ -4,7 +4,7 @@
   "main": "on_deploy.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/on_deploy.js"
   },
   "dependencies": {
     "dave-bot": "file:../dave_bot"
