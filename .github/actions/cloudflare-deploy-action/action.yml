@@ -39,7 +39,6 @@ runs:
       run: |
         mv ${{ inputs.configPath }} wrangler.toml
     - name: Build & Deploy Worker
-      working-directory: ${{ inputs.workingDirectory }}
       uses: cloudflare/wrangler-action@v3
       with:
         apiToken: ${{ inputs.apiToken }}
@@ -49,6 +48,7 @@ runs:
           OPEN_AI_KEY
           GOD_ID
           MAIN_CHAT_ID
+        workingDirectory: ${{ inputs.workingDirectory }}
       env:
         TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
         OPEN_AI_KEY: ${{ inputs.openAiKey }}

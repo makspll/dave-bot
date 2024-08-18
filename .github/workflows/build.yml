@@ -34,7 +34,7 @@ jobs:
         with:
           args: 'telegramApiKey=$TELEGRAM_API_KEY'
           workingDirectory: 'on_deploy'
-          nodeVersionFile: '../.nvmrc'
+          nodeVersionFile: '.nvmrc'
 
   pr-deploy:
     name: Deploy To Staging On PR
@@ -61,4 +61,4 @@ jobs:
         with:
           args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          
           workingDirectory: 'on_deploy'
-          nodeVersionFile: '../.nvmrc'
+          nodeVersionFile: '.nvmrc'
