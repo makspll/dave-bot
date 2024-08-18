@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Deploy to Cloudflare
-        uses: ./.github/actions/cloudflare-deploy-action.yml
+        uses: ./.github/actions/cloudflare-deploy-action
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -50,6 +50,6 @@ jobs:
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           configPath: 'wrangler-staging.toml'
       - name: On Deploy Hooks
-        uses: ./.github/actions/run-node-callback.yml
+        uses: ./.github/actions/run-node-callback
         with:
           args: 'telegramApiKey=$TELEGRAM_API_KEY'
