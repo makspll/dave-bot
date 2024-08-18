@@ -32,6 +32,8 @@ jobs:
         with:
           args: 'telegramApiKey=$TELEGRAM_API_KEY'
           workingDirectory: 'on_deploy'
+          nodeVersionFile: '../.nvmrc'
+
   pr-deploy:
     name: Deploy To Staging On PR
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
@@ -56,3 +58,4 @@ jobs:
         with:
           args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          
           workingDirectory: 'on_deploy'
+          nodeVersionFile: '../.nvmrc'
