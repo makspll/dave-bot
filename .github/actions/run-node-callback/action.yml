@@ -1,10 +1,6 @@
 name: Run Node Callback
 description: Run a node callback
 inputs:
-  nodeVersion:
-    description: 'Node Version'
-    required: true
-    default: '14'
   nodeVersionFile:
     description: 'Node Version File'
     required: true
@@ -24,7 +20,6 @@ runs:
     - name: Install Node Using .nvmrc
       uses: actions/setup-node@v2
       with:
-        node-version: ${{ inputs.nodeVersion }}
         node-version-file: ${{ inputs.nodeVersionFile }}
     - name: Install Dependencies
       shell: bash
