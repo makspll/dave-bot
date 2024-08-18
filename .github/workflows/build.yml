@@ -44,8 +44,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Deploy to Cloudflare
-        # working-directory: dave_bot
         uses: ./.github/actions/cloudflare-deploy-action
+        working-directory: dave_bot
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -54,7 +54,6 @@ jobs:
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           configPath: 'wrangler.staging.toml'
-          workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
         # working-directory: on_deploy
         uses: ./.github/actions/run-node-callback
