@@ -31,7 +31,6 @@ runs:
       if: ${{ inputs.configPath != 'wrangler.toml' }}
       shell: bash
       run: |
-        ls -la
         mv ${{ inputs.configPath }} wrangler.toml
     - name: Build & Deploy Worker
       uses: cloudflare/wrangler-action@v3
