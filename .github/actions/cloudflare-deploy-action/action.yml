@@ -28,6 +28,7 @@ runs:
   steps:
     - name: Replace wrangler.toml with ${{ inputs.configPath }}
       if: ${{ inputs.configPath != 'wrangler.toml' }}
+      shell: bash
       run: |
         mv ${{ inputs.configPath }} wrangler.toml
     - name: Build & Deploy Worker
