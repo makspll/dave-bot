@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Deploy to Cloudflare
+        working-directory: dave_bot
         uses: ./.github/actions/cloudflare-deploy-action.yml
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -26,8 +27,8 @@ jobs:
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
-          workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
+        working-directory: on_deploy
         uses: ./.github/actions/run-node-callback.yml
         with:
           args: 'telegramApiKey=$TELEGRAM_API_KEY'
@@ -43,6 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Deploy to Cloudflare
+        working-directory: dave_bot
         uses: ./.github/actions/cloudflare-deploy-action
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -54,6 +56,7 @@ jobs:
           configPath: 'wrangler.staging.toml'
           workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
+        working-directory: on_deploy
         uses: ./.github/actions/run-node-callback
         with:
           args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          

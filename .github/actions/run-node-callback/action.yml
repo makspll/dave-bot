@@ -13,30 +13,22 @@ inputs:
     description: 'Arguments'
     required: false
     default: ''
-  workingDirectory:
-    description: 'Working directory'
-    required: false
-    default: '.'
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v2
     - name: Install Node Using .nvmrc
-      working-directory: ${{ inputs.workingDirectory }}
       uses: actions/setup-node@v2
       with:
         node-version-file: ${{ inputs.nodeVersionFile }}
     - name: Install Dependencies
-      working-directory: ${{ inputs.workingDirectory }}
       shell: bash
       run: npm install
     - name: Compile to javascript files
-      working-directory: ${{ inputs.workingDirectory }}
       shell: bash
       run: npm run build
     - name: Run Node on_deploy Callback In Main.ts
-      working-directory: ${{ inputs.workingDirectory }}
       shell: bash
       run: |
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}
