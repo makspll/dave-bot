@@ -1,6 +1,6 @@
-import { ManyArgs, StringArg } from "dave-bot/src/argparse.js";
-import { COMMANDS } from "dave-bot/src/commands.js";
-import { setMyCommands } from "dave-bot/src/telegram.js";
+import { ManyArgs, StringArg } from "dave-bot/dist/src/argparse.js";
+import { COMMANDS } from "dave-bot/dist/src/commands.js";
+import { setMyCommands } from "dave-bot/dist/src/telegram.js";
 
 function on_deploy(args: string[]) {
     console.log("Running on deploy node hooks");
