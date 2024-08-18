@@ -11,6 +11,10 @@ import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
 import { BoolArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
 import { send } from "process";
+import { Scores } from "./types/formatters.js";
+import { ChatbotSettings } from "./types/settings.js";
+import { GameType } from "./types/sql.js";
+import { TelegramMessage } from "./types/telegram.js";
 
 export class UserErrorException extends Error {
     constructor(user_message: string) {

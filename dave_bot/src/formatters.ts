@@ -1,5 +1,6 @@
 import stringWidth from "string-width";
 import { stringPad } from "./utils.js";
+import { MetricBody, MetricId, MetricDefinition, Scores } from "./types/formatters.js";
 
 
 // expects a dictionary of the form:

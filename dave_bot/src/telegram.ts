@@ -1,5 +1,7 @@
 import { AUDIO_MESSAGE_CHANCE, DEFAULT_MSG_DELAY } from "./data.js"
 import { call_tts } from "./openai.js"
+import { User, Chat } from "./types/sql.js"
+import { TelegramSendMessageRequest, TelegramSetReactionRequest, TelegramSetCommandRequest, TelegramMessage } from "./types/telegram.js"
 
 
 export async function sendMessage(request: TelegramSendMessageRequest): Promise<number> {
@@ -60,7 +62,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     }).then(res => res.json())
         .then((data: any) => {
             if (!data.ok) {
-                throw new Error("Failed to send telegram message: " + data.responseText, data.status)
+                throw new Error("Failed to send telegram message: " + data.responseText + data.status)
             }
             console.log("Successfully sent telegram message", data)
             return data.result.message_id as number
@@ -93,7 +95,7 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
     }).then(res => res.json())
         .then((res: any) => {
             if (!res.ok) {
-                throw new Error("Failed to send telegram reaction: " + res.responseText, res.status)
+                throw new Error("Failed to send telegram reaction: " + res.responseText + res.status)
             }
             const data: any = res
             console.log("Successfully sent telegram reaction", data)
@@ -110,7 +112,7 @@ export async function setMyCommands(request: TelegramSetCommandRequest): Promise
         .then(res => res.json())
         .then((data: any) => {
             if (!data.ok) {
-                throw new Error("Failed to set telegram commands: " + data.responseText, data.status)
+                throw new Error("Failed to set telegram commands: " + data.responseText + data.status)
             }
             console.log("Successfully set telegram commands", data)
         }).catch((err: Error) => {

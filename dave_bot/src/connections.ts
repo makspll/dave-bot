@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { formatDateToYYYYMMDD, printDateToNYTGameId } from './utils.js';
+import { Guess, InvalidGuess, ValidGuess, ConnectionsResponse, ConnectionsKnowledgeState, ParsedConnectionsShareable } from './types/connections.js';
 
 // retrieves connections for a specific date, returns a json object in the format:
 //{

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { TTSRequest, LLMCompletionsRequest } from "./types/openai.js";
 
 export async function call_tts(request: TTSRequest): Promise<Blob> {
     const client = new OpenAI({

@@ -5,7 +5,7 @@
 //   "Tell the user what you think of them based on your previous relationship, be honest, and worry not about swearing or being wholesome, either way.",
 //   "Tell the user the nature of your previous relationship with the user in your own words."
 // ]
-interface KeywordTrigger {
+export interface KeywordTrigger {
     trigger: string[],
     chance: number,
     gpt_chance?: number,

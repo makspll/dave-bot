@@ -1,3 +1,5 @@
+import { KeywordTrigger } from "./types/data.js";
+
 export const TRIGGERS: KeywordTrigger[] = [
   {
     "trigger": ["you", "pass", "butter", "dave"],

@@ -1,3 +1,5 @@
+import { DeepPartial } from "@src/types/deep_partial.js";
+import { TelegramMessage } from "@src/types/telegram.js";
 
 
 export function makeTestMessage(override: DeepPartial<TelegramMessage> | undefined = undefined): TelegramMessage {

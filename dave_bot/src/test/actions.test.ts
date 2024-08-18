@@ -4,6 +4,8 @@ import { sendMessage } from '@src/telegram.js';
 import { makeTestMessage } from './utils/utils.test.js';
 import { calculate_sentiment } from '@src/utils.js';
 import { call_gpt } from '@src/openai.js';
+import { KeywordTrigger } from '@src/types/data.js';
+import { ChatbotSettings } from '@src/types/settings.js';
 
 jest.mock('@src/telegram.js', () => ({
     ...jest.requireActual('@src/telegram.js'),

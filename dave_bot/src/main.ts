@@ -3,6 +3,9 @@ import { commands_and_filter_optins, hardlyfier, keywords, nyt_games_submission,
 import { COMMANDS, connections_command, wordle_command } from "./commands.js";
 import { TRIGGERS } from "./data.js";
 import * as util from "node:util";
+import { Action } from "./types/actions.js";
+import { ChatbotSettings } from "./types/settings.js";
+import { TelegramMessage } from "./types/telegram.js";
 
 export interface Env {
     MAIN_CHAT_ID: number,

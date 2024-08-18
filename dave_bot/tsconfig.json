@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-        "noEmit": true,
+        "composite": true,
+        "noEmit": false,
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "lib": [
@@ -12,10 +13,6 @@
             "@types/node",
             "jest",
         ],
-        // "typeRoots": [
-        //     "./node_modules/@types",
-        //     "./src/types"
-        // ],
         "esModuleInterop": true,
         "skipLibCheck": true,
         "target": "es2022",
@@ -23,6 +20,7 @@
         "moduleDetection": "force",
         "isolatedModules": true,
         "baseUrl": ".",
+        "declaration": true,
         "paths": {
             "@src/*": [
                 "src/*"
@@ -34,6 +32,7 @@
                 "type": "raw"
             }
         ],
+        "outDir": "./dist",
     },
     "include": [
         "src/**/*",

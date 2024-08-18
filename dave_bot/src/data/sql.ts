@@ -1,6 +1,6 @@
-import { D1Database, D1Result } from "@cloudflare/workers-types"
-import { resourceLimits } from "node:worker_threads";
-type typeVerifier<T> = (obj: any) => obj is T
+import { D1Database, D1Result, D1PreparedStatement } from "@cloudflare/workers-types"
+import { Chat, GameSubmission, GameType, User } from "@src/types/sql.js";
+
 
 export function isUser(obj: any): obj is User {
     return typeof obj.user_id === 'number' && typeof obj.alias === 'string' && obj.consent_date instanceof Date &&

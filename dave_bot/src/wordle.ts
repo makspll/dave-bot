@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { escapeMarkdown } from './markdown.js';
 import { formatDateToYYYYMMDD, sample } from './utils.js';
+import { WordleResponse, WordleWord, WordleKnowledgeState, LetterProbabilities, Letter, WordleSolveOutput, WordleScore } from './types/wordle.js';
 
 export const WordleIndices = [0, 1, 2, 3, 4] as const
 export const ALL_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',

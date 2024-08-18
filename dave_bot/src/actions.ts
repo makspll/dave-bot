@@ -3,6 +3,11 @@ import { HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SY
 import { get_user_chats, insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"
 import { sendMessage, setReaction, user_from_message } from "./telegram.js"
+import { Action } from "./types/actions.js"
+import { KeywordTrigger } from "./types/data.js"
+import { ChatbotSettings } from "./types/settings.js"
+import { GameType } from "./types/sql.js"
+import { TelegramMessage, TelegramEmoji } from "./types/telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 
 
