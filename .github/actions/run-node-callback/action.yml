@@ -12,7 +12,7 @@ inputs:
   onDeployScript:
     description: 'On Deploy Script'
     required: true
-    default: 'on_deploy'
+    default: 'start'
   args:
     description: 'Arguments'
     required: false
