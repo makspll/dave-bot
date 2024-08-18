@@ -26,6 +26,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: actions/checkout@v2
     - name: Replace wrangler.toml with ${{ inputs.configPath }}
       if: ${{ inputs.configPath != 'wrangler.toml' }}
       shell: bash

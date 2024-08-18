@@ -20,6 +20,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v2
     - name: Install Node Using .nvmrc
       uses: actions/setup-node@v2
       with:
