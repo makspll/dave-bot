@@ -29,11 +29,10 @@ jobs:
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
-        # working-directory: on_deploy
         uses: ./.github/actions/run-node-callback.yml
         with:
           args: 'telegramApiKey=$TELEGRAM_API_KEY'
-          workingDirectory: 'on_deploy'
+          workingDirectory: 'start'
           nodeVersionFile: '.nvmrc'
 
   pr-deploy:
@@ -56,9 +55,8 @@ jobs:
           configPath: 'wrangler.staging.toml'
           workingDirectory: 'dave_bot'
       - name: On Deploy Hooks
-        # working-directory: on_deploy
         uses: ./.github/actions/run-node-callback
         with:
           args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          
-          workingDirectory: 'on_deploy'
+          workingDirectory: 'start'
           nodeVersionFile: '.nvmrc'
