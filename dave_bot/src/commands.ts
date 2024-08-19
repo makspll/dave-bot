@@ -33,7 +33,7 @@ export class Command<T extends any[]> {
     }
 
     public description(): string {
-        return `${this.help}\nArguments: \n${this.args.args.map(a => '\t' + a.describe()).join("\n")}`
+        return `${this.help}\Args: \n${this.args.args.map(a => a.describe()).join(",")}`
     }
 
     public async run(payload: TelegramMessage, settings: ChatbotSettings, args: string[]) {

@@ -33,9 +33,9 @@ export abstract class Arg<T> {
 
     public describe(): string {
         if (this.position !== null) {
-            return `${this.long_name} - ${this.help}`
+            return `${this.long_name}`
         } else {
-            return `${this.long_name}=VALUE - ${this.help}`
+            return `${this.long_name}=VALUE`
         }
     }
 
