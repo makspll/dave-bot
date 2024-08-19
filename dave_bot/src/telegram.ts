@@ -124,6 +124,27 @@ export async function setMyCommands(request: TelegramSetCommandRequest): Promise
             throw err
         })
 }
+
+export async function setWebhook(api_key: string, webhookUrl: string, secret_token: string | undefined): Promise<void> {
+    let url = `https://api.telegram.org/bot${api_key}/setWebhook`
+    let parameters = new FormData()
+
+    parameters.append("url", webhookUrl)
+    if (secret_token) {
+        parameters.append("secret_token", secret_token)
+    }
+
+    return fetch(url, { method: "POST", body: parameters }).then(res => res.json()).then((data: any) => {
+        if (!data.ok) {
+            throw new Error(`Failed to set telegram webhook: ${JSON.stringify(data)}`)
+        }
+        console.log("Successfully set telegram webhook", data)
+    }
+    ).catch((err: Error) => {
+        console.error("Error in setting telegram webhook", err)
+        throw err
+    })
+}
 /// converts a telegram message to a user, extracting the user_id, alias and creating a new consent date
 export function user_from_message(message: TelegramMessage): User {
     return {
