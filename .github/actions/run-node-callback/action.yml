@@ -35,9 +35,9 @@ runs:
       shell: bash
       run: |
         cd ../dave_bot
-        npm install --dev
+        npm install --include=dev 
         npm run ${{ inputs.buildScript }}
         cd ../${{ inputs.workingDirectory }}
         npm run ${{ inputs.buildScript }}
-        npm install --dev
+        npm install --include=dev 
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}
