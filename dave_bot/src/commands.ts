@@ -176,6 +176,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     let first_id: number
     let latest_id: number | undefined = undefined
+    console.log("game type: ", game_type)
     switch (game_type) {
         case "connections":
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
@@ -187,8 +188,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
             break
         case "autism_test":
             first_id = 0
+            break
         default:
-            throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
+            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test")
     }
 
     if (start != null) {
