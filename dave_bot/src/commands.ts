@@ -232,6 +232,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     const dontUsePrevious = end != null && (!latest_id || end < latest_id)
     if (!dontUsePrevious) {
         let previous_scores = structuredClone(scores)
+        console.log(previous_scores)
 
         if (latest_id != undefined) {
             delete previous_scores[latest_id]

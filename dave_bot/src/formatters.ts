@@ -160,7 +160,6 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
             if (day_players_count >= 3) {
                 player_metrics.get("games_3_plus")!.value += 1
             }
-            console.log([...player_metrics.entries()])
             all_player_daily_average += bot_ids.has(player_id) ? 0 : score
         }
         if (day_players_count > 0) {
