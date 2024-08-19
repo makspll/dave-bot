@@ -60,7 +60,7 @@ export interface LeaderboardScores {
 }
 
 
-export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null) {
+export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null, shit_moji: string  = '💩') {
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     // sort scores.scores by sort_by
     sort_scores(scores, [sort_by, "games", "avg_delta"]);
@@ -73,7 +73,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
     let change_emojis = ['🔻', '🔺', '✨', '🔴']
     while (emojis.length < scores.scores.size) {
-        emojis.push('💩');
+        emojis.push(shit_moji);
     }
     let longest_emoji = Math.max(...emojis.map(x => stringWidth(x)));
     let longest_change_emoji = Math.max(...change_emojis.map(x => stringWidth(x)));
