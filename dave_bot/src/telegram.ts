@@ -108,9 +108,11 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
 
 export async function setMyCommands(request: TelegramSetCommandRequest): Promise<void> {
     let url = `https://api.telegram.org/bot${request.api_key}/setMyCommands`
-    let parameters = new FormData()
-    parameters.append("commands", JSON.stringify(request.payload))
-    return fetch(url, { method: "POST", body: parameters })
+
+    let payload = {
+        commands: request.payload
+    }
+    return fetch(url, { method: "POST", body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } })
         .then(res => res.json())
         .then((data: any) => {
             if (!data.ok) {
