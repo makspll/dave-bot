@@ -10,6 +10,7 @@ import { ChatbotSettings } from "./types/settings.js"
 import { GameType } from "./types/sql.js"
 import { TelegramMessage, TelegramEmoji } from "./types/telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
+import { read_raw_args } from "./argparse.js"
 
 
 export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
@@ -18,18 +19,18 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
 
     if (message.message.text.startsWith("/")) {
         console.log("it's a command")
-        let split_cmd = message.message.text.split('@')[0].split(' ')
-        console.log(split_cmd)
-        let cmd_word = split_cmd[0].replace("/", "")
-        if (opted_in !== true && !["info", "optin", "optout"].includes(cmd_word)) {
+        let cmd_words = read_raw_args(message.message.text.slice(1))
+        console.log(cmd_words)
+        let cmd_name = cmd_words.shift()!.split('@')[0]
+
+        if (opted_in !== true && !["info", "optin", "optout"].includes(cmd_name)) {
             return false
         }
 
-        let cmd = COMMANDS.find(c => c.name == cmd_word)
-        split_cmd.shift()
+        let cmd = COMMANDS.find(c => c.name == cmd_name)
         if (cmd) {
             try {
-                await cmd.run(message, settings, split_cmd)
+                await cmd.run(message, settings, cmd_words)
             } catch (e) {
                 if (e instanceof UserErrorException) {
                     await sendMessage({

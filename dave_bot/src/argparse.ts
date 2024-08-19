@@ -1,5 +1,34 @@
 import { UserErrorException } from "./error.js";
 
+
+
+export function read_raw_args(input: string): string[] {
+    const args: string[] = [];
+    let currentArg = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+
+        if (char === ' ' && !inQuotes) {
+            if (currentArg.length > 0) {
+                args.push(currentArg);
+                currentArg = '';
+            }
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
+        } else {
+            currentArg += char;
+        }
+    }
+
+    if (currentArg.length > 0) {
+        args.push(currentArg);
+    }
+
+    return args;
+}
+
 export class ManyArgs<T extends any[]> {
     public args: { [K in keyof T]: Arg<T[K]> };
 
