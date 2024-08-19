@@ -232,10 +232,12 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     const dontUsePrevious = end != null && (!latest_id || end < latest_id)
     if (!dontUsePrevious) {
         let previous_scores = clone_score(scores)
-        console.log(previous_scores)
 
         if (latest_id != undefined) {
             delete previous_scores[latest_id]
+        }
+        for (const [game_id, score_map] of previous_scores) {
+            console.log("previous scores: ", game_id, [...score_map])
         }
         previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
     }
