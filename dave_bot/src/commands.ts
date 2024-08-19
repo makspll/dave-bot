@@ -33,7 +33,7 @@ export class Command<T extends any[]> {
     }
 
     public description(): string {
-        let args = this.args.args.length > 0 ? "Args:" + this.args.args.map(a => a.describe()).join(",") : ""
+        let args = this.args.args.length > 0 ? "Args: " + this.args.args.map(a => a.describe()).join(", ") : ""
         return `${this.help}. ${args}`
     }
 
