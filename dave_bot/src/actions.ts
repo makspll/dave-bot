@@ -262,14 +262,15 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     // capture group hard_mode is optional (if present the game is in hard mode)
     let regex_and_game_types: [RegExp, GameType][] = [
         [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
-        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"]
+        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
+        [/^Autism Test: (?<game_score>)/, "autism_test"]
     ]
 
     for (let [regex, game_type] of regex_and_game_types) {
         let match = message.message.text.match(regex)
         if (match) {
             console.log("game submission detected for: ", game_type)
-            let game_id = parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
+            let game_id = game_type == "autism_test" ? 0 : parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
 
             let user = user_from_message(message)
 

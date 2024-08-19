@@ -185,6 +185,8 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
             first_id = 1134
             break
+        case "autism_test":
+            first_id = 0
         default:
             throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
     }
@@ -221,6 +223,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 break
             case "wordle":
                 score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
+                break
+            case "autism_test":
+                score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
                 break
             default:
                 console.error("Unknown game type: ", s.game_type)
