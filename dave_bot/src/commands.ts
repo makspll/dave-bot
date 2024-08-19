@@ -117,6 +117,7 @@ export async function attack_command(payload: TelegramMessage, settings: Chatbot
     const target_name = args[0]
     const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
     const target = users.find(x => x.alias == target_name)?.user_id
+    console.log("target: ", target)
     if (!target) {
         throw new UserErrorException(`User ${target_name} not found, choose one of: ${users.map(x => x.alias).join(", ")}`)
     }
