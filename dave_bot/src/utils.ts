@@ -67,4 +67,5 @@ export function clone_score(score: Scores) {
     for (const [key, value] of score.entries()) {
         new_scores.set(key, new Map(value))
     }
+    return new_scores
 }
