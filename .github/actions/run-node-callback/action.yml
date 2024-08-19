@@ -39,4 +39,6 @@ runs:
         npm install
         npm run ${{ inputs.buildScript }}
         cd ../${{ inputs.workingDirectory }}
+        ls -la dist
+        ls -la 
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}
