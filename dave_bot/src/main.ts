@@ -12,12 +12,14 @@ export interface Env {
     GOD_ID: number,
     KV_STORE: KVNamespace,
     TELEGRAM_API_KEY: string,
+    TELEGRAM_WEBHOOK_SECRET: string,
     OPEN_AI_KEY: string,
     DB: D1Database;
 }
 
 function get_settings(env: Env): ChatbotSettings {
     return {
+        telegram_webhook_secret: env.TELEGRAM_WEBHOOK_SECRET,
         telegram_api_key: env.TELEGRAM_API_KEY,
         openai_api_key: env.OPEN_AI_KEY,
         main_chat_id: env.MAIN_CHAT_ID,
@@ -73,6 +75,10 @@ export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
         console.log("fetch callback")
+        // check X-Telegram-Bot-Api-Secret-Token is correct
+        if (request.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
+            return new Response("Unauthorized", { status: 401 })
+        }
 
         try {
             if (request.method === "POST") {

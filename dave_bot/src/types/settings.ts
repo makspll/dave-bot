@@ -1,6 +1,7 @@
 import { D1Database, KVNamespace } from "@cloudflare/workers-types";
 
 export interface ChatbotSettings {
+    telegram_webhook_secret: string,
     telegram_api_key: string,
     openai_api_key: string,
     main_chat_id: number,

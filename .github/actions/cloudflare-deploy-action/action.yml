@@ -44,12 +44,14 @@ runs:
         apiToken: ${{ inputs.apiToken }}
         accountId: ${{ inputs.accountId }}
         secrets: |
+          TELEGRAM_WEBHOOK_SECRET
           TELEGRAM_API_KEY
           OPEN_AI_KEY
           GOD_ID
           MAIN_CHAT_ID
         workingDirectory: ${{ inputs.workingDirectory }}
       env:
+        TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
         TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
         OPEN_AI_KEY: ${{ inputs.openAiKey }}
         GOD_ID: ${{ inputs.godId }}
