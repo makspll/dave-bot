@@ -1,4 +1,4 @@
-import { UserErrorException } from "./commands.js";
+import { UserErrorException } from "./error.js";
 
 export class ManyArgs<T extends any[]> {
     public args: { [K in keyof T]: Arg<T[K]> };

@@ -1,4 +1,5 @@
-import { COMMANDS, UserErrorException } from "./commands.js"
+import { COMMANDS } from "./commands.js"
+import { UserErrorException } from "./error.js"
 import { HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SYSTEM_PROMPT } from "./data.js"
 import { get_user_chats, insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"

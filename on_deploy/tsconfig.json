@@ -94,16 +94,30 @@
     // "allowUnusedLabels": true,                        /* Disable error reporting for unused labels. */
     // "allowUnreachableCode": true,                     /* Disable error reporting for unreachable code. */
     /* Completeness */
+    "resolveJsonModule": true,
     "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
     "types": [
       "node",
     ],
     "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "src/types/*"
+      ]
+    }
   },
   "references": [
     {
       "path": "../dave_bot"
     }
   ],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+  ]
 }

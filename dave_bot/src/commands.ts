@@ -15,13 +15,7 @@ import { Scores } from "./types/formatters.js";
 import { ChatbotSettings } from "./types/settings.js";
 import { GameType } from "./types/sql.js";
 import { TelegramMessage } from "./types/telegram.js";
-
-export class UserErrorException extends Error {
-    constructor(user_message: string) {
-        super(user_message);
-        this.name = "UserErrorException";
-    }
-}
+import { UserErrorException } from "./error.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
