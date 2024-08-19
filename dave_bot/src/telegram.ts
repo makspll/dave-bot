@@ -68,6 +68,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
             return data.result.message_id as number
         }).catch((err: Error) => {
             console.error("Error in sending telegram message", err)
+            throw err
         })
 
     if (message_id === undefined) {
@@ -101,6 +102,7 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
             console.log("Successfully sent telegram reaction", data)
         }).catch((err: Error) => {
             console.error("Error in sending telegram reaction", err)
+            throw err
         })
 }
 
@@ -117,6 +119,7 @@ export async function setMyCommands(request: TelegramSetCommandRequest): Promise
             console.log("Successfully set telegram commands", data)
         }).catch((err: Error) => {
             console.error("Error in setting telegram commands", err)
+            throw err
         })
 }
 /// converts a telegram message to a user, extracting the user_id, alias and creating a new consent date
