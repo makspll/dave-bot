@@ -24,6 +24,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
+          telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
@@ -49,6 +50,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
+          telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}

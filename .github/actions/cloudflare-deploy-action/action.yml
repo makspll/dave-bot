@@ -10,6 +10,9 @@ inputs:
   telegramApiKey:
     description: 'Telegram API Key'
     required: true
+  telegramWebhookSecret:
+    description: 'Telegram Webhook Secret included in the X-Telegram-Webhook-Secret header'
+    required: true
   openAiKey:
     description: 'Open AI Key'
     required: true
@@ -51,7 +54,7 @@ runs:
           MAIN_CHAT_ID
         workingDirectory: ${{ inputs.workingDirectory }}
       env:
-        TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+        TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
         TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
         OPEN_AI_KEY: ${{ inputs.openAiKey }}
         GOD_ID: ${{ inputs.godId }}
