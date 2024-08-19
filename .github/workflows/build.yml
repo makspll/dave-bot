@@ -31,7 +31,7 @@ jobs:
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback.yml
         with:
-          args: 'telegramApiKey=$TELEGRAM_API_KEY'
+          args: '${{ secrets.TELEGRAM_API_KEY }}'          
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
 
@@ -57,6 +57,6 @@ jobs:
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:
-          args: 'telegramApiKey=${{ secrets.TELEGRAM_API_KEY }}'          
+          args: '${{ secrets.TELEGRAM_API_KEY }}'          
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'

@@ -49,7 +49,6 @@ export abstract class Arg<T> {
         } else {
             for (const arg of args) {
                 const [name, value] = arg.split('=');
-
                 const trimmed_arg = name.trim().replace('-', '');
                 const matches = trimmed_arg.startsWith(this.long_name) ||
                     (this.short_name !== null && trimmed_arg.startsWith(this.short_name));

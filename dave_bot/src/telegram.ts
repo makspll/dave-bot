@@ -109,7 +109,6 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
 export async function setMyCommands(request: TelegramSetCommandRequest): Promise<void> {
     let url = `https://api.telegram.org/bot${request.api_key}/setMyCommands`
 
-    console.log("sending telegram commands", request.payload)
     let payload = {
         commands: request.payload
     }
