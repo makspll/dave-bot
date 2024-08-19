@@ -1,0 +1,61 @@
+name: 'Cloudflare Deploy Action'
+description: 'Build and deploy a Cloudflare Worker'
+inputs:
+  apiToken:
+    description: 'Cloudflare API Token'
+    required: true
+  accountId:
+    description: 'Cloudflare Account ID'
+    required: true
+  telegramApiKey:
+    description: 'Telegram API Key'
+    required: true
+  telegramWebhookSecret:
+    description: 'Telegram Webhook Secret included in the X-Telegram-Webhook-Secret header'
+    required: true
+  openAiKey:
+    description: 'Open AI Key'
+    required: true
+  godId:
+    description: 'God ID'
+    required: true
+  mainChatId:
+    description: 'Main Chat ID'
+    required: true
+  configPath:
+    description: 'Path to wrangler.toml'
+    required: false
+    default: 'wrangler.toml'
+  workingDirectory:
+    description: 'Working Directory'
+    required: false
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v2
+    - name: Replace wrangler.toml with ${{ inputs.configPath }}
+      working-directory: ${{ inputs.workingDirectory }}
+      if: ${{ inputs.configPath != 'wrangler.toml' }}
+      shell: bash
+      run: |
+        mv ${{ inputs.configPath }} wrangler.toml
+    - name: Build & Deploy Worker
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ inputs.apiToken }}
+        accountId: ${{ inputs.accountId }}
+        secrets: |
+          TELEGRAM_WEBHOOK_SECRET
+          TELEGRAM_API_KEY
+          OPEN_AI_KEY
+          GOD_ID
+          MAIN_CHAT_ID
+        workingDirectory: ${{ inputs.workingDirectory }}
+      env:
+        TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
+        TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
+        OPEN_AI_KEY: ${{ inputs.openAiKey }}
+        GOD_ID: ${{ inputs.godId }}
+        MAIN_CHAT_ID: ${{ inputs.mainChatId }}

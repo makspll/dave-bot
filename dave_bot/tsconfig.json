@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "noEmit": false,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": [
+            "esnext"
+        ],
+        "strict": true,
+        "types": [
+            "@cloudflare/workers-types",
+            "@types/node",
+            "jest",
+        ],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "es2022",
+        "allowJs": true,
+        "moduleDetection": "force",
+        "isolatedModules": true,
+        "baseUrl": ".",
+        "declaration": true,
+        "paths": {
+            "@src/*": [
+                "src/*"
+            ]
+        },
+        "outDir": "./dist",
+    },
+    "include": [
+        "src/**/*",
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+    ],
+}

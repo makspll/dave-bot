@@ -17,21 +17,24 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
-      - name: Build & Deploy Worker
-        uses: cloudflare/wrangler-action@v3
+      - name: Deploy to Cloudflare
+        # working-directory: dave_bot
+        uses: ./.github/actions/cloudflare-deploy-action.yml
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          secrets: |
-            TELEGRAM_API_KEY
-            OPEN_AI_KEY
-            GOD_ID
-            MAIN_CHAT_ID
-        env:
-          TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
-          OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
-          GOD_ID: ${{ secrets.GOD_ID }}
-          MAIN_CHAT_ID: ${{ secrets.MAIN_CHAT_ID }}
+          telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
+          telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          openAiKey: ${{ secrets.OPEN_AI_KEY }}
+          godId: ${{ secrets.GOD_ID }}
+          mainChatId: ${{ secrets.MAIN_CHAT_ID }}
+          workingDirectory: 'dave_bot'
+      - name: On Deploy Hooks
+        uses: ./.github/actions/run-node-callback.yml
+        with:
+          args: '${{ secrets.TELEGRAM_API_KEY }} ${{ secrets.TELEGRAM_WEBHOOK_SECRET }} ${{ secrets.TELEGRAM_WEBHOOK_URL }}'          
+          workingDirectory: 'on_deploy'
+          nodeVersionFile: '.nvmrc'
 
   pr-deploy:
     name: Deploy To Staging On PR
@@ -41,21 +44,21 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
-      - name: Replace wrangler.toml with wrangler.staging.toml
-        run: |
-          mv wrangler.staging.toml wrangler.toml
-      - name: Build & Deploy Worker
-        uses: cloudflare/wrangler-action@v3
+      - name: Deploy to Cloudflare
+        uses: ./.github/actions/cloudflare-deploy-action
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          secrets: |
-            TELEGRAM_API_KEY
-            OPEN_AI_KEY
-            GOD_ID
-            MAIN_CHAT_ID
-        env:
-          TELEGRAM_API_KEY: ${{ secrets.TELEGRAM_API_KEY }}
-          OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
-          GOD_ID: ${{ secrets.GOD_ID }}
-          MAIN_CHAT_ID: ${{ secrets.MAIN_CHAT_ID }}
+          telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
+          telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          openAiKey: ${{ secrets.OPEN_AI_KEY }}
+          godId: ${{ secrets.GOD_ID }}
+          mainChatId: ${{ secrets.MAIN_CHAT_ID }}
+          configPath: 'wrangler.staging.toml'
+          workingDirectory: 'dave_bot'
+      - name: On Deploy Hooks
+        uses: ./.github/actions/run-node-callback
+        with:
+          args: '${{ secrets.TELEGRAM_API_KEY }} ${{ secrets.TELEGRAM_WEBHOOK_SECRET }} ${{ secrets.TELEGRAM_WEBHOOK_URL }}'          
+          workingDirectory: 'on_deploy'
+          nodeVersionFile: '.nvmrc'

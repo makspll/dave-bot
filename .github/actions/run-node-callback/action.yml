@@ -1,0 +1,43 @@
+name: Run Node Callback
+description: Run a node callback
+inputs:
+  nodeVersionFile:
+    description: 'Node Version File'
+    required: true
+    default: '.nvmrc'
+  buildScript:
+    description: 'Build Script'
+    required: true
+    default: 'build'
+  onDeployScript:
+    description: 'On Deploy Script'
+    required: true
+    default: 'start'
+  args:
+    description: 'Arguments'
+    required: false
+    default: ''
+  workingDirectory:
+    description: 'Working Directory'
+    required: false
+    default: '.'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Install Node Using .nvmrc
+      uses: actions/setup-node@v2
+      with:
+        node-version-file: ${{ inputs.nodeVersionFile }}
+    - name: Run Node on_deploy Callback In Main.ts
+      working-directory: ${{ inputs.workingDirectory }}
+      shell: bash
+      run: |
+        cd ../dave_bot
+        npm install --include=dev 
+        npm run ${{ inputs.buildScript }}
+        cd ../${{ inputs.workingDirectory }}
+        npm install --include=dev 
+        npm run ${{ inputs.buildScript }}
+        npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}

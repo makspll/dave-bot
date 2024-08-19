@@ -1,0 +1,20 @@
+{
+  "name": "on_deploy",
+  "version": "1.0.0",
+  "main": "on_deploy.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/on_deploy.js"
+  },
+  "dependencies": {
+    "dave-bot": "file:../dave_bot",
+    "typescript": "^5.5.4"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.4.1"
+  }
+}
