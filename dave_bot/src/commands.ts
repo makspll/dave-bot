@@ -399,7 +399,7 @@ export const COMMANDS: Command<any>[] = [
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
     new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
     new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([
-        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections"]),
+        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test"]),
         new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),
