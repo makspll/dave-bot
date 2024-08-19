@@ -34,11 +34,10 @@ runs:
       working-directory: ${{ inputs.workingDirectory }}
       shell: bash
       run: |
-        npm install
         cd ../dave_bot
         npm install
         npm run ${{ inputs.buildScript }}
         cd ../${{ inputs.workingDirectory }}
-        ls -la dist
-        ls -la 
+        npm run ${{ inputs.buildScript }}
+        npm install
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}
