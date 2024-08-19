@@ -28,6 +28,7 @@ jest.mock('@src/openai.js', () => ({
 
 const testSettings: ChatbotSettings = {
     telegram_api_key: 'telegramkey',
+    telegram_webhook_secret: 'webhook',
     openai_api_key: 'openaikey',
     main_chat_id: 0,
     god_id: 1,
