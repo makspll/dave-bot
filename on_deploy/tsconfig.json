@@ -98,7 +98,12 @@
     "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
     "types": [
-      "@types/node",
+      "node",
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../node_modules/@types",
+      "../../node_modules/@types"
     ],
     "outDir": "./dist",
     "baseUrl": "./",
