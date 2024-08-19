@@ -10,6 +10,7 @@ import { ChatbotSettings } from "./types/settings.js"
 import { GameType } from "./types/sql.js"
 import { TelegramMessage, TelegramEmoji } from "./types/telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
+import { read_raw_args } from "./argparse.js"
 
 
 export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
@@ -18,18 +19,18 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
 
     if (message.message.text.startsWith("/")) {
         console.log("it's a command")
-        let split_cmd = message.message.text.split('@')[0].split(' ')
-        console.log(split_cmd)
-        let cmd_word = split_cmd[0].replace("/", "")
-        if (opted_in !== true && !["info", "optin", "optout"].includes(cmd_word)) {
+        let cmd_words = read_raw_args(message.message.text.slice(1))
+        console.log(cmd_words)
+        let cmd_name = cmd_words.shift()!.split('@')[0]
+
+        if (opted_in !== true && !["info", "optin", "optout"].includes(cmd_name)) {
             return false
         }
 
-        let cmd = COMMANDS.find(c => c.name == cmd_word)
-        split_cmd.shift()
+        let cmd = COMMANDS.find(c => c.name == cmd_name)
         if (cmd) {
             try {
-                await cmd.run(message, settings, split_cmd)
+                await cmd.run(message, settings, cmd_words)
             } catch (e) {
                 if (e instanceof UserErrorException) {
                     await sendMessage({
@@ -261,14 +262,15 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     // capture group hard_mode is optional (if present the game is in hard mode)
     let regex_and_game_types: [RegExp, GameType][] = [
         [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
-        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"]
+        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
+        [/^Autism Test: (?<game_score>)/, "autism_test"]
     ]
 
     for (let [regex, game_type] of regex_and_game_types) {
         let match = message.message.text.match(regex)
         if (match) {
             console.log("game submission detected for: ", game_type)
-            let game_id = parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
+            let game_id = game_type == "autism_test" ? 0 : parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
 
             let user = user_from_message(message)
 

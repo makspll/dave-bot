@@ -12,7 +12,7 @@ export interface Chat {
     alias?: string
 }
 
-export type GameType = "wordle" | "connections"
+export type GameType = "wordle" | "connections" | "autism_test"
 
 // Added in Migration number: 0002
 export interface GameSubmission {

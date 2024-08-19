@@ -117,6 +117,7 @@ export async function attack_command(payload: TelegramMessage, settings: Chatbot
     const target_name = args[0]
     const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
     const target = users.find(x => x.alias == target_name)?.user_id
+    console.log("target: ", target)
     if (!target) {
         throw new UserErrorException(`User ${target_name} not found, choose one of: ${users.map(x => x.alias).join(", ")}`)
     }
@@ -175,6 +176,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     let first_id: number
     let latest_id: number | undefined = undefined
+    console.log("game type: ", game_type)
     switch (game_type) {
         case "connections":
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
@@ -184,8 +186,11 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
             first_id = 1134
             break
+        case "autism_test":
+            first_id = 0
+            break
         default:
-            throw new UserErrorException("Valid game type required as the first argument: connections, wordle")
+            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test")
     }
 
     if (start != null) {
@@ -220,6 +225,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 break
             case "wordle":
                 score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
+                break
+            case "autism_test":
+                score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
                 break
             default:
                 console.error("Unknown game type: ", s.game_type)
@@ -393,7 +401,7 @@ export const COMMANDS: Command<any>[] = [
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
     new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
     new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([
-        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections"]),
+        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test"]),
         new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),
