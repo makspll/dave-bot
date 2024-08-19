@@ -65,6 +65,7 @@ export function calculate_sentiment(words: string[]) {
 export function clone_score(score: Scores) {
     const new_scores = new Map();
     for (const [key, value] of score.entries()) {
+        console.log(key, [...value])
         new_scores.set(key, new Map(value))
     }
     return new_scores
