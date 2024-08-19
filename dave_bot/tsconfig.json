@@ -26,12 +26,6 @@
                 "src/*"
             ]
         },
-        "plugins": [
-            {
-                "transform": "ts-nameof",
-                "type": "raw"
-            }
-        ],
         "outDir": "./dist",
     },
     "include": [

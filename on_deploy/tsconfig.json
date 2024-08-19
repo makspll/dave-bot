@@ -97,8 +97,12 @@
     "resolveJsonModule": true,
     "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
     "types": [
-      "@types/node",
+      "node",
     ],
     "outDir": "./dist",
     "baseUrl": "./",
