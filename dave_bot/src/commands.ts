@@ -6,7 +6,7 @@ import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
 import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
-import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
+import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
 import { BoolArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
@@ -231,7 +231,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     let previous_leaderboard;
     const dontUsePrevious = end != null && (!latest_id || end < latest_id)
     if (!dontUsePrevious) {
-        let previous_scores = JSON.parse(JSON.stringify(scores))
+        let previous_scores = clone_score(scores)
         console.log(previous_scores)
 
         if (latest_id != undefined) {

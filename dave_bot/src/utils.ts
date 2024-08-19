@@ -1,5 +1,6 @@
 import stringWidth from "string-width";
 import { AFINN } from "./sem.js";
+import { Scores } from "./types/formatters.js";
 
 
 export const FIRST_WORDLE_DATE = new Date('2021-06-19')
@@ -58,5 +59,12 @@ export function calculate_sentiment(words: string[]) {
         return sentiment_carriers.reduce((a, b) => a + b, 0) / sentiment_carriers.length
     } else {
         return 0
+    }
+}
+
+export function clone_score(score: Scores) {
+    const new_scores = new Map();
+    for (const [key, value] of score.entries()) {
+        new_scores.set(key, new Map(value))
     }
 }
