@@ -38,6 +38,6 @@ runs:
         npm install --include=dev 
         npm run ${{ inputs.buildScript }}
         cd ../${{ inputs.workingDirectory }}
-        npm run ${{ inputs.buildScript }}
         npm install --include=dev 
+        npm run ${{ inputs.buildScript }}
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}
