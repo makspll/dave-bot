@@ -62,7 +62,7 @@ export async function sendMessage(request: TelegramSendMessageRequest): Promise<
     }).then(res => res.json())
         .then((data: any) => {
             if (!data.ok) {
-                throw new Error("Failed to send telegram message: " + data.responseText + data.status)
+                throw new Error(`Failed to send telegram message:  ${JSON.stringify(data)}`)
             }
             console.log("Successfully sent telegram message", data)
             return data.result.message_id as number
@@ -95,7 +95,7 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
     }).then(res => res.json())
         .then((res: any) => {
             if (!res.ok) {
-                throw new Error("Failed to send telegram reaction: " + res.responseText + res.status)
+                throw new Error(`Failed to send telegram reaction: ${JSON.stringify(res)}`)
             }
             const data: any = res
             console.log("Successfully sent telegram reaction", data)
@@ -112,7 +112,7 @@ export async function setMyCommands(request: TelegramSetCommandRequest): Promise
         .then(res => res.json())
         .then((data: any) => {
             if (!data.ok) {
-                throw new Error("Failed to set telegram commands: " + data.responseText + data.status)
+                throw new Error(`Failed to set telegram commands: ${JSON.stringify(data)}`)
             }
             console.log("Successfully set telegram commands", data)
         }).catch((err: Error) => {
