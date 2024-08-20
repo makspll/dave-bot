@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "grafana" {
-  url  = "https://makspll.grafana.net"
+  url  = "https://maksana.grafana.net"
   auth = var.grafana_api_key
 }
 
