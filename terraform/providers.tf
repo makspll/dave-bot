@@ -2,7 +2,7 @@ terraform {
   required_providers {
     grafana = {
       source  = "grafana/grafana"
-      version = "1.20.0"
+      version = "3.7.0"
     }
   }
 }
@@ -12,14 +12,3 @@ provider "grafana" {
   auth = var.grafana_api_key
 }
 
-
-resource "grafana_data_source" "loki" {
-  name        = "Loki"
-  type        = "loki"
-  url         = "https://logs-prod-012.grafana.net"
-  access_mode = "proxy"
-
-  basic_auth_enabled  = true
-  basic_auth_username = var.loki_username
-
-}
