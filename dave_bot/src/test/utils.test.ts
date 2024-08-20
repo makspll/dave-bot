@@ -1,4 +1,5 @@
-import { FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId, stringPad } from "../utils.js";
+import { Scores } from "@src/types/formatters.js";
+import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId, stringPad } from "../utils.js";
 import stringWidth from "string-width";
 
 
@@ -52,4 +53,11 @@ it('first wordle puzzle date converts to 0', () => {
     const result = printDateToNYTGameId(FIRST_WORDLE_DATE, FIRST_WORDLE_DATE, true)
 
     expect(result).toBe(0)
+})
+
+it('clones scores', () => {
+    const scores: Scores = new Map([[1023, new Map([[1, 2]])]])
+    const cloned = clone_score(scores)
+    expect(cloned).toEqual(scores)
+    expect(cloned.get(1023).get(1)).toEqual(2)
 })
