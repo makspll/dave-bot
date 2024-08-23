@@ -248,10 +248,6 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         }
 
         previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
-        for (const [game_id, score_map] of scores) {
-            console.log("scores: ", game_id, [...score_map])
-            console.log("previous scores: ", game_id, [...previous_scores.get(game_id)])
-        }
     }
 
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
