@@ -83,7 +83,7 @@ export default {
         // for easy access
         let settings: ChatbotSettings = get_settings(env)
         inject_logger(settings, { service: "dave", environment: settings.environment })
-        console.log("fetch callback")
+        await console.log("fetch callback")
 
         // check X-Telegram-Bot-Api-Secret-Token is correct
         if (request.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
