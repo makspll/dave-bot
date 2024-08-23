@@ -60,7 +60,7 @@ export interface LeaderboardScores {
 }
 
 
-export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null, shit_moji: string  = '💩') {
+export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null, shit_moji: string = '💩') {
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     // sort scores.scores by sort_by
     sort_scores(scores, [sort_by, "games", "avg_delta"]);
@@ -196,8 +196,11 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     metric_definitions.set("games", { title: "N", ascending: false })
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
 
+    let converted_names = new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics]))
+    console.log([...player_to_metrics])
+    console.log([...converted_names])
     let leaderboard = {
-        "scores": new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics])),
+        "scores": converted_names,
         "scorekinds": metric_definitions
     }
 
