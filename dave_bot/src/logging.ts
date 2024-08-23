@@ -71,7 +71,7 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
         if (res.ok) {
             return res.json()
         } else {
-            const json = await res.json()
+            const json = await res.text()
             throw new Error("Failed to send logs to Loki " + res.status + "," + json)
         }
     })
