@@ -54,7 +54,7 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
                     "service": tags.service,
                     "environment": tags.environment
                 },
-                "values": logs.map(log => [log.timestamp, { "level": log.level, ...log.json }])
+                "values": logs.map(log => [log.timestamp, log.message, { "level": log.level, ...log.json }])
             }
         ]
     }
