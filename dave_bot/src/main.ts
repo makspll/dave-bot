@@ -6,7 +6,7 @@ import * as util from "node:util";
 import { Action } from "./types/actions.js";
 import { ChatbotSettings } from "./types/settings.js";
 import { TelegramMessage } from "./types/telegram.js";
-import { inject_logger } from "./logging.js";
+import { flush_logs, inject_logger } from "./logging.js";
 
 export interface Env {
     MAIN_CHAT_ID: number,
@@ -41,49 +41,65 @@ export default {
     async scheduled(event: any, env: Env, ctx: ExecutionContext) {
         let settings: ChatbotSettings = get_settings(env)
         inject_logger(settings, { service: "dave", environment: settings.environment })
-        switch (event.cron) {
-            case "0 8 * * *": // every morning
-                console.log("Firing off wordle")
-                await sendMessage({
-                    api_key: settings.telegram_api_key,
-                    open_ai_key: settings.openai_api_key,
-                    payload: {
-                        chat_id: settings.main_chat_id,
-                        text: `Good morning! It's wordlin time!`
-                    },
-                })
-                let message: TelegramMessage = {
-                    message: {
-                        chat: {
-                            id: settings.main_chat_id,
-                            title: "",
-                            type: "private"
+        try {
+            switch (event.cron) {
+                case "0 8 * * *": // every morning
+                    console.log("Firing off wordle")
+                    await sendMessage({
+                        api_key: settings.telegram_api_key,
+                        open_ai_key: settings.openai_api_key,
+                        payload: {
+                            chat_id: settings.main_chat_id,
+                            text: `Good morning! It's wordlin time!`
                         },
-                        message_id: 0,
-                        from: {
-                            id: 0,
-                            is_bot: false,
-                            first_name: "",
-                            last_name: "",
-                            username: "",
-                            language_code: ""
-                        },
-                        date: 0,
-                        text: ""
+                    })
+                    let message: TelegramMessage = {
+                        message: {
+                            chat: {
+                                id: settings.main_chat_id,
+                                title: "",
+                                type: "private"
+                            },
+                            message_id: 0,
+                            from: {
+                                id: 0,
+                                is_bot: false,
+                                first_name: "",
+                                last_name: "",
+                                username: "",
+                                language_code: ""
+                            },
+                            date: 0,
+                            text: ""
+                        }
                     }
-                }
 
-                await wordle_command(message, settings)
-                await connections_command(message, settings)
-                break;
+                    await wordle_command(message, settings)
+                    await connections_command(message, settings)
+                    break;
+            }
+        } catch (error: any) {
+            console.error("Error in scheduled callback", error, error.message)
+            await sendMessage({
+                payload: {
+                    chat_id: env.GOD_ID,
+                    text: `${util.inspect(error)}`,
+                },
+                api_key: env.TELEGRAM_API_KEY,
+                open_ai_key: env.OPEN_AI_KEY,
+                audio_chance: 0,
+                delay: 0,
+            })
         }
+
+        flush_logs(settings)
     },
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
         let settings: ChatbotSettings = get_settings(env)
         inject_logger(settings, { service: "dave", environment: settings.environment })
-        await console.log("fetch callback")
+        console.log("fetch callback")
 
         // check X-Telegram-Bot-Api-Secret-Token is correct
         if (request.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
@@ -132,6 +148,7 @@ export default {
             })
         }
 
+        flush_logs(settings)
         return new Response("OK") // Doesn't really matter
     },
 };

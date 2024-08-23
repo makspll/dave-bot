@@ -18,23 +18,24 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     const old_log = console.log
     const old_error = console.error
     const old_warn = console.warn
+    LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
         old_log(...args)
-        const response = await post_logs_to_loki([{ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
-        old_log("Logging to Loki: ", response)
+        LogBatcher.push_log({ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 })
     }
     console.error = async (...args: any[]) => {
         old_error(...args)
-        const response = await post_logs_to_loki([{ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
-        old_log("Logging to Loki: ", response)
+        LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 })
     }
     console.warn = async (...args: any[]) => {
         old_warn(...args)
-        const response = await post_logs_to_loki([{ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
-        old_log("Logging to Loki: ", response)
-
+        LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 })
     }
 
+}
+
+export function flush_logs(settings: ChatbotSettings) {
+    LogBatcher.flush(settings)
 }
 
 export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings: ChatbotSettings) {
@@ -61,7 +62,36 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
             "Content-Type": "application/json"
         },
         body: json
-    }).then(res => res.json())
+    }).then(res => {
+        if (res.ok) {
+            return res.json()
+        } else {
+
+            throw new Error("Failed to send logs to Loki" + res.status)
+        }
+    })
 
     return response
+}
+
+export class LogBatcher {
+    static logs = new Array<Log>();
+    static tags: ServiceTags | null = null
+
+    static set_tags(tags: ServiceTags) {
+        this.tags = tags
+    }
+
+    static push_log(log: Log) {
+        this.logs.push(log)
+    }
+
+    static async flush(settings: ChatbotSettings) {
+        if (!this.tags) {
+            throw new Error("Tags not set")
+        }
+        const response = await post_logs_to_loki(this.logs, this.tags, settings)
+        this.logs = []
+    }
+
 }
