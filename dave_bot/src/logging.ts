@@ -53,15 +53,14 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
         ]
     }
     const basic_auth = btoa(`${settings.loki_username}:${settings.loki_password}`)
-    const compressed_payload = gzipSync(JSON.stringify(payload))
+    const json = JSON.stringify(payload)
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
             "Authorization": `Basic ${basic_auth}`,
-            "Content-Encoding": "gzip"
+            "Content-Type": "application/json"
         },
-        body: compressed_payload
+        body: json
     }).then(res => res.json())
 
     return response
