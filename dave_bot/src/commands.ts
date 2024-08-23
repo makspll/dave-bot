@@ -249,11 +249,17 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         }
 
         previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
+        for (const [game_id, score_map] of scores) {
+            console.log("scores: ", game_id, [...score_map])
+            console.log("previous scores: ", [...previous_scores.get(game_id)])
+        }
     }
+
 
     console.log("previous leaderboard: ", previous_leaderboard, latest_id, end)
 
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
+    console.log("current leaderboard: ", current_leaderboard)
     const low_moji = game_type == 'autism_test' ? '🎉' : '💩'
     const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}`, previous_leaderboard, low_moji)
 

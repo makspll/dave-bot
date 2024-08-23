@@ -146,7 +146,6 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         const day_players_count = [...player_scores.keys()].filter(x => !bot_ids.has(x)).length
         for (const [player_id, score] of player_scores.entries()) {
             if (!(player_to_metrics.has(player_id))) {
-                console.log(`new player '${player_id}'`)
                 let player_metrics: Map<MetricId, MetricBody> = new Map()
                 player_metrics.set("avg", { value: 0, rank: 0 })
                 player_metrics.set("games", { value: 0, rank: 0 })
@@ -179,7 +178,6 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
 
     // finalize the metrics
     for (const [player_id, metrics] of player_to_metrics.entries()) {
-        console.log(player_id, [...metrics])
         let avg = metrics.get("avg")!
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
@@ -190,7 +188,6 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         }
 
         metrics.delete("games_3_plus")
-        console.log(player_id, [...metrics])
     }
 
     // generate leaderoard dictionary
@@ -200,10 +197,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
 
     let converted_names = new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics]))
-    console.log("after")
-    for (const [name, metrics] of converted_names.entries()) {
-        console.log(name, [...metrics])
-    }
+
     let leaderboard = {
         "scores": converted_names,
         "scorekinds": metric_definitions
