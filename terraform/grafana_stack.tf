@@ -9,10 +9,10 @@ module "dave_grafana_stack" {
   source          = "./modules/grafana_stack"
   grafana_api_key = var.grafana_api_key
   stack_name      = "dave-bot"
-  stack_slug      = "dave-bot"
+  stack_slug      = "davebot"
   region_slug     = "eu"
   providers = {
-    "grafana" = grafana.cloud
+    grafana = grafana.cloud
   }
 }
 
