@@ -22,6 +22,3 @@ output "stack_loki_username" {
   description = "URL of the Loki datasource"
   value       = grafana_cloud_stack.grafana_stack.logs_user_id
 }
-
-
-
