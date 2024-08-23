@@ -7,5 +7,8 @@ export interface ChatbotSettings {
     main_chat_id: number,
     god_id: number,
     kv_namespace: KVNamespace,
+    loki_username: string,
+    loki_password: string,
+    environment: string,
     db: D1Database
 }

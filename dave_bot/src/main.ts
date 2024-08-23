@@ -6,6 +6,7 @@ import * as util from "node:util";
 import { Action } from "./types/actions.js";
 import { ChatbotSettings } from "./types/settings.js";
 import { TelegramMessage } from "./types/telegram.js";
+import { inject_logger } from "./logging.js";
 
 export interface Env {
     MAIN_CHAT_ID: number,
@@ -14,6 +15,9 @@ export interface Env {
     TELEGRAM_API_KEY: string,
     TELEGRAM_WEBHOOK_SECRET: string,
     OPEN_AI_KEY: string,
+    LOKI_USERNAME: string,
+    LOKI_PASSWORD: string,
+    ENVIRONMENT: string,
     DB: D1Database;
 }
 
@@ -25,6 +29,9 @@ function get_settings(env: Env): ChatbotSettings {
         main_chat_id: env.MAIN_CHAT_ID,
         god_id: env.GOD_ID,
         kv_namespace: env.KV_STORE,
+        loki_username: env.LOKI_USERNAME,
+        loki_password: env.LOKI_PASSWORD,
+        environment: env.ENVIRONMENT,
         db: env.DB
     }
 }
@@ -33,7 +40,7 @@ export default {
     //handles cron jobs
     async scheduled(event: any, env: Env, ctx: ExecutionContext) {
         let settings: ChatbotSettings = get_settings(env)
-
+        inject_logger(settings, { service: "dave", environment: settings.environment })
         switch (event.cron) {
             case "0 8 * * *": // every morning
                 console.log("Firing off wordle")
@@ -74,7 +81,10 @@ export default {
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
+        let settings: ChatbotSettings = get_settings(env)
+        inject_logger(settings, { service: "dave", environment: settings.environment })
         console.log("fetch callback")
+
         // check X-Telegram-Bot-Api-Secret-Token is correct
         if (request.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
             return new Response("Unauthorized", { status: 401 })
@@ -85,7 +95,6 @@ export default {
                 const payload: TelegramMessage = await request.json()
                 // Getting the POST request JSON payload
                 if ('message' in payload && payload.message.text) {
-                    let settings: ChatbotSettings = get_settings(env)
                     console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
                     let actions: [string, Action][] = [
                         ["commands and optin filters", commands_and_filter_optins],

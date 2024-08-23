@@ -16,6 +16,12 @@ inputs:
   openAiKey:
     description: 'Open AI Key'
     required: true
+  lokiUsername:
+    description: 'Loki Username'
+    required: true
+  lokiPassword:
+    description: 'Loki Password'
+    required: true
   godId:
     description: 'God ID'
     required: true
@@ -30,6 +36,9 @@ inputs:
     description: 'Working Directory'
     required: false
     default: '.'
+  environment:
+    description: 'Environment'
+    required: true
 
 runs:
   using: 'composite'
@@ -52,6 +61,9 @@ runs:
           OPEN_AI_KEY
           GOD_ID
           MAIN_CHAT_ID
+          LOKI_USERNAME
+          LOKI_PASSWORD
+          ENVIRONMENT
         workingDirectory: ${{ inputs.workingDirectory }}
       env:
         TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
@@ -59,3 +71,6 @@ runs:
         OPEN_AI_KEY: ${{ inputs.openAiKey }}
         GOD_ID: ${{ inputs.godId }}
         MAIN_CHAT_ID: ${{ inputs.mainChatId }}
+        LOKI_USERNAME: ${{ inputs.lokiUsername }}
+        LOKI_PASSWORD: ${{ inputs.lokiPassword }}
+        ENVIRONMENT: ${{ inputs.environment }}
