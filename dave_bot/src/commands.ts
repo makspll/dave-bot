@@ -242,6 +242,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         let previous_scores = clone_score(scores)
 
         if (latest_id != undefined) {
+            console.log("deleting latest id: ", latest_id)
             delete previous_scores[latest_id]
         }
         for (const [game_id, score_map] of previous_scores) {
