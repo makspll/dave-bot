@@ -92,7 +92,7 @@ export default {
             })
         }
 
-        flush_logs(settings)
+        await flush_logs(settings)
     },
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
