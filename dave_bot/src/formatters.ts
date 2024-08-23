@@ -146,6 +146,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         const day_players_count = [...player_scores.keys()].filter(x => !bot_ids.has(x)).length
         for (const [player_id, score] of player_scores.entries()) {
             if (!(player_to_metrics.has(player_id))) {
+                console.log(`new player '${player_id}'`)
                 let player_metrics: Map<MetricId, MetricBody> = new Map()
                 player_metrics.set("avg", { value: 0, rank: 0 })
                 player_metrics.set("games", { value: 0, rank: 0 })
