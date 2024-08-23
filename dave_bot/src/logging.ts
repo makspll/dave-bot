@@ -6,7 +6,7 @@ export interface Log {
     level: "INFO" | "WARN" | "ERROR";
     message: string;
     json?: object;
-    timestamp: number;
+    timestamp: bigint;
 }
 
 export interface ServiceTags {
@@ -26,15 +26,15 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
         bypass_log(...args)
-        LogBatcher.push_log({ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 })
+        LogBatcher.push_log({ level: "INFO", message: args.join(" "), timestamp: process.hrtime.bigint() })
     }
     console.error = async (...args: any[]) => {
         bypass_error(...args)
-        LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 })
+        LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: process.hrtime.bigint() })
     }
     console.warn = async (...args: any[]) => {
         bypass_warn(...args)
-        LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 })
+        LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: process.hrtime.bigint() })
     }
 
 }
@@ -54,7 +54,7 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
                     "service": tags.service,
                     "environment": tags.environment
                 },
-                "values": logs.map(log => [log.timestamp, log.message, { "level": log.level, ...log.json }])
+                "values": logs.map(log => [log.timestamp.toString(), log.message, { "level": log.level, ...log.json }])
             }
         ]
     }
