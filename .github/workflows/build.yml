@@ -26,9 +26,12 @@ jobs:
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
           telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
+          lokiUsername: ${{ secrets.LOKI_USERNAME }}
+          lokiPassword: ${{ secrets.LOKI_PASSWORD }}
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           workingDirectory: 'dave_bot'
+          environment: 'production'
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:
@@ -52,10 +55,13 @@ jobs:
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
           telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
+          lokiUsername: ${{ secrets.LOKI_USERNAME }}
+          lokiPassword: ${{ secrets.LOKI_PASSWORD }}
           godId: ${{ secrets.GOD_ID }}
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           configPath: 'wrangler.staging.toml'
           workingDirectory: 'dave_bot'
+          environment: 'staging'
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:

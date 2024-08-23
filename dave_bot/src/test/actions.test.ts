@@ -44,7 +44,10 @@ const testSettings: ChatbotSettings = {
         exec: jest.fn(),
         dump: jest.fn(),
         batch: jest.fn(),
-    }
+    },
+    loki_username: '',
+    loki_password: '',
+    environment: ''
 }
 
 beforeEach(() => {
