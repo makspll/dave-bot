@@ -235,6 +235,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     })
 
+    console.log("latest id", latest_id)
 
     let previous_leaderboard;
     const dontUsePrevious = end != null && (!latest_id || end < latest_id)
@@ -242,16 +243,12 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         let previous_scores = clone_score(scores)
 
         if (latest_id != undefined) {
-            delete previous_scores[latest_id]
-        }
-        for (const [game_id, score_map] of previous_scores) {
-            console.log("previous scores: ", game_id, [...score_map])
+            console.log("deleting latest id: ", latest_id)
+            previous_scores.delete(latest_id)
         }
 
         previous_leaderboard = convertDailyScoresToLeaderboard(previous_scores, bot_ids, player_ids_to_names)
     }
-
-    console.log("previous leaderboard: ", previous_leaderboard, latest_id, end)
 
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
     const low_moji = game_type == 'autism_test' ? '🎉' : '💩'

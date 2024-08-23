@@ -1,3 +1,4 @@
+import { MetricBody, MetricId } from "@src/types/formatters.js"
 import { convertDailyScoresToLeaderboard, generateLeaderboard, LeaderboardScores } from "../formatters.js"
 import { compareMultilineStrings } from "./utils/utils.test.js"
 
@@ -46,43 +47,55 @@ it('correctly accounts for delta scores', async () => {
     `)
 })
 
-// it('correctly converts daily scores to leaderboard', async () => {
-//     const stats = convertDailyScoresToLeaderboard(
-//         {
-//             "2024-01-01": {
-//                 "3": 3,
-//                 "4": 4,
-//                 "5": 5,
-//             },
-//             "2024-01-02": {
-//                 "3": 3,
-//                 "5": 5,
-//             }
-//         }
-//     )
 
-//     expect(stats).toEqual({
-//         "scores": new Map([
-//             ["3", new Map([
-//                 ["avg", { "rank": 0, "value": 3 }],
-//                 ["games", { "rank": 0, "value": 2 }],
-//                 ["avg_delta", { "rank": 0, "value": -1 }]
-//             ])],
-//             ["4", new Map([
-//                 ["avg", { "rank": 0, "value": 4 }],
-//                 ["games", { "rank": 0, "value": 1 }],
-//                 ["avg_delta", { "rank": 0, "value": 0 }]
-//             ])],
-//             ["5", new Map([
-//                 ["avg", { "rank": 0, "value": 5 }],
-//                 ["games", { "rank": 0, "value": 2 }],
-//                 ["avg_delta", { "rank": 0, "value": 1 }]
-//             ])]
-//         ]),
-//         "scorekinds": new Map([
-//             ["avg", { "title": "Avg", "ascending": true }],
-//             ["games", { "title": "N", "ascending": false }],
-//             ["avg_delta", { "title": "Avg-", "ascending": true }]
-//         ])
-//     })
-// })
+describe('convertDailyScoresToLeaderboard', () => {
+    it('should convert scores to leaderboard format correctly', () => {
+        // Mock data
+        const scores = new Map<number, Map<number, number>>([
+            [1, new Map<number, number>([
+                [101, 10],
+                [102, 20],
+                [103, 30]
+            ])],
+            [2, new Map<number, number>([
+                [101, 15],
+                [102, 25],
+                [103, 35]
+            ])]
+        ]);
+
+        const bot_ids = new Set<number>([103]);
+        const player_names = new Map<number, string>([
+            [101, 'Player1'],
+            [102, 'Player2'],
+            [103, 'Bot1']
+        ]);
+
+        // Expected output
+        const expectedOutput = new Map<string, Map<MetricId, MetricBody>>([
+            ['Player1', new Map<MetricId, MetricBody>([
+                ['avg', { value: 12.5, rank: 0 }],
+                ['games', { value: 2, rank: 0 }],
+                ['avg_delta', { value: 0, rank: 0 }]
+            ])],
+            ['Player2', new Map<MetricId, MetricBody>([
+                ['avg', { value: 22.5, rank: 0 }],
+                ['games', { value: 2, rank: 0 }],
+                ['avg_delta', { value: 0, rank: 0 }]
+            ])],
+            ['Bot1', new Map<MetricId, MetricBody>([
+                ['avg', { value: 32.5, rank: 0 }],
+                ['games', { value: 2, rank: 0 }],
+                ['avg_delta', { value: 0, rank: 0 }]
+            ])]
+        ]);
+
+        // Call the function
+        const result = convertDailyScoresToLeaderboard(scores, bot_ids, player_names);
+
+
+        // Assertions
+        expect(result.scores).toEqual(expectedOutput);
+    });
+
+});
