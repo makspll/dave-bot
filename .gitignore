@@ -136,3 +136,4 @@ dist
 backups/
 .terraform
 .tfstate
+.terraform.lock.hcl
