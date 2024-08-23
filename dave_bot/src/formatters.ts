@@ -189,6 +189,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         }
 
         metrics.delete("games_3_plus")
+        console.log(player_id, [...metrics])
     }
 
     // generate leaderoard dictionary
