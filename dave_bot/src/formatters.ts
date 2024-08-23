@@ -100,6 +100,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
         let change = '';
         if (previous_scores) {
             let current_metric = user_scores.get(sort_by);
+            console.log(previous_scores.scores, typeof (previous_scores.scores))
             let previous_user = previous_scores.scores.get(name);
             if (current_metric && previous_user) {
                 let previous_metric = previous_user.get(sort_by);
