@@ -235,6 +235,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     })
 
+    console.log("latest id", latest_id)
 
     let previous_leaderboard;
     const dontUsePrevious = end != null && (!latest_id || end < latest_id)
