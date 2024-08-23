@@ -14,6 +14,10 @@ export interface ServiceTags {
     environment: string;
 }
 
+
+const bypass_log = console.log
+const bypass_error = console.error
+
 export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     const old_log = console.log
     const old_error = console.error
@@ -66,7 +70,7 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
         if (res.ok) {
             return res.json()
         } else {
-
+            bypass_error(res)
             throw new Error("Failed to send logs to Loki" + res.status)
         }
     })
