@@ -14,13 +14,13 @@ export interface ServiceTags {
     environment: string;
 }
 
+const bypass_log = console.log
+const bypass_error = console.error
+const bypass_warn = console.warn
 
 
 export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
 
-    const bypass_log = console.log
-    const bypass_error = console.error
-    const bypass_warn = console.warn
     LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
         bypass_log.apply(console, args)
@@ -69,6 +69,8 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
         if (!res.ok) {
             const text = await res.text()
             throw new Error("Failed to send logs to Loki " + res.status + "," + text + "when sending: " + json)
+        } else {
+            bypass_log.apply(console, [`Successfully sent ${logs.length} logs to Loki with timestamp ${process.hrtime.bigint()} `])
         }
     })
 
