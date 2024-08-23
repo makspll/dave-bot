@@ -13,4 +13,12 @@ output "service_account_token" {
   value       = grafana_cloud_stack_service_account_token.stack_service_account.key
 }
 
+output "stack_loki_url" {
+  description = "URL of the Loki datasource"
+  value       = grafana_cloud_stack.grafana_stack.logs_url
+}
 
+output "stack_loki_username" {
+  description = "URL of the Loki datasource"
+  value       = grafana_cloud_stack.grafana_stack.logs_user_id
+}

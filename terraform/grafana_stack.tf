@@ -31,10 +31,10 @@ resource "grafana_data_source" "loki" {
   provider            = grafana.stack
   name                = "Loki"
   type                = "loki"
-  url                 = "https://logs-dave-bot.grafana.net"
+  url                 = module.dave_grafana_stack.stack_loki_url
   access_mode         = "proxy"
   basic_auth_enabled  = true
-  basic_auth_username = var.loki_username
+  basic_auth_username = module.dave_grafana_stack.stack_loki_username
   secure_json_data_encoded = jsonencode({
     basicAuthPassword = var.loki_password
   })
