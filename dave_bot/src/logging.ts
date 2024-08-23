@@ -18,19 +18,19 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     const old_log = console.log
     const old_error = console.error
     const old_warn = console.warn
-    console.log = (...args: any[]) => {
+    console.log = async (...args: any[]) => {
         old_log(...args)
-        const response = post_logs_to_loki([{ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        const response = await post_logs_to_loki([{ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
         old_log("Logging to Loki: ", response)
     }
-    console.error = (...args: any[]) => {
+    console.error = async (...args: any[]) => {
         old_error(...args)
-        const response = post_logs_to_loki([{ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        const response = await post_logs_to_loki([{ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
         old_log("Logging to Loki: ", response)
     }
-    console.warn = (...args: any[]) => {
+    console.warn = async (...args: any[]) => {
         old_warn(...args)
-        const response = post_logs_to_loki([{ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        const response = await post_logs_to_loki([{ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
         old_log("Logging to Loki: ", response)
 
     }
