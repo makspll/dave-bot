@@ -1,7 +1,7 @@
 
 provider "grafana" {
-  alias = "cloud"
-  auth  = var.grafana_api_key
+  alias                     = "cloud"
+  cloud_access_policy_token = var.grafana_api_key
 }
 
 
