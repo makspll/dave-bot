@@ -200,6 +200,10 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
 
     let converted_names = new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics]))
+    console.log("after")
+    for (const [name, metrics] of converted_names.entries()) {
+        console.log(name, [...metrics])
+    }
     let leaderboard = {
         "scores": converted_names,
         "scorekinds": metric_definitions
