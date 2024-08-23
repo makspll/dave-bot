@@ -15,25 +15,23 @@ export interface ServiceTags {
 }
 
 
-let bypass_log = console.log
-let bypass_error = console.error
-let bypass_warn = console.warn
 
 export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
-    bypass_log = console.log
-    bypass_error = console.error
-    bypass_warn = console.warn
+
+    const bypass_log = console.log
+    const bypass_error = console.error
+    const bypass_warn = console.warn
     LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
-        bypass_log(...args)
+        bypass_log.apply(console, args)
         LogBatcher.push_log({ level: "INFO", message: args.join(" "), timestamp: process.hrtime.bigint() })
     }
     console.error = async (...args: any[]) => {
-        bypass_error(...args)
+        bypass_error.apply(console, args)
         LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: process.hrtime.bigint() })
     }
     console.warn = async (...args: any[]) => {
-        bypass_warn(...args)
+        bypass_warn(console, args)
         LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: process.hrtime.bigint() })
     }
 
