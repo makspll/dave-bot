@@ -25,18 +25,27 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     console.log = async (...args: any[]) => {
         bypass_log.apply(console, args)
         LogBatcher.push_log({
-            level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000000
+            level: "INFO", message: args_to_string(args), timestamp: Date.now() * 1000000
         })
     }
     console.error = async (...args: any[]) => {
         bypass_error.apply(console, args)
-        LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000000 })
+        LogBatcher.push_log({ level: "ERROR", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
     console.warn = async (...args: any[]) => {
         bypass_warn(console, args)
-        LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000000 })
+        LogBatcher.push_log({ level: "WARN", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
+}
 
+function args_to_string(args: any[]): string {
+    return args.map(arg => {
+        if (typeof arg === "object") {
+            return JSON.stringify(arg)
+        } else {
+            return arg.toString()
+        }
+    }).join(" ")
 }
 
 export async function flush_logs(settings: ChatbotSettings) {
