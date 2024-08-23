@@ -67,12 +67,12 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
             "Content-Type": "application/json"
         },
         body: json
-    }).then(res => {
+    }).then(async res => {
         if (res.ok) {
             return res.json()
         } else {
-            bypass_error(res)
-            throw new Error("Failed to send logs to Loki" + res.status)
+            const json = await res.json()
+            throw new Error("Failed to send logs to Loki " + res.status + "," + json)
         }
     })
 
