@@ -6,9 +6,3 @@ terraform {
     }
   }
 }
-
-provider "grafana" {
-  url  = "https://maksana.grafana.net"
-  auth = var.grafana_api_key
-}
-
