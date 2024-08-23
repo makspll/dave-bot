@@ -1,8 +1,9 @@
 
 provider "grafana" {
-  url  = module.dave_grafana_stack.stack_url
-  auth = module.dave_grafana_stack.service_account_token
+  alias = "cloud"
+  auth  = var.grafana_api_key
 }
+
 
 module "dave_grafana_stack" {
   source          = "./modules/grafana_stack"
@@ -10,13 +11,24 @@ module "dave_grafana_stack" {
   stack_name      = "dave-bot"
   stack_slug      = "dave-bot"
   region_slug     = "eu"
+  providers = {
+    "grafana" = grafana.cloud
+  }
+}
+
+provider "grafana" {
+  alias = "stack"
+  url   = module.dave_grafana_stack.stack_url
+  auth  = module.dave_grafana_stack.service_account_token
 }
 
 resource "grafana_folder" "dave_folder" {
-  title = "Dave Bot"
+  provider = grafana.stack
+  title    = "Dave Bot"
 }
 
 resource "grafana_data_source" "loki" {
+  provider            = grafana.stack
   name                = "Loki"
   type                = "loki"
   url                 = "https://logs-dave-bot.grafana.net"
