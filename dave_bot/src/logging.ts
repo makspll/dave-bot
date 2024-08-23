@@ -6,7 +6,7 @@ export interface Log {
     level: "INFO" | "WARN" | "ERROR";
     message: string;
     json?: object;
-    timestamp: bigint;
+    timestamp: number;
 }
 
 export interface ServiceTags {
@@ -24,15 +24,17 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
         bypass_log.apply(console, args)
-        LogBatcher.push_log({ level: "INFO", message: args.join(" "), timestamp: process.hrtime.bigint() })
+        LogBatcher.push_log({
+            level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000000
+        })
     }
     console.error = async (...args: any[]) => {
         bypass_error.apply(console, args)
-        LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: process.hrtime.bigint() })
+        LogBatcher.push_log({ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000000 })
     }
     console.warn = async (...args: any[]) => {
         bypass_warn(console, args)
-        LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: process.hrtime.bigint() })
+        LogBatcher.push_log({ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000000 })
     }
 
 }
@@ -70,7 +72,7 @@ export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings
             const text = await res.text()
             throw new Error("Failed to send logs to Loki " + res.status + "," + text + "when sending: " + json)
         } else {
-            bypass_log.apply(console, [`Successfully sent ${logs.length} logs to Loki with timestamp ${process.hrtime.bigint()} `])
+            bypass_log.apply(console, [`Successfully sent ${logs.length} logs to Loki with timestamp ${Date.now() * 1000000} `])
         }
     })
 
