@@ -16,7 +16,7 @@ import { read_raw_args } from "./argparse.js"
 export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
     let chats = await get_user_chats(settings.db, message.message.from.id)
     let opted_in = chats.find(c => message.message.chat.id == c.chat_id) !== undefined
-
+    console.log("user opted in?:", opted_in)
     if (message.message.text.startsWith("/")) {
         console.log("it's a command")
         let cmd_words = read_raw_args(message.message.text.slice(1))
@@ -53,7 +53,7 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
         }
 
         if (opted_in !== true) {
-            console.log("user not in inclusion list, ignoring message");
+            console.log("user not opted in, ignoring message");
             return false
         }
 
@@ -67,8 +67,10 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
         })
 
         return false
-    } else {
+    } else if (opted_in === true) {
         return true
+    } else {
+        return false
     }
 }
 
