@@ -20,20 +20,24 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
     const old_warn = console.warn
     console.log = (...args: any[]) => {
         old_log(...args)
-        post_logs_to_loki([{ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        const response = post_logs_to_loki([{ level: "INFO", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        old_log("Logging to Loki: ", response)
     }
     console.error = (...args: any[]) => {
         old_error(...args)
-        post_logs_to_loki([{ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        const response = post_logs_to_loki([{ level: "ERROR", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        old_log("Logging to Loki: ", response)
     }
     console.warn = (...args: any[]) => {
         old_warn(...args)
-        post_logs_to_loki([{ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        const response = post_logs_to_loki([{ level: "WARN", message: args.join(" "), timestamp: Date.now() * 1000 }], tags, settings)
+        old_log("Logging to Loki: ", response)
+
     }
 
 }
 
-export function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings: ChatbotSettings) {
+export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings: ChatbotSettings) {
     // This function would send the logs to Loki
     // For the sake of this example, we'll just log them to the console
     const url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
@@ -50,7 +54,7 @@ export function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings: Chat
     }
     const basic_auth = btoa(`${settings.loki_username}:${settings.loki_password}`)
     const compressed_payload = gzipSync(JSON.stringify(payload))
-    fetch(url, {
+    const response = await fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -58,5 +62,7 @@ export function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings: Chat
             "Content-Encoding": "gzip"
         },
         body: compressed_payload
-    })
+    }).then(res => res.json())
+
+    return response
 }
