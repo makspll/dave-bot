@@ -34,8 +34,8 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
 
 }
 
-export function flush_logs(settings: ChatbotSettings) {
-    LogBatcher.flush(settings)
+export async function flush_logs(settings: ChatbotSettings) {
+    await LogBatcher.flush(settings)
 }
 
 export async function post_logs_to_loki(logs: Log[], tags: ServiceTags, settings: ChatbotSettings) {

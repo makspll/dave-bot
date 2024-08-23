@@ -148,7 +148,7 @@ export default {
             })
         }
 
-        flush_logs(settings)
+        await flush_logs(settings)
         return new Response("OK") // Doesn't really matter
     },
 };
