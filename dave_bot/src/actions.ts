@@ -67,7 +67,7 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
         })
 
         return false
-    } else if (opted_in !== true) {
+    } else if (opted_in === true) {
         return true
     } else {
         return false
