@@ -33,7 +33,7 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
         LogBatcher.push_log({ level: "ERROR", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
     console.warn = async (...args: any[]) => {
-        bypass_warn(console, args)
+        bypass_warn.apply(console, args)
         LogBatcher.push_log({ level: "WARN", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
 }
