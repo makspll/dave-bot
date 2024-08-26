@@ -106,7 +106,7 @@ export default {
             console.warn("Unauthorized webhook call", {
                 method: request.method,
                 url: request.url,
-                cloudflare_props: JSON.stringify(request.cf)
+                cloudflare_props: JSON.stringify(request.cf),
                 headers: {
                     "User-Agent": request.headers.get("User-Agent"),
                     "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
