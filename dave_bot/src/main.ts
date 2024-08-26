@@ -114,6 +114,7 @@ export default {
                 },
                 ip: request.headers.get("CF-Connecting-IP") || "Unknown",
             });
+            await flush_logs(settings)
             return new Response("Unauthorized", { status: 401 })
         }
 
