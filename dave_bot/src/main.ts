@@ -103,6 +103,17 @@ export default {
 
         // check X-Telegram-Bot-Api-Secret-Token is correct
         if (request.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
+            console.warn("Unauthorized webhook call", {
+                method: request.method,
+                url: request.url,
+                cloudflare_props: JSON.stringify(request.cf)
+                headers: {
+                    "User-Agent": request.headers.get("User-Agent"),
+                    "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
+                    "Content-Type": request.headers.get("Content-Type"),
+                },
+                ip: request.headers.get("CF-Connecting-IP") || "Unknown",
+            });
             return new Response("Unauthorized", { status: 401 })
         }
 
