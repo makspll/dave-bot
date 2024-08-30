@@ -13,7 +13,7 @@ CREATE TABLE property_snapshots (
     published_on DATE,
     available_from DATE,
 
-    PRIMARY KEY (id, search_id),
+    PRIMARY KEY (property_id, search_id),
     FOREIGN KEY (search_id) REFERENCES searches(search_id) ON DELETE CASCADE
 );
 
