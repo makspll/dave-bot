@@ -68,7 +68,14 @@ runs:
         workingDirectory: ${{ inputs.workingDirectory }}
         preCommands: |
           echo "Running wrangler migrations"
-          yes "y" | npx wrangler d1 migrations apply DB
+          (
+            for i in {1..100}; do
+              yes "y"
+              sleep 0.1
+            done
+          ) &
+
+          wrangler d1 migrations apply DB
       env:
         TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
         TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
