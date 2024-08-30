@@ -68,12 +68,7 @@ runs:
         workingDirectory: ${{ inputs.workingDirectory }}
         preCommands: |
           echo "Running wrangler migrations"
-          (
-            for i in {1..100}; do
-              yes "y"
-              sleep 0.1
-            done
-          ) &
+          timeout 10s bash -c 'while true; do yes "y" | head -n 1; sleep 0.1; done' &
 
           wrangler d1 migrations apply DB
       env:
