@@ -73,7 +73,8 @@ runs:
           ENVIRONMENT
         workingDirectory: ${{ inputs.workingDirectory }}
         preCommands: |
-          echo "Running wrangler migrations"
+          echo "Running wrangler migrations from $CWD"
+          ls -la 
           cd ${{ inputs.workingDirectory }}
           npx wrangler d1 migrations list DB --remote
           npx wrangler d1 migrations apply DB --remote
