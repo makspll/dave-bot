@@ -259,6 +259,6 @@ export async function get_snapshots_from_search(db: D1Database, search_id: numbe
 
 export async function get_user_permissions(db: D1Database, user_id: number): Promise<UserPermission[]> {
     return await new Query<UserPermission>(`
-        SELECT * FROM user_permissions WHERE user_id = ?
+        SELECT * FROM permissions WHERE user_id = ?
         `, user_id).getMany(db)
 }
