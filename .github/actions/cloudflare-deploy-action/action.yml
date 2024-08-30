@@ -51,6 +51,7 @@ runs:
       run: |
         mv ${{ inputs.configPath }} wrangler.toml
     - name: Retrieve wrangler version
+      shell: bash
       id: wrangler-version
       run: |
         echo "wrangler-version=$(grep -oP '"wrangler":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' package.json)" >> $GITHUB_OUTPUT
