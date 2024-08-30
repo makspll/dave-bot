@@ -409,7 +409,7 @@ export async function remove_property_query_command(payload: TelegramMessage, se
 export async function initiate_property_search(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
     let user = user_from_message(payload)
     let queries = await get_user_property_queries(settings.db, user)
-    let message = "I will now search for properties matching your queries: " + queries.join(", ")
+    let message = "I will now search for properties matching your queries: " + queries.map(q => q.query).join(", ")
     await sendCommandMessage(payload, settings, message)
 }
 
