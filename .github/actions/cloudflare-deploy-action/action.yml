@@ -54,7 +54,7 @@ runs:
       shell: bash
       id: wrangler-version
       run: |
-        echo "wrangler-version=$(grep -oP '"wrangler":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' package.json)" >> $GITHUB_OUTPUT
+        echo "wrangler-version=$(grep -oP '"wrangler":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' ${{ inputs.workingDirectory }}/package.json)" >> $GITHUB_OUTPUT
     - name: Build & Deploy Worker
       uses: cloudflare/wrangler-action@v3
       with:
