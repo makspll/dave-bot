@@ -18,7 +18,7 @@ CREATE TABLE property_snapshots (
 );
 
 CREATE TABLE searches (
-    search_id BIGINT PRIMARY KEY,
+    search_id BIGINT PRIMARY KEY NOT NULL AUTOINCREMENT,
     user_query_id BIGINT NOT NULL,
     search_datetime TIMESTAMP NOT NULL DEFAULT (TIMESTAMP('now')),
 
@@ -26,7 +26,7 @@ CREATE TABLE searches (
 );
 
 CREATE TABLE user_queries (
-    user_query_id BIGINT PRIMARY KEY,
+    user_query_id BIGINT PRIMARY KEY NOT NULL AUTOINCREMENT,
     user_id BIGINT NOT NULL,
     query VARCHAR(255) NOT NULL UNIQUE,
     creation_date DATE NOT NULL DEFAULT (DATE('now')),
