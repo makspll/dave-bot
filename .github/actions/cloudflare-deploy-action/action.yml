@@ -65,6 +65,9 @@ runs:
           LOKI_PASSWORD
           ENVIRONMENT
         workingDirectory: ${{ inputs.workingDirectory }}
+        preCommands: |
+          echo "Running wrangler migrations"
+          yes "y" | wrangler d1 migrations apply DB
       env:
         TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
         TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}

@@ -5,7 +5,7 @@ import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatte
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
-import { get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, insert_game_submission, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
@@ -13,7 +13,7 @@ import { BoolArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from ".
 import { send } from "process";
 import { Scores } from "./types/formatters.js";
 import { ChatbotSettings } from "./types/settings.js";
-import { GameType } from "./types/sql.js";
+import { GameType, Permission } from "./types/sql.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { UserErrorException } from "./error.js";
 
@@ -23,12 +23,14 @@ export class Command<T extends any[]> {
     public name: string;
     public help: string;
     public args: ManyArgs<T>;
+    public permissions_required: Permission[];
     public callback: CommandCallback<T>;
 
-    constructor(name: string, help: string, args: ManyArgs<T>, callback: CommandCallback<T>) {
+    constructor(name: string, help: string, args: ManyArgs<T>, callback: CommandCallback<T>, permissions_required: Permission[] = []) {
         this.name = name;
         this.help = help;
         this.args = args;
+        this.permissions_required = permissions_required;
         this.callback = callback;
     }
 
@@ -392,6 +394,25 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
 }
 
 
+export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
+    let user = user_from_message(payload)
+    await insert_user_property_query(settings.db, user, args[0])
+    await sendCommandMessage(payload, settings, "Query added")
+}
+
+export async function remove_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
+    let user = user_from_message(payload)
+    await delete_user_property_query(settings.db, user, args[0])
+    await sendCommandMessage(payload, settings, "Query added")
+}
+
+export async function initiate_property_search(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
+    let user = user_from_message(payload)
+    let queries = await get_user_property_queries(settings.db, user)
+    let message = "I will now search for properties matching your queries: " + queries.join(", ")
+    await sendCommandMessage(payload, settings, message)
+}
+
 export const COMMANDS: Command<any>[] = [
     new Command("listtriggers", "List all the triggers that Dave responds to", new ManyArgs([]), list_triggers_command),
     new Command("optout", "Opt out of Dave's services", new ManyArgs([new OptionalArg(new BoolArg("confirmation", "confirm you want to opt out"))]), optout_command),
@@ -406,4 +427,7 @@ export const COMMANDS: Command<any>[] = [
     ]), leaderboard_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
+    new Command("newpropertyquery", "Add a new property query to scrape", new ManyArgs([new StringArg("query", "The query to add")]), new_property_query_command, ["Manage Property Query"]),
+    new Command("removepropertyquery", "Remove a property query", new ManyArgs([new StringArg("query", "The query to remove")]), remove_property_query_command, ["Manage Property Query"]),
+
 ]

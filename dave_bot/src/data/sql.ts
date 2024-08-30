@@ -1,5 +1,5 @@
 import { D1Database, D1Result, D1PreparedStatement } from "@cloudflare/workers-types"
-import { Chat, GameSubmission, GameType, User } from "@src/types/sql.js";
+import { Chat, GameSubmission, GameType, PropertySnapshot, Search, User, UserPermission, UserQuery } from "@src/types/sql.js";
 
 
 export function isUser(obj: any): obj is User {
@@ -210,4 +210,55 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
     return await new Query<GameSubmission>(`
         SELECT * FROM game_submissions WHERE game_id = ? AND game_type = ? AND user_id = ?
         `, game_id, game_type, user_id).getFirst(db)
+}
+
+export async function insert_user_property_query(db: D1Database, user: User, query: string): Promise<void> {
+    return await new Query(`
+        INSERT INTO user_queries (user_id, query) 
+        VALUES (?, ?)
+        `, user.user_id, query).run(db)
+}
+
+export async function get_user_property_queries(db: D1Database, user: User): Promise<UserQuery[]> {
+    return await new Query<UserQuery>(`
+        SELECT * FROM user_queries WHERE user_id = ?
+        `, user.user_id).getMany(db)
+}
+
+export async function delete_user_property_query(db: D1Database, user: User, query: string): Promise<void> {
+    return await new Query(`
+        DELETE FROM user_queries WHERE user_id = ? AND query = ?
+        `, user.user_id, query).run(db)
+}
+
+export async function insert_new_search(db: D1Database, user_query: UserQuery): Promise<void> {
+    return await new Query(`
+        INSERT INTO searches (user_query_id) 
+        VALUES (?)
+        `, user_query.user_query_id).run(db)
+}
+
+export async function insert_property_snapshots(db: D1Database, snapshots: PropertySnapshot[]): Promise<void> {
+    return await new QueryBatch(...snapshots.map(s => new Query(`
+        INSERT INTO property_snapshots (property_id, search_id, url, address, price_per_month, longitude, latitude, property_type, summary_description, published_on, available_from) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, s.property_id, s.search_id, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on, s.available_from))).execute(db)
+}
+
+export async function get_latest_two_searches(db: D1Database, user_query_id: number): Promise<Search[]> {
+    return await new Query<Search>(`
+        SELECT * FROM searches WHERE user_query_id = ? ORDER BY search_datetime DESC LIMIT 2
+        `, user_query_id).getMany(db)
+}
+
+export async function get_snapshots_from_search(db: D1Database, search_id: number): Promise<PropertySnapshot[]> {
+    return await new Query<PropertySnapshot>(`
+        SELECT * FROM property_snapshots WHERE search_id = ?
+        `, search_id).getMany(db)
+}
+
+export async function get_user_permissions(db: D1Database, user_id: number): Promise<UserPermission[]> {
+    return await new Query<UserPermission>(`
+        SELECT * FROM user_permissions WHERE user_id = ?
+        `, user_id).getMany(db)
 }
