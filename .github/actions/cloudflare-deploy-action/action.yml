@@ -65,7 +65,7 @@ runs:
           LOKI_PASSWORD
           ENVIRONMENT
         workingDirectory: ${{ inputs.workingDirectory }}
-        preCommands: |
+        postCommands: |
           echo "Running wrangler migrations"
           yes "y" | wrangler d1 migrations apply DB
       env:
