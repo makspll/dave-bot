@@ -429,5 +429,5 @@ export const COMMANDS: Command<any>[] = [
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
     new Command("newpropertyquery", "Add a new property query to scrape", new ManyArgs([new StringArg("query", "The query to add")]), new_property_query_command, ["Manage Property Query"]),
     new Command("removepropertyquery", "Remove a property query", new ManyArgs([new StringArg("query", "The query to remove")]), remove_property_query_command, ["Manage Property Query"]),
-
+    new Command("initiatepropertysearch", "Initiate a property search", new ManyArgs([]), initiate_property_search, ["Manage Property Query"]),
 ]
