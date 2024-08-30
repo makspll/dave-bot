@@ -53,6 +53,7 @@ runs:
     - name: Build & Deploy Worker
       uses: cloudflare/wrangler-action@v3
       with:
+        quiet: false
         apiToken: ${{ inputs.apiToken }}
         accountId: ${{ inputs.accountId }}
         secrets: |
@@ -65,7 +66,7 @@ runs:
           LOKI_PASSWORD
           ENVIRONMENT
         workingDirectory: ${{ inputs.workingDirectory }}
-        postCommands: |
+        preCommands: |
           echo "Running wrangler migrations"
           wrangler d1 migrations apply DB
       env:
