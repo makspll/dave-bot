@@ -41,8 +41,9 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
         console.log("scrape result", response.result.success)
         last_url = config.url;
         const html = response.result.content;
+        const contains_flight_data = html.includes("__next_f");
         const data = parseFlightData(html);
-        console.log(data[0])
+        console.log("contains next f", contains_flight_data, "flight data", data)
     }
     return []
 }
