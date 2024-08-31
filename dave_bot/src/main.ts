@@ -43,6 +43,7 @@ export default {
     async scheduled(event: any, env: Env, ctx: ExecutionContext) {
         let settings: ChatbotSettings = get_settings(env)
         inject_logger(settings, { service: "dave", environment: settings.environment })
+        console.log(settings.scrapfly_api_key.slice(0, 5))
         try {
             switch (event.cron) {
                 case "0 8 * * *": // every morning
