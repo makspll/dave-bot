@@ -11,7 +11,7 @@ export interface ScrapflyScrapeConfig {
     country: string,
     headers: any,
     proxy_pool: string,
-    cost_budget: number,
+    cost_budget?: number,
     wait_for_selector?: string
     screenshots?: any
 }
@@ -39,7 +39,7 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("session_sticky_proxy", scrapeRequest.payload.session_sticky_proxy.toString());
     payload.append("country", scrapeRequest.payload.country);
     payload.append("proxy_pool", scrapeRequest.payload.proxy_pool);
-    payload.append("cost_budget", scrapeRequest.payload.cost_budget.toString());
+    if (scrapeRequest.payload.cost_budget) payload.append("cost_budget", scrapeRequest.payload.cost_budget.toString());
     if (scrapeRequest.payload.wait_for_selector) {
         payload.append("wait_for_selector", scrapeRequest.payload.wait_for_selector);
     }
