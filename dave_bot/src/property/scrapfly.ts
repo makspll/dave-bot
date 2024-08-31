@@ -42,11 +42,11 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("country", scrapeRequest.payload.country);
     payload.append("headers", JSON.stringify(scrapeRequest.payload.headers));
 
-    console.log(`Scraping ${url}/${payload.toString()}&key=REDACTED`);
+    console.log(`Scraping ${url}?${payload.toString()}&key=REDACTED`);
 
     payload.append("key", scrapeRequest.apiKey);
 
-    return fetch(`${url}/${payload.toString()}`, {
+    return fetch(`${url}?${payload.toString()}`, {
         method: "GET"
     }).then(async response => {
         if (!response.ok) {
