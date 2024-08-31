@@ -43,9 +43,8 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("country", scrapeRequest.payload.country);
     payload.append("headers", JSON.stringify(scrapeRequest.payload.headers));
 
-    return fetch(url, {
-        method: "POST",
-        body: payload,
+    return fetch(`${url}/${payload.toString()}`, {
+        method: "POST"
     }).then(async response => {
         if (!response.ok) {
             const contentType = response.headers.get("content-type");
