@@ -38,11 +38,11 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
             payload: config
         });
 
-        console.log("scrape result", response)
+        console.log("scrape result", response.result.success)
         last_url = config.url;
         const html = response.result.content;
         const data = parseFlightData(html);
-        console.log(data)
+        console.log(data[0])
     }
     return []
 }

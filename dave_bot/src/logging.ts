@@ -23,17 +23,23 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
 
     LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
-        bypass_log.apply(console, args)
+        if (settings.environment !== "production") {
+            bypass_log.apply(console, args)
+        }
         LogBatcher.push_log({
             level: "INFO", message: args_to_string(args), timestamp: Date.now() * 1000000
         })
     }
     console.error = async (...args: any[]) => {
-        bypass_error.apply(console, args)
+        if (settings.environment !== "production") {
+            bypass_error.apply(console, args)
+        }
         LogBatcher.push_log({ level: "ERROR", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
     console.warn = async (...args: any[]) => {
-        bypass_warn.apply(console, args)
+        if (settings.environment !== "production") {
+            bypass_warn.apply(console, args)
+        }
         LogBatcher.push_log({ level: "WARN", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
 }

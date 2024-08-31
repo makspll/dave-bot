@@ -10,7 +10,8 @@ export interface ScrapflyScrapeConfig {
     session_sticky_proxy: boolean,
     country: string,
     headers: any,
-    proxy_pool: string
+    proxy_pool: string,
+    cost_budget: number
 }
 
 export interface ScrapeflyScrapeResponse {
@@ -21,7 +22,7 @@ export function make_scrape_config(url: string, session_id: string, refferer: st
     let headers: any = {};
     if (refferer) headers['referer'] = refferer;
     return {
-        url, render_js: false, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool'
+        url, render_js: false, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool', cost_budget: 1
     };
 }
 
@@ -42,6 +43,7 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("session_sticky_proxy", scrapeRequest.payload.session_sticky_proxy.toString());
     payload.append("country", scrapeRequest.payload.country);
     payload.append("proxy_pool", scrapeRequest.payload.proxy_pool);
+    payload.append("cost_budget", scrapeRequest.payload.cost_budget.toString());
 
     for (const key in scrapeRequest.payload.headers) {
         payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
