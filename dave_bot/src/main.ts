@@ -134,8 +134,7 @@ function wrap_callback(event: any, env: Env, ctx: ExecutionContext, name: string
         try {
             let settings: ChatbotSettings = get_settings(env)
             inject_logger(settings, { service: "dave", environment: settings.environment })
-            ctx.waitUntil(callback(event, env, ctx, settings))
-            ctx.waitUntil(flush_logs(settings))
+            ctx.waitUntil(callback(event, env, ctx, settings).then(() => flush_logs(settings)))
             return new Response(null, { status: 200 })
 
         } catch (e) {
