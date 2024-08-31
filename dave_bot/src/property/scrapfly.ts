@@ -9,7 +9,8 @@ export interface ScrapflyScrapeConfig {
     session: string,
     session_sticky_proxy: boolean,
     country: string,
-    headers: any
+    headers: any,
+    proxy_pool: string
 }
 
 export interface ScrapeflyScrapeResponse {
@@ -20,7 +21,7 @@ export function make_scrape_config(url: string, session_id: string, refferer: st
     let headers: any = {};
     if (refferer) headers['referer'] = refferer;
     return {
-        url, render_js: false, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers,
+        url, render_js: true, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool'
     };
 }
 

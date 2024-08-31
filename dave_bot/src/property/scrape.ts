@@ -29,6 +29,7 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
 
     for (const page_num of [1]) {
         query.pn = page_num;
+        console.log("scraping page", page_num)
 
         const config = make_scrape_config(make_zoopla_url(query), session_id, last_url);
         const response = await scrape({
