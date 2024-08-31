@@ -20,7 +20,7 @@ export interface ZooplaQuery {
 
 
 
-export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promise<PropertySnapshot[]> {
+export async function scrape_zoopla(api_key: string, query: ZooplaQuery, debug: boolean | undefined = undefined): Promise<PropertySnapshot[]> {
     // begin sesssion
 
 
@@ -33,7 +33,7 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
         query.pn = page_num;
         console.log("scraping page", page_num)
 
-        const config = make_scrape_config(make_zoopla_url(query), session_id, last_url);
+        const config = make_scrape_config(make_zoopla_url(query), session_id, last_url, debug);
         const response = await scrape({
             apiKey: api_key,
             payload: config

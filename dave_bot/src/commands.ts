@@ -428,7 +428,7 @@ export async function initiate_property_search(payload: TelegramMessage, setting
     }
     console.log("query: ", query)
     try {
-        await scrape_zoopla(settings.scrapfly_api_key, query)
+        await scrape_zoopla(settings.scrapfly_api_key, query, settings.environment == "staging" ? true : undefined)
     } catch (e) {
         await sendCommandMessage(payload, settings, "There was an error searching for properties, please try again later")
     }

@@ -14,18 +14,21 @@ export interface ScrapflyScrapeConfig {
     cost_budget?: number,
     wait_for_selector?: string
     screenshots?: any
+    debug?: boolean
 }
 
 export interface ScrapeflyScrapeResponse {
 
 }
 
-export function make_scrape_config(url: string, session_id: string, refferer: string | undefined = undefined): ScrapflyScrapeConfig {
+export function make_scrape_config(url: string, session_id: string, refferer: string | undefined = undefined, enable_debug: boolean | undefined = undefined): ScrapflyScrapeConfig {
     let headers: any = {};
     if (refferer) headers['referer'] = refferer;
-    return {
+    let config: any = {
         url, render_js: true, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool', cost_budget: 30, wait_for_selector: "[id^=\"listing\"]", screenshots: { "page": "fullpage" }
     };
+    config.debug = enable_debug;
+    return config
 }
 
 export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<ScrapeResult> {
@@ -43,6 +46,7 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     if (scrapeRequest.payload.wait_for_selector) {
         payload.append("wait_for_selector", scrapeRequest.payload.wait_for_selector);
     }
+    if (scrapeRequest.payload.debug) payload.append("debug", scrapeRequest.payload.debug.toString());
 
     for (const key in scrapeRequest.payload.headers) {
         payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
