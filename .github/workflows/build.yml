@@ -25,6 +25,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
           telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          scrapflyApiKey: ${{ secrets.SCRAPFLY_API_KEY }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           lokiUsername: ${{ secrets.LOKI_USERNAME }}
           lokiPassword: ${{ secrets.LOKI_PASSWORD }}
@@ -54,6 +55,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
           telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          scrapflyApiKey: ${{ secrets.SCRAPFLY_API_KEY }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           lokiUsername: ${{ secrets.LOKI_USERNAME }}
           lokiPassword: ${{ secrets.LOKI_PASSWORD }}
