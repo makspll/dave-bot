@@ -41,6 +41,7 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
         console.log("scrape result", response.result.success)
         last_url = config.url;
         const html = response.result.content;
+        console.log("raw html:" + html)
         const contains_flight_data = html.includes("__next_f");
         const data = parseFlightData(html);
         console.log("contains next f", contains_flight_data, "flight data", data)
@@ -118,7 +119,7 @@ function* iterateFlightData(html: string): Generator<[string, string]> {
     }
 }
 
-function parseFlightData(html: string): any {
+export function parseFlightData(html: string): any {
     const data: any = {};
     for (const [key, val] of iterateFlightData(html)) {
         const jsonValue = parseFlightJsonValue(val);
