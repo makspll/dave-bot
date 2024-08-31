@@ -22,6 +22,7 @@ export interface ZooplaQuery {
 export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promise<PropertySnapshot[]> {
     // begin sesssion
 
+
     const session_id = await begin_zoopla_session(api_key, Date.now());
 
     // scrape 
