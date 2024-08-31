@@ -1,5 +1,6 @@
 import { PropertySnapshot } from "@src/types/sql.js";
 import { make_scrape_config, scrape } from "./scrapfly.js";
+import { LogBatcher } from "@src/logging.js";
 
 export interface ZooplaQuery {
     location: string,
@@ -41,7 +42,8 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
         console.log("scrape result", response.result.success)
         last_url = config.url;
         const html = response.result.content;
-        console.log("raw html:" + html)
+        LogBatcher.push_log({ level: "WARN", message: "raw html:" + html, timestamp: Date.now() * 1000000 })
+
         const contains_flight_data = html.includes("__next_f");
         const data = parseFlightData(html);
         console.log("contains next f", contains_flight_data, "flight data", data)
