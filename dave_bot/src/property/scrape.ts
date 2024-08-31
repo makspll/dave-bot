@@ -1,7 +1,5 @@
 import { PropertySnapshot } from "@src/types/sql.js";
-import {
-    ScrapflyClient, ScrapeConfig, ScreenshotConfig, ExtractionConfig,
-} from 'scrapfly-sdk';
+import { make_scrape_config, scrape } from "@src/property/scrapfly.js";
 
 export interface ZooplaQuery {
     location: string,
@@ -23,8 +21,8 @@ export interface ZooplaQuery {
 
 export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promise<PropertySnapshot[]> {
     // begin sesssion
-    const client = new ScrapflyClient({ key: api_key });
-    const session_id = await begin_zoopla_session(client, Date.now());
+
+    const session_id = await begin_zoopla_session(api_key, Date.now());
 
     // scrape 
     let last_url = "https://www.zoopla.co.uk/"
@@ -33,7 +31,11 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
         query.pn = page_num;
 
         const config = make_scrape_config(make_zoopla_url(query), session_id, last_url);
-        const response = await client.scrape(config);
+        const response = await scrape({
+            apiKey: api_key,
+            payload: config
+        });
+
         console.log("scrape result", response)
         last_url = config.url;
         const html = response.result.content;
@@ -43,23 +45,21 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
     return []
 }
 
-function make_scrape_config(url: string, session_id: string, refferer: string | undefined = undefined): ScrapeConfig {
-    let headers: any = {};
-    if (refferer) headers['referer'] = refferer;
-    return new ScrapeConfig({
-        url, render_js: false, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers,
-    });
-}
+
 
 /**
  * Begins a session with Zoopla by visiting the Zoopla homepage and collecting cookies. returns scrapfly session id if successful or throws error
  */
-async function begin_zoopla_session(client: ScrapflyClient, search_id: number): Promise<string> {
+async function begin_zoopla_session(key: string, search_id: number): Promise<string> {
     const url = "https://www.zoopla.co.uk/";
     const session_id = search_id.toString();
     const scrapeConfig = make_scrape_config(url, session_id);
 
-    const response = await client.scrape(scrapeConfig);
+    const response = await scrape({
+        apiKey: key,
+        payload: scrapeConfig
+    });
+
     console.log("begin scrape session result", response.uuid)
     if (!response.result.success) throw new Error("Failed to begin Zoopla session");
 
