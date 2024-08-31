@@ -46,10 +46,17 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     return fetch(url, {
         method: "POST",
         body: payload,
-    }).then(response => {
+    }).then(async response => {
         if (!response.ok) {
-            console.error(response);
-            throw new Error("Failed to scrape: " + response.status);
+            const contentType = response.headers.get("content-type");
+            let error = ""
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                error = await response.json().then(d => JSON.stringify(d));
+            } else {
+                error = await response.text();
+            }
+            console.error(error);
+            throw new Error("Failed to scrape: " + response.status + " " + error);
         }
         return response.json();
     }).then((data: any) => {
