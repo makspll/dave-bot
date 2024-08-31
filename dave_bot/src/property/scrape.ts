@@ -23,7 +23,7 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery): Promis
     // begin sesssion
 
 
-    const session_id = await begin_zoopla_session(api_key, Date.now());
+    const session_id = Date.now().toString() //await begin_zoopla_session(api_key, Date.now());
 
     // scrape 
     let last_url = "https://www.zoopla.co.uk/"
