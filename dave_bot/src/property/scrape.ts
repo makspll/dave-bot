@@ -1,4 +1,3 @@
-import { insert_new_search } from "@src/data/sql.js";
 import { PropertySnapshot } from "@src/types/sql.js";
 import {
     ScrapflyClient, ScrapeConfig, ScreenshotConfig, ExtractionConfig,
