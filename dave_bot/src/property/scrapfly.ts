@@ -34,7 +34,6 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
 
     const url = "https://api.scrapfly.io/scrape";
     const payload = new URLSearchParams();
-    payload.append("key", scrapeRequest.apiKey);
     payload.append("url", scrapeRequest.payload.url);
     payload.append("render_js", scrapeRequest.payload.render_js.toString());
     payload.append("asp", scrapeRequest.payload.asp.toString());
@@ -43,8 +42,12 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("country", scrapeRequest.payload.country);
     payload.append("headers", JSON.stringify(scrapeRequest.payload.headers));
 
+    console.log(`Scraping ${url}/${payload.toString()}&key=REDACTED`);
+
+    payload.append("key", scrapeRequest.apiKey);
+
     return fetch(`${url}/${payload.toString()}`, {
-        method: "POST"
+        method: "GET"
     }).then(async response => {
         if (!response.ok) {
             const contentType = response.headers.get("content-type");
