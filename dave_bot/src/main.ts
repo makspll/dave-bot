@@ -99,6 +99,7 @@ export default {
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // for easy access
+        ctx.passThroughOnException()
         let settings: ChatbotSettings = get_settings(env)
         inject_logger(settings, { service: "dave", environment: settings.environment })
         console.log("fetch callback")
