@@ -22,6 +22,9 @@ inputs:
   lokiPassword:
     description: 'Loki Password'
     required: true
+  scrapflyApiKey:
+    description: 'ScrapFly API Key'
+    required: true
   godId:
     description: 'God ID'
     required: true
@@ -71,6 +74,7 @@ runs:
           LOKI_USERNAME
           LOKI_PASSWORD
           ENVIRONMENT
+          SCRAPFLY_API_KEY
         workingDirectory: ${{ inputs.workingDirectory }}
         preCommands: |
           echo "Running wrangler migrations from $PWD"
@@ -88,3 +92,4 @@ runs:
         LOKI_USERNAME: ${{ inputs.lokiUsername }}
         LOKI_PASSWORD: ${{ inputs.lokiPassword }}
         ENVIRONMENT: ${{ inputs.environment }}
+        SCRAPFLY_API_KEY: ${{ inputs.scrapflyApiKey }}

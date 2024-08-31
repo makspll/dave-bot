@@ -27,6 +27,7 @@ jest.mock('@src/openai.js', () => ({
 
 
 const testSettings: ChatbotSettings = {
+    scrapfly_api_key: 'scrapflykey',
     telegram_api_key: 'telegramkey',
     telegram_webhook_secret: 'webhook',
     openai_api_key: 'openaikey',

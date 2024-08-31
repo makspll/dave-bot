@@ -18,6 +18,7 @@ export interface Env {
     LOKI_USERNAME: string,
     LOKI_PASSWORD: string,
     ENVIRONMENT: string,
+    SCRAPFLY_API_KEY: string,
     DB: D1Database;
 }
 
@@ -32,6 +33,7 @@ function get_settings(env: Env): ChatbotSettings {
         loki_username: env.LOKI_USERNAME,
         loki_password: env.LOKI_PASSWORD,
         environment: env.ENVIRONMENT,
+        scrapfly_api_key: env.SCRAPFLY_API_KEY,
         db: env.DB
     }
 }
