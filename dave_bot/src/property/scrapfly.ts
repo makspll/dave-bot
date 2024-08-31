@@ -40,7 +40,10 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("session", scrapeRequest.payload.session);
     payload.append("session_sticky_proxy", scrapeRequest.payload.session_sticky_proxy.toString());
     payload.append("country", scrapeRequest.payload.country);
-    payload.append("headers", JSON.stringify(scrapeRequest.payload.headers));
+
+    for (const key in scrapeRequest.payload.headers) {
+        payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
+    }
 
     console.log(`Scraping ${url}?${payload.toString()}&key=REDACTED`);
 
