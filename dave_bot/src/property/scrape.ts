@@ -83,7 +83,7 @@ function make_zoopla_url(params: ZooplaQuery) {
     if (params.search_source) zooplaUrlArgs.set("search_source", params.search_source.toString());
     if (params.pn) zooplaUrlArgs.set("pn", params.pn.toString());
 
-    return `https://www.zoopla.co.uk/to-rent/property/${params.location}/${zooplaUrlArgs.toString()}`;
+    return `https://www.zoopla.co.uk/to-rent/property/${params.location}/?${zooplaUrlArgs.toString()}`;
 }
 
 
