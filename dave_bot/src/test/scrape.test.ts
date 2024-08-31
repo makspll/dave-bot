@@ -5,7 +5,8 @@ it("parses flight data correctly", () => {
     console.log("current work dir", process.cwd())
     const flightData = readFileSync('./test_data/scrape_data.html', 'utf-8');
     const result = parseFlightData(flightData);
-    expect(result["81"]).toStrictEqual(
+    console.log(result)
+    expect(result).toStrictEqual(
         {
             "address": "Old Street, London EC1V",
             "alternativeRentFrequencyLabel": "£692 pw",

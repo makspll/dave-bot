@@ -11,7 +11,9 @@ export interface ScrapflyScrapeConfig {
     country: string,
     headers: any,
     proxy_pool: string,
-    cost_budget: number
+    cost_budget: number,
+    wait_for_selector?: string
+    screenshots?: any
 }
 
 export interface ScrapeflyScrapeResponse {
@@ -22,17 +24,11 @@ export function make_scrape_config(url: string, session_id: string, refferer: st
     let headers: any = {};
     if (refferer) headers['referer'] = refferer;
     return {
-        url, render_js: false, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool', cost_budget: 30
+        url, render_js: false, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool', cost_budget: 30, wait_for_selector: "[id^=\"listing\"]", screenshots: { "page": "fullpage" }
     };
 }
 
 export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<ScrapeResult> {
-    // curl -G --request "GET" \
-    // --url "https://api.scrapfly.io/scrape" \
-    // --data-urlencode "key=key" \
-    // --data-urlencode "url=https://httpbin.dev/anything" \
-    // --data-urlencode "render_js=true" \
-    // --data-urlencode "asp=true"
 
     const url = "https://api.scrapfly.io/scrape";
     const payload = new URLSearchParams();
@@ -44,9 +40,15 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
     payload.append("country", scrapeRequest.payload.country);
     payload.append("proxy_pool", scrapeRequest.payload.proxy_pool);
     payload.append("cost_budget", scrapeRequest.payload.cost_budget.toString());
+    if (scrapeRequest.payload.wait_for_selector) {
+        payload.append("wait_for_selector", scrapeRequest.payload.wait_for_selector);
+    }
 
     for (const key in scrapeRequest.payload.headers) {
         payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
+    }
+    for (const key in scrapeRequest.payload.screenshots) {
+        payload.append(`screenshots[${key}]`, scrapeRequest.payload.screenshots[key]);
     }
 
     console.log(`Scraping ${url}?${payload.toString()}&key=REDACTED`);
