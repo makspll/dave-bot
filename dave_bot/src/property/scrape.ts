@@ -1,5 +1,5 @@
 import { PropertySnapshot } from "@src/types/sql.js";
-import { make_scrape_config, scrape } from "@src/property/scrapfly.js";
+import { make_scrape_config, scrape } from "./scrapfly.js";
 
 export interface ZooplaQuery {
     location: string,
