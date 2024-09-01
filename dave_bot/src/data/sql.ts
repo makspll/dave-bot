@@ -63,7 +63,7 @@ export class Query<T> {
      */
     public static async unwrapD1Result<T>(result: D1Result<T>): Promise<T[]> {
         if (!result.success || result.error) {
-            console.error(`Error in query`, result.error)
+            console.error(`Error in query`, result.error ?? `unknown error`)
             throw result.error ?? `Error when executing query`
         }
         return result.results
@@ -73,8 +73,8 @@ export class Query<T> {
     public getBound(db: D1Database): D1PreparedStatement {
         try {
             return db.prepare(this.query).bind(...this.args);
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -83,8 +83,8 @@ export class Query<T> {
         try {
             const result = await this.getBound(db).all<T>()
             return Query.unwrapD1Result(result)
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -98,8 +98,8 @@ export class Query<T> {
             } else {
                 return results[0]
             }
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -107,8 +107,8 @@ export class Query<T> {
     public async run(db: D1Database): Promise<void> {
         try {
             await this.getBound(db).run()
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -223,7 +223,7 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
 
 export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {
     return await new Query(`
-        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, user.user_id, query.chat_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).run(db)
 }
 
