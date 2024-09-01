@@ -134,9 +134,8 @@ function parseFlightJsonValue(string: string): any {
 }
 
 function* iterateFlightData(html: string): Generator<[string, string]> {
-    const flightData = html.match(/self.__next_f.push\(\[1, "(.*?)"\]\)/g) || [];
-    console.log("flight data matches count", flightData.length)
-    const fullFlightData = unescape(flightData.map(match => match.match(/self.__next_f.push\(\[1, "(.*?)"\]\)/)?.[1] || '').join(''));
+    const flightData = html.matchAll(/self.__next_f.push\(\[1,.?"(.*?)"\]\)/g) || [];
+    const fullFlightData = Array.from(flightData).map((m) => unescape(m[1])).join('\n');
     const lines = fullFlightData.split('\n');
     console.log("flight data lines count", lines.length)
     for (const data of lines) {
@@ -148,7 +147,6 @@ function* iterateFlightData(html: string): Generator<[string, string]> {
 export function parseFlightData(html: string): any {
     const data: any = {};
     for (const [key, val] of iterateFlightData(html)) {
-        console.log("flight data key", key)
         const jsonValue = parseFlightJsonValue(val);
         if (jsonValue) {
             data[key] = jsonValue;
