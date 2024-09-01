@@ -68,6 +68,7 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any>
     for (const key in scrapeRequest.payload.screenshots) {
         payload.append(`screenshots[${key}]`, scrapeRequest.payload.screenshots[key]);
     }
+    if (scrapeRequest.payload.webhook_name) payload.append("webhook_name", scrapeRequest.payload.webhook_name);
 
     console.log(`Scraping ${url}?${payload.toString()}&key=REDACTED`);
 
