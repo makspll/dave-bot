@@ -91,6 +91,11 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
     }
     let url = request.result.url;
     let params = new URLSearchParams(url.split("?")[1]);
+    if (params.size === 0) {
+        console.log("processed initial scrape for session:", request.context.session?.name)
+        return
+    }
+
     let content = request.result.content;
     let flightData = parseFlightData(content);
     let latest_search_id = await get_latest_search(settings.db);
@@ -106,7 +111,6 @@ async function begin_zoopla_session(key: string, search_id: number, settings: Ch
     const url = "https://www.zoopla.co.uk/";
     const session_id = search_id.toString();
     const scrapeConfig = make_scrape_config(url, session_id, undefined, settings);
-    scrapeConfig.webhook_name = undefined
     const response = await scrape({
         apiKey: key,
         payload: scrapeConfig
