@@ -20,6 +20,7 @@ CREATE TABLE property_snapshots (
 CREATE TABLE user_queries (
     user_query_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id BIGINT NOT NULL,
+    chat_id BIGINT NOT NULL,
     location VARCHAR(255) NOT NULL,
     query VARCHAR(255) NOT NULL UNIQUE,
     min_price INTEGER NOT NULL,
@@ -29,4 +30,5 @@ CREATE TABLE user_queries (
     available_from DATE NOT NULL,
     creation_date DATE NOT NULL DEFAULT (DATE('now')),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (chat_id) REFERENCES chats(chat_id) ON DELETE CASCADE
 );

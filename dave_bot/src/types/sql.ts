@@ -54,6 +54,7 @@ export interface GameSubmission {
 
 export interface UserQuery {
     user_query_id: number,
+    chat_id: number,
     user_id: number,
     location: string
     query: string,

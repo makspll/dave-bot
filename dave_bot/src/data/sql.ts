@@ -223,8 +223,8 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
 
 export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {
     return await new Query(`
-        INSERT INTO user_queries (user_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, user.user_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).run(db)
+        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, user.user_id, query.chat_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).run(db)
 }
 
 export async function get_user_property_queries(db: D1Database, user: User): Promise<UserQuery[]> {
@@ -253,6 +253,14 @@ export async function insert_property_snapshots(db: D1Database, snapshots: Prope
         SET price_per_month = ?, available_from = ?, comma_separated_images = ?
         `, s.property_id, s.location, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on?.toISOString(), s.available_from?.toISOString(), s.num_bedrooms, s.comma_separated_images,
         s.price_per_month, s.available_from?.toISOString(), s.comma_separated_images))).execute(db)
+}
+
+export async function get_properties_matching_query(db: D1Database, query: UserQuery, include_seen: boolean): Promise<PropertySnapshot[]> {
+    const seen_query = include_seen ? "" : "AND shown = false"
+    return await new Query<PropertySnapshot>(`
+        SELECT * FROM property_snapshots 
+        WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query}`,
+        query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).getMany(db)
 }
 
 export async function get_user_permissions(db: D1Database, user_id: number): Promise<UserPermission[]> {

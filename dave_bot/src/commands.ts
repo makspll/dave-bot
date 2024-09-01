@@ -5,7 +5,7 @@ import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatte
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
-import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
@@ -13,7 +13,7 @@ import { BoolArg, DateArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg 
 import { send } from "process";
 import { Scores } from "./types/formatters.js";
 import { ChatbotSettings } from "./types/settings.js";
-import { GameType, Permission } from "./types/sql.js";
+import { GameType, Permission, PropertySnapshot, UserQuery } from "./types/sql.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { UserErrorException } from "./error.js";
 import { scrape_zoopla, ZooplaQuery } from "./property/scrape.js";
@@ -406,7 +406,7 @@ export async function new_property_query_command(payload: TelegramMessage, setti
 
     let user = user_from_message(payload)
     await insert_user_property_query(settings.db, user, {
-        location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from
+        location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, chat_id: payload.message.chat.id
     })
     await sendCommandMessage(payload, settings, "Query added")
 }
@@ -417,19 +417,23 @@ export async function remove_property_query_command(payload: TelegramMessage, se
     await sendCommandMessage(payload, settings, "Query removed")
 }
 
+export function merge_queries(acc: UserQuery, q: UserQuery): UserQuery {
+    if (q.min_bedrooms < acc.min_bedrooms) acc.min_bedrooms = q.min_bedrooms
+    if (q.max_bedrooms > acc.max_bedrooms) acc.max_bedrooms = q.max_bedrooms
+    if (q.min_price < acc.min_price) acc.min_price = q.min_price
+    if (q.max_price > acc.max_price) acc.max_price = q.max_price
+    if (q.available_from < acc.available_from) acc.available_from = q.available_from
+    if (q.query != acc.query) acc.query = acc.location
+    return acc
+}
+
 export async function initiate_property_search(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
     let user = user_from_message(payload)
     let queries = await get_user_property_queries(settings.db, user)
     let message = "I will now search for properties matching your queries: " + queries.map(q => q.query).join(", ")
     await sendCommandMessage(payload, settings, message)
 
-    let query = queries.reduce((acc, q) => {
-        if (q.min_bedrooms < acc.min_bedrooms) acc.min_bedrooms = q.min_bedrooms
-        if (q.max_bedrooms > acc.max_bedrooms) acc.max_bedrooms = q.max_bedrooms
-        if (q.min_price < acc.min_price) acc.min_price = q.min_price
-        if (q.max_price > acc.max_price) acc.max_price = q.max_price
-        return acc
-    })
+    let query = queries.reduce(merge_queries)
 
     if (queries.length > 1) {
         query.query = query.location
@@ -442,6 +446,28 @@ export async function initiate_property_search(payload: TelegramMessage, setting
         await sendCommandMessage(payload, settings, "There was an error searching for properties, please try again later: " + JSON.stringify(e))
     }
 }
+
+export async function send_property_alerts(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
+    let user = user_from_message(payload)
+    let queries = await get_user_property_queries(settings.db, user)
+
+    // find all properties that match the queries
+    let merged_query = queries.reduce(merge_queries)
+    let properties = await get_properties_matching_query(settings.db, merged_query, true)
+
+    let message = "there are " + properties.length + " properties matching your queries " + JSON.stringify(merged_query.query)
+    await sendCommandMessage(payload, settings, message)
+
+    // send the properties to the user
+    for (const property of properties) {
+        function format_property(p: PropertySnapshot) {
+            return `${p.address} - ${p.price_per_month} - ${p.summary_description} - ${p.url}`
+        }
+        await sendCommandMessage(payload, settings, JSON.stringify(property))
+    }
+
+}
+
 
 export const COMMANDS: Command<any>[] = [
     new Command("listtriggers", "List all the triggers that Dave responds to", new ManyArgs([]), list_triggers_command),
