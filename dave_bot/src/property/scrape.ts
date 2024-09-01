@@ -51,6 +51,19 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
             mark_properties_as_seen(settings.db, [property.property_id])
         }
 
+        if (properties.length === 0) {
+            sendMessage({
+                api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key,
+                payload: {
+                    chat_id: query.chat_id,
+                    text: "No new properties found :C"
+                },
+                delay: 0,
+                audio_chance: 0,
+
+            })
+        }
     }
 }
 
