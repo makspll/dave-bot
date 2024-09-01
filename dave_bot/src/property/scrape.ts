@@ -109,7 +109,7 @@ function convertPropertyData(propertyData: PropertyData, search_id: number): Pro
         latitude: propertyData.pos.lat,
         property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
-        num_bedrooms: parseInt(propertyData.title.replace(/[^0-9]/g, "")) ?? 0,
+        num_bedrooms: 0,
         comma_separated_images: propertyData.gallery.join(","),
         published_on: parseDate(propertyData.publishedOn) ?? new Date(),
         available_from: parseDate(propertyData.availableFrom) ?? new Date()
@@ -150,7 +150,7 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
         try {
             return convertPropertyData(propertyData, last_search_id?.search_id)
         } catch (e) {
-            console.error("Failed to convert property data", e)
+            console.error("Failed to convert property data", e, typeof e)
             return null
         }
     }).filter((snapshot) => snapshot !== null);
