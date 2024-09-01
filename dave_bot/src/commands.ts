@@ -419,7 +419,7 @@ export async function initiate_property_search(payload: TelegramMessage, setting
         await scrape_zoopla(query, settings)
     } catch (e) {
         console.error("error scraping", e)
-        await sendCommandMessage(payload, settings, "There was an error searching for properties, please try again later")
+        await sendCommandMessage(payload, settings, "There was an error searching for properties, please try again later: " + JSON.stringify(e))
     }
 }
 
