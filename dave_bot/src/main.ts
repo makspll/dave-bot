@@ -133,13 +133,17 @@ async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionConte
 
 }
 
-type Callback = (event: any, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) => Promise<void>
+type Callback = (event: any | Request, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) => Promise<void>
 
-function wrap_callback(event: any, env: Env, ctx: ExecutionContext, name: string, callback: Callback): () => Promise<Response> {
+function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, name: string, callback: Callback): () => Promise<Response> {
     return async function () {
         try {
             let settings: ChatbotSettings = get_settings(env)
             inject_logger(settings, { service: "dave", environment: settings.environment })
+            if (event instanceof Request) {
+                let body = await event.text()
+                event = new Response(body, event)
+            }
             ctx.waitUntil(callback(event, env, ctx, settings).then(() => flush_logs(settings)))
             return new Response(null, { status: 200 })
 
@@ -158,8 +162,8 @@ export default {
     },
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-        let clone = request.clone()
-        return await wrap_callback(clone, env, ctx, "scheduled", fetch_callback)()
+        // ingest the request and make a new one 
+        return await wrap_callback(request, env, ctx, "scheduled", fetch_callback)()
     },
 };
 
