@@ -6,6 +6,7 @@ it("parses flight data correctly", () => {
     const flightData = readFileSync('./test_data/scrape_data.json', 'utf-8');
     const parsed = JSON.parse(flightData);
     const result = parseFlightData(parsed.content);
+
     expect(result[2]).toEqual(
         {
             address: 'Chelsea Manor Street, London SW3',

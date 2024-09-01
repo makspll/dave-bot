@@ -106,7 +106,7 @@ export function convertPropertyData(propertyData: PropertyData, location: string
         latitude: propertyData.pos?.lat ?? propertyData.location?.latitude ?? 0,
         property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
-        num_bedrooms: 0,
+        num_bedrooms: propertyData.features.find((feature) => feature.iconId === "bed")?.content ?? 1,
         comma_separated_images: propertyData.gallery?.join(",") ?? "",
         shown: false,
         published_on: parseDate(propertyData.publishedOn) ?? new Date(),
