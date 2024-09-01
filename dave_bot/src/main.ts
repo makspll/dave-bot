@@ -165,13 +165,13 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
                 inject_logger_with_tags(settings)
                     .then(async () => {
                         // flush logs periodically
-                        const intervalId = setInterval(() => {
-                            flush_logs(settings);
+                        const intervalId = setInterval(async () => {
+                            await flush_logs(settings);
                         }, 500);
 
-                        return callback(event, env, ctx, settings).finally(() => {
+                        return callback(event, env, ctx, settings).finally(async () => {
                             clearInterval(intervalId);
-                            flush_logs(settings);
+                            await flush_logs(settings);
                         })
                     })
             )
@@ -180,7 +180,7 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
         } catch (e) {
             console.error(e)
             console.error(`Error in ${name} callback`, e)
-            flush_logs(get_settings(env))
+            await flush_logs(get_settings(env))
             return new Response(null, { status: 500 })
         }
     }
