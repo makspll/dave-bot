@@ -14,7 +14,7 @@ CREATE TABLE property_snapshots (
     available_from DATE,
     shown BOOLEAN NOT NULL DEFAULT FALSE,
     num_bedrooms INTEGER NOT NULL DEFAULT 0,
-    comma_separated_images TEXT NOT NULL DEFAULT "",
+    comma_separated_images TEXT NOT NULL DEFAULT ""
 );
 
 CREATE TABLE user_queries (
