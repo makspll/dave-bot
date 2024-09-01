@@ -110,6 +110,9 @@ export class LogBatcher {
         if (!this.tags) {
             throw new Error("Tags not set")
         }
+        if (this.logs.length === 0) {
+            return
+        }
         const response = await post_logs_to_loki(this.logs, this.tags, settings)
         this.logs = []
     }
