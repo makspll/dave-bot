@@ -138,6 +138,7 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
                     // verify signature 
                     console.log("Received scrapfly webhook")
                     await process_scrape_result(await event.json(), settings)
+                    await flush_logs(settings)
                     return new Response(null, { status: 200 })
                 } else if (event.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
                     console.warn("Unauthorized webhook call", {
