@@ -1,7 +1,7 @@
 import { PropertySnapshot, UserQuery } from "@src/types/sql.js";
 import { make_scrape_config, scrape, ScrapeResult } from "./scrapfly.js";
 import { LogBatcher } from "../logging.js";
-import { get_latest_search, get_latest_two_searches, get_todays_searches, insert_new_search } from "../data/sql.js";
+import { get_latest_search, get_latest_two_searches, get_todays_searches, insert_new_search, insert_property_snapshots } from "../data/sql.js";
 import moment from "moment-timezone";
 import { ChatbotSettings } from "@src/types/settings.js";
 
@@ -76,6 +76,23 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
     }
 }
 
+function convertPropertyData(propertyData: PropertyData, search_id: number): PropertySnapshot {
+    const propertySnapshot: PropertySnapshot = {
+        property_id: propertyData.listingId,
+        search_id: search_id,
+        url: `https://www.zoopla.co.uk${propertyData.listingUris.detail}`,
+        address: propertyData.address,
+        price_per_month: parseInt(propertyData.price.replace(/[^0-9]/g, "")),
+        longitude: propertyData.pos.lng,
+        latitude: propertyData.pos.lat,
+        property_type: propertyData.propertyType,
+        summary_description: propertyData.summaryDescription,
+        num_bedrooms: parseInt(propertyData.title.replace(/[^0-9]/g, "")),
+        comma_separated_images: propertyData.gallery.join(",")
+    }
+    return propertySnapshot
+}
+
 export async function process_scrape_result(request: ScrapeResult, settings: ChatbotSettings) {
     if (!request.result.success) {
         console.error("Scrape failed", request.result.error, request.result.url)
@@ -96,9 +113,19 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
         console.log("processed initial scrape for session:", request.context.session?.name)
         return
     }
+    let last_search_id = await get_latest_search(settings.db);
+
+    if (!last_search_id) {
+        console.error("No search id found")
+        return
+    }
 
     let content = request.result.content;
     let flightData = parseFlightData(content);
+    let snapshots = flightData.map((propertyData) => convertPropertyData(propertyData, last_search_id?.search_id))
+    console.log("Saving", snapshots.length, "properties to db")
+    await insert_property_snapshots(settings.db, snapshots)
+
     let latest_search_id = await get_latest_search(settings.db);
     console.log("saving properties to latest search id", latest_search_id)
 }
@@ -171,7 +198,60 @@ function* iterateFlightData(html: string): Generator<[string, string]> {
     }
 }
 
-export function parseFlightData(html: string): any {
+interface State {
+    replacements: number
+}
+
+
+function recursive_replace_lookup_string(full_data: any, current_data: any, lookup_key_prefix: string = '$', state: State): any {
+    if (current_data === null || current_data === undefined) {
+        return current_data
+    }
+
+    if (typeof current_data === 'string' && current_data.startsWith(lookup_key_prefix)) {
+        state.replacements++;
+        const lookup_key = current_data.slice(1);
+        return full_data[lookup_key];
+    }
+
+    if (Array.isArray(current_data)) {
+        return current_data.map((item) => recursive_replace_lookup_string(full_data, item, lookup_key_prefix, state));
+    }
+    if (typeof current_data === 'object') {
+        const new_data: any = {};
+        for (const [key, val] of Object.entries(current_data)) {
+            new_data[key] = recursive_replace_lookup_string(full_data, val, lookup_key_prefix, state);
+        }
+        return new_data;
+    }
+    return current_data;
+}
+
+function inlineFlightDataReferences(flightData: any) {
+    // recursively walk lists dictionaries and replace references like "$72" with the actual value from the flight data dict
+    let state = {
+        replacements: 999
+    }
+    let new_data = flightData;
+    while (state.replacements > 0) {
+        console.log(state.replacements)
+        state.replacements = 0;
+        new_data = recursive_replace_lookup_string(new_data, new_data, '$', state);
+    }
+    return new_data
+}
+
+function findPropertyData(flightData: any): PropertyData[] {
+    const propertyData: PropertyData[] = [];
+    for (const key in flightData) {
+        if (typeof flightData[key] === "object" && flightData[key].listingId !== undefined && flightData[key].propertyType !== undefined) {
+            propertyData.push(flightData[key]);
+        }
+    }
+    return propertyData;
+}
+
+export function parseFlightData(html: string): PropertyData[] {
     const data: any = {};
     for (const [key, val] of iterateFlightData(html)) {
         const jsonValue = parseFlightJsonValue(val);
@@ -179,5 +259,78 @@ export function parseFlightData(html: string): any {
             data[key] = jsonValue;
         }
     }
-    return data;
+    const inlined = inlineFlightDataReferences(data);
+    return findPropertyData(inlined);
+}
+
+interface Branch {
+    branchDetailsUri: string;
+    branchId: number;
+    logoUrl: string;
+    name: string;
+    phone: string;
+}
+
+interface Feature {
+    content: number;
+    iconId: string;
+}
+
+interface Image {
+    src: string;
+    caption: string | null;
+    responsiveImgList: Array<{
+        src: string;
+        width: number;
+    }>;
+}
+
+interface ListingUris {
+    contact: string;
+    detail: string;
+    success: string;
+}
+
+interface Position {
+    lat: number;
+    lng: number;
+}
+
+interface PropertyData {
+    address: string;
+    alternativeRentFrequencyLabel: string;
+    availableFrom: string;
+    availableFromLabel: string;
+    branch: Branch;
+    displayType: string;
+    featuredType: string | null;
+    features: Feature[];
+    flag: string;
+    gallery: string[];
+    highlights: any[]; // Adjust the type if you have a specific structure for highlights
+    image: Image;
+    isFavourite: boolean;
+    isPremium: boolean;
+    lastPublishedDate: string;
+    listingId: string;
+    listingType: string;
+    listingUris: ListingUris;
+    numberOfFloorPlans: number;
+    numberOfImages: number;
+    numberOfVideos: number;
+    pos: Position;
+    price: string;
+    priceDrop: string | null;
+    priceTitle: string;
+    propertyType: string;
+    publishedOn: string;
+    publishedOnLabel: string;
+    shortPriceTitle: string;
+    summaryDescription: string;
+    tags: Array<{
+        content: string;
+    }>;
+    title: string;
+    transports: any[]; // Adjust the type if you have a specific structure for transports
+    underOffer: boolean;
 }

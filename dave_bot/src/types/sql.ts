@@ -76,7 +76,9 @@ export interface PropertySnapshot {
     property_type: string,
     summary_description: string,
     published_on?: Date,
-    available_from?: Date
+    available_from?: Date,
+    comma_separated_images: string,
+    num_bedrooms: number
 }
 
 export type Permission = "Manage Property Query"
