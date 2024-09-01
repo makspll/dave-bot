@@ -8,8 +8,8 @@ export interface ScrapflyScrapeConfig {
     url: string,
     render_js: boolean,
     asp: boolean,
-    session: string,
-    session_sticky_proxy: boolean,
+    session?: string,
+    session_sticky_proxy?: boolean,
     country: string,
     headers: any,
     proxy_pool: string,
@@ -27,14 +27,15 @@ export interface ScrapeflyScrapeResponse {
 export function make_scrape_config(url: string, session_id: string | undefined, refferer: string | undefined = undefined, settings: ChatbotSettings): ScrapflyScrapeConfig {
     let headers: any = {};
     // if (refferer) headers['referer'] = refferer;
-    let config: any = {
+    let config: ScrapflyScrapeConfig = {
         url,
         render_js: true,
         asp: true,
         // session:
         //     session_id,
         // session_sticky_proxy: true,
-        country: 'gb', headers,
+        country: 'gb',
+        headers,
         proxy_pool: 'public_datacenter_pool',
         cost_budget: 30,
         wait_for_selector: "[id^=\"listing\"]",
@@ -52,8 +53,8 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any>
     payload.append("url", scrapeRequest.payload.url);
     payload.append("render_js", scrapeRequest.payload.render_js.toString());
     payload.append("asp", scrapeRequest.payload.asp.toString());
-    payload.append("session", scrapeRequest.payload.session);
-    payload.append("session_sticky_proxy", scrapeRequest.payload.session_sticky_proxy.toString());
+    if (scrapeRequest.payload.session) payload.append("session", scrapeRequest.payload.session);
+    if (scrapeRequest.payload.session_sticky_proxy) payload.append("session_sticky_proxy", scrapeRequest.payload.session_sticky_proxy.toString());
     payload.append("country", scrapeRequest.payload.country);
     payload.append("proxy_pool", scrapeRequest.payload.proxy_pool);
     if (scrapeRequest.payload.cost_budget) payload.append("cost_budget", scrapeRequest.payload.cost_budget.toString());
@@ -62,12 +63,16 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any>
     }
     if (scrapeRequest.payload.debug) payload.append("debug", scrapeRequest.payload.debug.toString());
 
-    for (const key in scrapeRequest.payload.headers) {
-        payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
+    if (scrapeRequest.payload.headers) {
+        for (const key in scrapeRequest.payload.headers) {
+            payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
+        }
     }
+
     for (const key in scrapeRequest.payload.screenshots) {
         payload.append(`screenshots[${key}]`, scrapeRequest.payload.screenshots[key]);
     }
+
     if (scrapeRequest.payload.webhook_name) payload.append("webhook_name", scrapeRequest.payload.webhook_name);
 
     console.log(`Scraping ${url}?${payload.toString()}&key=REDACTED`);

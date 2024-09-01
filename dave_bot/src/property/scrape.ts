@@ -107,8 +107,10 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
 async function begin_zoopla_session(key: string, search_id: number, settings: ChatbotSettings): Promise<void> {
     const url = "https://www.zoopla.co.uk/";
     const session_id = search_id.toString();
+    console.log("Starting session with id", session_id)
     const scrapeConfig = make_scrape_config(url, session_id, undefined, settings);
     scrapeConfig.wait_for_selector = undefined;
+    console.log("Initiating scrape first scrape session", url)
     const response = await scrape({
         apiKey: key,
         payload: scrapeConfig
