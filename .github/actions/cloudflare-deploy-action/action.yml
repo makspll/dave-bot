@@ -22,6 +22,9 @@ inputs:
   lokiPassword:
     description: 'Loki Password'
     required: true
+  scrapflyApiKey:
+    description: 'ScrapFly API Key'
+    required: true
   godId:
     description: 'God ID'
     required: true
@@ -36,6 +39,9 @@ inputs:
     description: 'Working Directory'
     required: false
     default: '.'
+  workerUrl:
+    description: 'Worker URL'
+    required: true
   environment:
     description: 'Environment'
     required: true
@@ -50,11 +56,18 @@ runs:
       shell: bash
       run: |
         mv ${{ inputs.configPath }} wrangler.toml
+    - name: Retrieve wrangler version
+      shell: bash
+      id: wrangler-version
+      run: |
+        echo "wrangler-version=$(grep -oP '"wrangler":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' ${{ inputs.workingDirectory }}/package.json)" >> $GITHUB_OUTPUT
     - name: Build & Deploy Worker
       uses: cloudflare/wrangler-action@v3
       with:
+        quiet: false
         apiToken: ${{ inputs.apiToken }}
         accountId: ${{ inputs.accountId }}
+        wranglerVersion: ${{ steps.wrangler-version.outputs.wrangler-version }}
         secrets: |
           TELEGRAM_WEBHOOK_SECRET
           TELEGRAM_API_KEY
@@ -64,7 +77,16 @@ runs:
           LOKI_USERNAME
           LOKI_PASSWORD
           ENVIRONMENT
+          SCRAPFLY_API_KEY
+          WORKER_URL
         workingDirectory: ${{ inputs.workingDirectory }}
+        preCommands: |
+          echo "Running wrangler migrations from $PWD"
+          ls -la 
+          npx wrangler d1 migrations list DB --remote
+          npx wrangler d1 migrations apply DB --remote
+          echo "Wrangler migrations completed"
+
       env:
         TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
         TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
@@ -74,3 +96,5 @@ runs:
         LOKI_USERNAME: ${{ inputs.lokiUsername }}
         LOKI_PASSWORD: ${{ inputs.lokiPassword }}
         ENVIRONMENT: ${{ inputs.environment }}
+        SCRAPFLY_API_KEY: ${{ inputs.scrapflyApiKey }}
+        WORKER_URL: ${{ inputs.workerUrl }}

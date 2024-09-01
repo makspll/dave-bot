@@ -25,6 +25,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
           telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          scrapflyApiKey: ${{ secrets.SCRAPFLY_API_KEY }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           lokiUsername: ${{ secrets.LOKI_USERNAME }}
           lokiPassword: ${{ secrets.LOKI_PASSWORD }}
@@ -32,6 +33,7 @@ jobs:
           mainChatId: ${{ secrets.MAIN_CHAT_ID }}
           workingDirectory: 'dave_bot'
           environment: 'production'
+          workerUrl: 'https://hardly-know-her-telegram-bot.makspl17.workers.dev'
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:
@@ -54,6 +56,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           telegramApiKey: ${{ secrets.TELEGRAM_API_KEY }}
           telegramWebhookSecret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          scrapflyApiKey: ${{ secrets.SCRAPFLY_API_KEY }}
           openAiKey: ${{ secrets.OPEN_AI_KEY }}
           lokiUsername: ${{ secrets.LOKI_USERNAME }}
           lokiPassword: ${{ secrets.LOKI_PASSWORD }}
@@ -62,6 +65,7 @@ jobs:
           configPath: 'wrangler.staging.toml'
           workingDirectory: 'dave_bot'
           environment: 'staging'
+          workerUrl: 'https://hardly-know-her-telegram-bot-staging.makspl17.workers.dev'
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:

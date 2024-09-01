@@ -1,7 +1,7 @@
 import { COMMANDS } from "./commands.js"
 import { UserErrorException } from "./error.js"
 import { HARDLYKNOWER_PROBABILITY, KEYWORD_GPT_CHANCE, SICKOMODE_PROBABILITY, SYSTEM_PROMPT } from "./data.js"
-import { get_user_chats, insert_game_submission } from "./data/sql.js"
+import { get_user_chats, get_user_permissions, insert_game_submission } from "./data/sql.js"
 import { call_gpt } from "./openai.js"
 import { sendMessage, setReaction, user_from_message } from "./telegram.js"
 import { Action } from "./types/actions.js"
@@ -30,6 +30,15 @@ export let commands_and_filter_optins: Action = async (message: TelegramMessage,
         let cmd = COMMANDS.find(c => c.name == cmd_name)
         if (cmd) {
             try {
+                if (cmd.permissions_required) {
+                    const permissions = (await get_user_permissions(settings.db, message.message.from.id)).map(x => x.permission);
+                    for (const permission of cmd.permissions_required) {
+                        if (!permissions.includes(permission)) {
+                            throw new UserErrorException(`You do not have the required permissions to run this command. Required permissions: ${cmd.permissions_required.join(", ")}`)
+                        }
+                    }
+                }
+
                 await cmd.run(message, settings, cmd_words)
             } catch (e) {
                 if (e instanceof UserErrorException) {

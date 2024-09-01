@@ -1,5 +1,6 @@
 import { D1Database, D1Result, D1PreparedStatement } from "@cloudflare/workers-types"
-import { Chat, GameSubmission, GameType, User } from "@src/types/sql.js";
+import { Chat, GameSubmission, GameType, PropertySnapshot, User, UserPermission, UserQuery } from "@src/types/sql.js";
+import moment from "moment-timezone";
 
 
 export function isUser(obj: any): obj is User {
@@ -32,6 +33,13 @@ class DBException extends Error {
         super(message)
         this.name = "DBException"
     }
+    toJSON() {
+        return {
+            name: this.name,
+            message: this.message,
+            stack: this.stack
+        };
+    }
 }
 
 /**
@@ -55,6 +63,7 @@ export class Query<T> {
      */
     public static async unwrapD1Result<T>(result: D1Result<T>): Promise<T[]> {
         if (!result.success || result.error) {
+            console.error(`Error in query`, result.error ?? `unknown error`)
             throw result.error ?? `Error when executing query`
         }
         return result.results
@@ -64,8 +73,8 @@ export class Query<T> {
     public getBound(db: D1Database): D1PreparedStatement {
         try {
             return db.prepare(this.query).bind(...this.args);
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -74,8 +83,8 @@ export class Query<T> {
         try {
             const result = await this.getBound(db).all<T>()
             return Query.unwrapD1Result(result)
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -89,8 +98,8 @@ export class Query<T> {
             } else {
                 return results[0]
             }
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -98,8 +107,8 @@ export class Query<T> {
     public async run(db: D1Database): Promise<void> {
         try {
             await this.getBound(db).run()
-        } catch (e) {
-            console.error(`Error in query`, this.query, this.args, e)
+        } catch (e: any) {
+            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -210,4 +219,75 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
     return await new Query<GameSubmission>(`
         SELECT * FROM game_submissions WHERE game_id = ? AND game_type = ? AND user_id = ?
         `, game_id, game_type, user_id).getFirst(db)
+}
+
+export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {
+    return await new Query(`
+        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, user.user_id, query.chat_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).run(db)
+}
+
+export async function get_user_property_queries(db: D1Database, user: User): Promise<UserQuery[]> {
+    return await new Query<UserQuery>(`
+        SELECT * FROM user_queries WHERE user_id = ?
+        `, user.user_id).getMany(db)
+        .then(q => q.map(q => {
+            q.available_from = new Date(q.available_from)
+            return q
+        }))
+}
+
+export async function get_all_user_property_queries(db: D1Database): Promise<UserQuery[]> {
+    return await new Query<UserQuery>(`
+        SELECT * FROM user_queries
+        `).getMany(db)
+        .then(q => q.map(q => {
+            q.available_from = new Date(q.available_from)
+            return q
+        }))
+}
+
+export async function get_user_property_queries_by_location(db: D1Database, location: string): Promise<UserQuery[]> {
+    return await new Query<UserQuery>(`
+        SELECT * FROM user_queries WHERE location = ?
+        `, location).getMany(db)
+}
+
+export async function delete_user_property_query(db: D1Database, user: User, query: string): Promise<void> {
+    return await new Query(`
+        DELETE FROM user_queries WHERE user_id = ? AND query = ?
+        `, user.user_id, query).run(db)
+}
+
+
+export async function insert_property_snapshots(db: D1Database, snapshots: PropertySnapshot[]): Promise<void> {
+    return await new QueryBatch(...snapshots.map(s => new Query(`
+        INSERT INTO property_snapshots (property_id, location, url, address, price_per_month, longitude, latitude, property_type, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO UPDATE
+        SET price_per_month = ?, available_from = ?, comma_separated_images = ?
+        `, s.property_id, s.location, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on?.toISOString(), s.available_from?.toISOString(), s.num_bedrooms, s.comma_separated_images,
+        s.price_per_month, s.available_from?.toISOString(), s.comma_separated_images))).execute(db)
+}
+
+export async function get_properties_matching_query(db: D1Database, query: UserQuery, include_seen: boolean): Promise<PropertySnapshot[]> {
+    const seen_query = include_seen ? "" : "AND shown = false"
+    return await new Query<PropertySnapshot>(`
+        SELECT * FROM property_snapshots 
+        WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query}`,
+        query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).getMany(db)
+}
+
+export async function mark_properties_as_seen(db: D1Database, listing_ids: string[]): Promise<void> {
+    if (listing_ids.length == 0) {
+        return
+    }
+    return await new QueryBatch(...listing_ids.map(id => new Query(`
+        UPDATE property_snapshots SET shown = true WHERE property_id = ?
+        `, id))).execute(db)
+}
+
+export async function get_user_permissions(db: D1Database, user_id: number): Promise<UserPermission[]> {
+    return await new Query<UserPermission>(`
+        SELECT * FROM permissions WHERE user_id = ?
+        `, user_id).getMany(db)
 }

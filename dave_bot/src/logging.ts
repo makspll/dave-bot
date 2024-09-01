@@ -23,17 +23,23 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
 
     LogBatcher.set_tags(tags)
     console.log = async (...args: any[]) => {
+        // if (settings.environment !== "production" && settings.environment !== "staging") {
         bypass_log.apply(console, args)
+        // }
         LogBatcher.push_log({
             level: "INFO", message: args_to_string(args), timestamp: Date.now() * 1000000
         })
     }
     console.error = async (...args: any[]) => {
+        // if (settings.environment !== "production" && settings.environment !== "staging") {
         bypass_error.apply(console, args)
+        // }
         LogBatcher.push_log({ level: "ERROR", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
     console.warn = async (...args: any[]) => {
+        // if (settings.environment !== "production" && settings.environment !== "staging") {
         bypass_warn.apply(console, args)
+        // }
         LogBatcher.push_log({ level: "WARN", message: args_to_string(args), timestamp: Date.now() * 1000000 })
     }
 }
@@ -103,6 +109,9 @@ export class LogBatcher {
     static async flush(settings: ChatbotSettings) {
         if (!this.tags) {
             throw new Error("Tags not set")
+        }
+        if (this.logs.length === 0) {
+            return
         }
         const response = await post_logs_to_loki(this.logs, this.tags, settings)
         this.logs = []
