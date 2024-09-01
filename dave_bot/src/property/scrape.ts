@@ -97,7 +97,7 @@ function parseDate(dateStr: string): Date | null {
 
 function convertPropertyData(propertyData: PropertyData, location: string): PropertySnapshot {
     const propertySnapshot: PropertySnapshot = {
-        property_id: propertyData.listingId,
+        property_id: "zoopla:" + propertyData.listingId,
         location,
         url: `https://www.zoopla.co.uk${propertyData.listingUris.detail}`,
         address: propertyData.address,
