@@ -1,7 +1,7 @@
 import { PropertySnapshot, UserQuery } from "@src/types/sql.js";
 import { make_scrape_config, scrape } from "./scrapfly.js";
 import { LogBatcher } from "../logging.js";
-import { get_todays_searches, insert_new_search } from "@src/data/sql.js";
+import { get_todays_searches, insert_new_search } from "../data/sql.js";
 import moment from "moment-timezone";
 
 export interface ZooplaQuery {
