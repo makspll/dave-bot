@@ -22,6 +22,12 @@ export interface Env {
     DB: D1Database;
 }
 
+export interface CronEvent {
+    cron: string
+    type: "scheduled"
+    scheduledTime: number
+}
+
 function get_settings(env: Env): ChatbotSettings {
     return {
         telegram_webhook_secret: env.TELEGRAM_WEBHOOK_SECRET,
@@ -87,7 +93,7 @@ async function fetch_callback(request: Request, env: Env, ctx: ExecutionContext,
     }
 }
 
-async function schedule_callback(event: any, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
+async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
     switch (event.cron) {
         case "0 8 * * *": // every morning
             console.log("Firing off wordle")
@@ -152,7 +158,8 @@ export default {
     },
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-        return await wrap_callback(request, env, ctx, "scheduled", fetch_callback)()
+        let clone = request.clone()
+        return await wrap_callback(clone, env, ctx, "scheduled", fetch_callback)()
     },
 };
 
