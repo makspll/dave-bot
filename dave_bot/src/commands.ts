@@ -16,7 +16,7 @@ import { ChatbotSettings } from "./types/settings.js";
 import { GameType, Permission, PropertySnapshot, UserQuery } from "./types/sql.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { UserErrorException } from "./error.js";
-import { merge_queries, scrape_zoopla, send_all_property_alerts, ZooplaQuery } from "./property/scrape.js";
+import { merge_queries, scrape_all_queries, scrape_zoopla, send_all_property_alerts, ZooplaQuery } from "./property/scrape.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
@@ -422,23 +422,7 @@ export async function remove_property_query_command(payload: TelegramMessage, se
 
 
 export async function initiate_property_search(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
-    let user = user_from_message(payload)
-    let queries = await get_user_property_queries(settings.db, user)
-    let message = "I will now search for properties matching your queries: " + queries.map(q => q.query).join(", ")
-    await sendCommandMessage(payload, settings, message)
-
-    let query = queries.reduce(merge_queries)
-
-    if (queries.length > 1) {
-        query.query = query.location
-    }
-
-    try {
-        await scrape_zoopla(query, settings)
-    } catch (e) {
-        console.error("error scraping", e, typeof e)
-        await sendCommandMessage(payload, settings, "There was an error searching for properties, please try again later: " + JSON.stringify(e))
-    }
+    await scrape_all_queries(settings)
 }
 
 

@@ -79,10 +79,19 @@ async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionConte
         // every hour
         case "0 * * * *":
             console.log("Hourly schedule")
+            // don't fire outside of working hours
+            let now = new Date()
+            let hour = now.getHours()
+            if (hour < 9 || hour > 17) {
+                console.log("Outside of working hours, not running property scraper")
+                break;
+            }
+
             await scrape_all_queries(settings)
             await send_all_property_alerts(settings)
             break;
         case "0 8 * * *": // every morning
+            console.log("Morning schedule")
             console.log("Firing off wordle")
             await sendMessage({
                 api_key: settings.telegram_api_key,
