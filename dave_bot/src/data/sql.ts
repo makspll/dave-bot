@@ -267,6 +267,12 @@ export async function get_properties_matching_query(db: D1Database, query: UserQ
         query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).getMany(db)
 }
 
+export async function mark_properties_as_seen(db: D1Database, listing_ids: string[]): Promise<void> {
+    return await new QueryBatch(...listing_ids.map(id => new Query(`
+        UPDATE property_snapshots SET shown = true WHERE property_id = ?
+        `, id))).execute(db)
+}
+
 export async function get_user_permissions(db: D1Database, user_id: number): Promise<UserPermission[]> {
     return await new Query<UserPermission>(`
         SELECT * FROM permissions WHERE user_id = ?

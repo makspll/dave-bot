@@ -5,7 +5,7 @@ import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatte
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
-import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
@@ -456,7 +456,7 @@ export async function send_property_alerts(payload: TelegramMessage, settings: C
     let merged_query = queries.reduce(merge_queries)
 
     console.log("merged query: ", merged_query)
-    let properties = await get_properties_matching_query(settings.db, merged_query, true)
+    let properties = await get_properties_matching_query(settings.db, merged_query, false)
 
     let message = "there are " + properties.length + " properties matching your queries " + JSON.stringify(merged_query.query)
     await sendCommandMessage(payload, settings, message)
@@ -469,6 +469,8 @@ export async function send_property_alerts(payload: TelegramMessage, settings: C
         await sendCommandMessage(payload, settings, format_property(property))
     }
 
+    // mark properties as seen
+    await mark_properties_as_seen(settings.db, properties.map(p => p.property_id))
 }
 
 
