@@ -95,11 +95,11 @@ function parseDate(dateStr: string): Date | null {
     return null;
 }
 
-function convertPropertyData(propertyData: PropertyData, location: string): PropertySnapshot {
+export function convertPropertyData(propertyData: PropertyData, location: string): PropertySnapshot {
     const propertySnapshot: PropertySnapshot = {
         property_id: "zoopla:" + propertyData.listingId,
         location,
-        url: `https://www.zoopla.co.uk${propertyData.listingUris.detail}`,
+        url: `https://www.zoopla.co.uk/to-rent/details/${propertyData.listingId}`,
         address: propertyData.address,
         price_per_month: parseInt(propertyData.price.replace(/[^0-9]/g, "")),
         longitude: propertyData.pos?.lng ?? propertyData.location?.longitude ?? 0,
@@ -329,7 +329,7 @@ interface Coordinates {
     longitude: number;
 }
 
-interface PropertyData {
+export interface PropertyData {
     address: string;
     alternativeRentFrequencyLabel: string;
     availableFrom: string;
@@ -347,7 +347,7 @@ interface PropertyData {
     lastPublishedDate: string;
     listingId: string;
     listingType: string;
-    listingUris: ListingUris;
+    listingUris?: ListingUris;
     numberOfFloorPlans: number;
     numberOfImages: number;
     numberOfVideos: number;
