@@ -63,7 +63,7 @@ async function fetch_callback(request: Request, env: Env, ctx: ExecutionContext,
 
         return
     }
-    console.log(request)
+    console.log(request.method)
     if (request.method === "POST") {
         const payload: TelegramMessage = await request.json()
         // Getting the POST request JSON payload
