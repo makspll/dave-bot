@@ -46,7 +46,7 @@ export class Command<T extends any[]> {
             const parsed_args = this.args.get_values(args);
             console.log("Parsed args: ", parsed_args)
             await this.callback(payload, settings, parsed_args);
-        } catch (e) {
+        } catch (e: any) {
             if (e instanceof UserErrorException) {
                 await sendMessage({
                     api_key: settings.telegram_api_key,
@@ -59,7 +59,7 @@ export class Command<T extends any[]> {
                     delay: 0
                 })
             } else {
-                console.error("Error running command: ", e)
+                console.error("Error running command: ", e, e.toString())
                 sendCommandMessage(payload, settings, "There was an error processing your command, please try again later")
                 throw e
             }
