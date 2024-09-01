@@ -105,8 +105,8 @@ function convertPropertyData(propertyData: PropertyData, search_id: number): Pro
         url: `https://www.zoopla.co.uk${propertyData.listingUris.detail}`,
         address: propertyData.address,
         price_per_month: parseInt(propertyData.price.replace(/[^0-9]/g, "")),
-        longitude: propertyData.pos.lng,
-        latitude: propertyData.pos.lat,
+        longitude: propertyData.pos?.lng ?? propertyData.location?.longitude ?? 0,
+        latitude: propertyData.pos?.lat ?? propertyData.location?.latitude ?? 0,
         property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
         num_bedrooms: 0,
@@ -328,6 +328,12 @@ interface Position {
     lng: number;
 }
 
+interface Coordinates {
+    isApproximate: boolean;
+    latitude: number;
+    longitude: number;
+}
+
 interface PropertyData {
     address: string;
     alternativeRentFrequencyLabel: string;
@@ -350,7 +356,7 @@ interface PropertyData {
     numberOfFloorPlans: number;
     numberOfImages: number;
     numberOfVideos: number;
-    pos: Position;
+    pos?: Position;
     price: string;
     priceDrop: string | null;
     priceTitle: string;
@@ -365,4 +371,5 @@ interface PropertyData {
     title: string;
     transports: any[]; // Adjust the type if you have a specific structure for transports
     underOffer: boolean;
+    location?: Coordinates;
 }
