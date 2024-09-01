@@ -4,7 +4,7 @@ import { LogBatcher } from "../logging.js";
 import { get_all_user_property_queries, get_properties_matching_query, get_user_property_queries_by_location, insert_property_snapshots, mark_properties_as_seen } from "../data/sql.js";
 import moment from "moment-timezone";
 import { ChatbotSettings } from "@src/types/settings.js";
-import { sendMessage } from "@src/telegram.js";
+import { sendMessage } from "../telegram.js";
 
 export interface ZooplaQuery {
     location: string,
