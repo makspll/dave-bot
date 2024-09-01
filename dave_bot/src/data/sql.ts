@@ -268,6 +268,9 @@ export async function get_properties_matching_query(db: D1Database, query: UserQ
 }
 
 export async function mark_properties_as_seen(db: D1Database, listing_ids: string[]): Promise<void> {
+    if (listing_ids.length == 0) {
+        return
+    }
     return await new QueryBatch(...listing_ids.map(id => new Query(`
         UPDATE property_snapshots SET shown = true WHERE property_id = ?
         `, id))).execute(db)
