@@ -34,6 +34,8 @@ export async function scrape_zoopla(api_key: string, query: ZooplaQuery, debug: 
         console.log("scraping page", page_num)
 
         const config = make_scrape_config(make_zoopla_url(query), session_id, last_url, debug);
+        let elapsed_time = 0;
+
         const response = await scrape({
             apiKey: api_key,
             payload: config

@@ -59,7 +59,13 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
 
     payload.append("key", scrapeRequest.apiKey);
 
-    return fetch(`${url}?${payload.toString()}`, {
+    let elapsed_time = 0;
+    const interval = setInterval(() => {
+        elapsed_time += 15;
+        console.log(`awaiting scrape for ${elapsed_time} seconds`);
+    }, 15000);
+
+    let response = await fetch(`${url}?${payload.toString()}`, {
         method: "GET"
     }).then(async response => {
         if (!response.ok) {
@@ -76,7 +82,11 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
         return response.json();
     }).then((data: any) => {
         return data as ScrapeResult;
+    }).finally(() => {
+        clearInterval(interval);
     });
+
+    return response
 }
 
 
