@@ -77,6 +77,7 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any>
     let response = await fetch(`${url}?${payload.toString()}`, {
         method: "GET"
     }).then(async response => {
+        console.log("Scrape response", response.status);
         if (!response.ok) {
             const contentType = response.headers.get("content-type");
             let error = ""
@@ -90,6 +91,8 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any>
         }
         return response.json();
     });
+
+    console.log("Fininshed scrape init");
 
     return response
 }
