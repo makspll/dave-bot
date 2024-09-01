@@ -150,7 +150,7 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
         try {
             return convertPropertyData(propertyData, last_search_id?.search_id)
         } catch (e) {
-            console.error("Failed to convert property data", e, typeof e)
+            console.error("Failed to convert property data", e, typeof e, "from", propertyData)
             return null
         }
     }).filter((snapshot) => snapshot !== null);
