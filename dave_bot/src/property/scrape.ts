@@ -122,7 +122,15 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
 
     let content = request.result.content;
     let flightData = parseFlightData(content);
-    let snapshots = flightData.map((propertyData) => convertPropertyData(propertyData, last_search_id?.search_id))
+    let snapshots = flightData.map((propertyData) => {
+        try {
+            return convertPropertyData(propertyData, last_search_id?.search_id)
+        } catch (e) {
+            console.error("Failed to convert property data", e)
+            return null
+        }
+    }).filter((snapshot) => snapshot !== null);
+
     console.log("Saving", snapshots.length, "properties to db")
     await insert_property_snapshots(settings.db, snapshots)
 
