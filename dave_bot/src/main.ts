@@ -1,12 +1,12 @@
 import { sendMessage } from "./telegram.js";
 import { commands_and_filter_optins, hardlyfier, keywords, nyt_games_submission, screamo, sickomode } from "./actions.js";
-import { COMMANDS, connections_command, wordle_command } from "./commands.js";
+import { COMMANDS, connections_command, send_property_alerts, wordle_command } from "./commands.js";
 import { TRIGGERS } from "./data.js";
 import { Action } from "./types/actions.js";
 import { ChatbotSettings } from "./types/settings.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { flush_logs, inject_logger } from "./logging.js";
-import { process_scrape_result } from "./property/scrape.js";
+import { process_scrape_result, scrape_all_queries, send_all_property_alerts } from "./property/scrape.js";
 
 export interface Env {
     MAIN_CHAT_ID: number,
@@ -76,6 +76,12 @@ async function fetch_callback(payload: TelegramMessage, env: Env, ctx: Execution
 
 async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
     switch (event.cron) {
+        // every hour
+        case "0 * * * *":
+            console.log("Hourly schedule")
+            await scrape_all_queries(settings)
+            await send_all_property_alerts(settings)
+            break;
         case "0 8 * * *": // every morning
             console.log("Firing off wordle")
             await sendMessage({

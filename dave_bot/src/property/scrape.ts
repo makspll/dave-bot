@@ -1,9 +1,10 @@
 import { PropertySnapshot, UserQuery } from "@src/types/sql.js";
 import { make_scrape_config, scrape, ScrapeResult } from "./scrapfly.js";
 import { LogBatcher } from "../logging.js";
-import { get_user_property_queries_by_location, insert_property_snapshots } from "../data/sql.js";
+import { get_all_user_property_queries, get_properties_matching_query, get_user_property_queries_by_location, insert_property_snapshots, mark_properties_as_seen } from "../data/sql.js";
 import moment from "moment-timezone";
 import { ChatbotSettings } from "@src/types/settings.js";
+import { sendMessage } from "@src/telegram.js";
 
 export interface ZooplaQuery {
     location: string,
@@ -19,6 +20,55 @@ export interface ZooplaQuery {
     is_shared_accommodation?: boolean,
     is_student_accommodation?: boolean
     pn?: number
+}
+
+export function merge_queries(acc: UserQuery, q: UserQuery): UserQuery {
+    if (q.min_bedrooms < acc.min_bedrooms) acc.min_bedrooms = q.min_bedrooms
+    if (q.max_bedrooms > acc.max_bedrooms) acc.max_bedrooms = q.max_bedrooms
+    if (q.min_price < acc.min_price) acc.min_price = q.min_price
+    if (q.max_price > acc.max_price) acc.max_price = q.max_price
+    if (q.available_from < acc.available_from) acc.available_from = q.available_from
+    if (q.query != acc.query) acc.query = acc.location
+    return acc
+}
+
+export async function send_all_property_alerts(settings: ChatbotSettings) {
+    let queries = await get_all_user_property_queries(settings.db)
+    for (let query of queries) {
+        let properties = await get_properties_matching_query(settings.db, query, false)
+        for (let property of properties) {
+            let msg = `${property.address} - ${property.price_per_month} - ${property.summary_description} - ${property.url}`
+            sendMessage({
+                api_key: settings.telegram_api_key,
+                open_ai_key: settings.openai_api_key,
+                payload: {
+                    chat_id: query.chat_id,
+                    text: msg
+                },
+                delay: 0,
+                audio_chance: 0,
+            })
+            mark_properties_as_seen(settings.db, [property.property_id])
+        }
+
+    }
+}
+
+export async function scrape_all_queries(settings: ChatbotSettings) {
+    let queries = await get_all_user_property_queries(settings.db);
+    let query_by_location = new Map<string, UserQuery>()
+    for (let query of queries) {
+        if (!query_by_location.has(query.location)) {
+            query_by_location.set(query.location, query)
+        } else {
+            query_by_location.set(query.location, merge_queries(query_by_location.get(query.location)!, query))
+        }
+    }
+
+    for (const [location, query] of query_by_location.entries()) {
+        console.log("Scraping location", location)
+        await scrape_zoopla(query, settings)
+    }
 }
 
 

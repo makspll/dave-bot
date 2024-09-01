@@ -237,6 +237,16 @@ export async function get_user_property_queries(db: D1Database, user: User): Pro
         }))
 }
 
+export async function get_all_user_property_queries(db: D1Database): Promise<UserQuery[]> {
+    return await new Query<UserQuery>(`
+        SELECT * FROM user_queries
+        `).getMany(db)
+        .then(q => q.map(q => {
+            q.available_from = new Date(q.available_from)
+            return q
+        }))
+}
+
 export async function get_user_property_queries_by_location(db: D1Database, location: string): Promise<UserQuery[]> {
     return await new Query<UserQuery>(`
         SELECT * FROM user_queries WHERE location = ?

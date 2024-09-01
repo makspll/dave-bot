@@ -16,7 +16,7 @@ import { ChatbotSettings } from "./types/settings.js";
 import { GameType, Permission, PropertySnapshot, UserQuery } from "./types/sql.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { UserErrorException } from "./error.js";
-import { scrape_zoopla, ZooplaQuery } from "./property/scrape.js";
+import { merge_queries, scrape_zoopla, send_all_property_alerts, ZooplaQuery } from "./property/scrape.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
@@ -419,15 +419,7 @@ export async function remove_property_query_command(payload: TelegramMessage, se
     await sendCommandMessage(payload, settings, "Query removed")
 }
 
-export function merge_queries(acc: UserQuery, q: UserQuery): UserQuery {
-    if (q.min_bedrooms < acc.min_bedrooms) acc.min_bedrooms = q.min_bedrooms
-    if (q.max_bedrooms > acc.max_bedrooms) acc.max_bedrooms = q.max_bedrooms
-    if (q.min_price < acc.min_price) acc.min_price = q.min_price
-    if (q.max_price > acc.max_price) acc.max_price = q.max_price
-    if (q.available_from < acc.available_from) acc.available_from = q.available_from
-    if (q.query != acc.query) acc.query = acc.location
-    return acc
-}
+
 
 export async function initiate_property_search(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
     let user = user_from_message(payload)
@@ -449,28 +441,9 @@ export async function initiate_property_search(payload: TelegramMessage, setting
     }
 }
 
+
 export async function send_property_alerts(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
-    let user = user_from_message(payload)
-    let queries = await get_user_property_queries(settings.db, user)
-    // find all properties that match the queries
-    let merged_query = queries.reduce(merge_queries)
-
-    console.log("merged query: ", merged_query)
-    let properties = await get_properties_matching_query(settings.db, merged_query, false)
-
-    let message = "there are " + properties.length + " properties matching your queries " + JSON.stringify(merged_query.query)
-    await sendCommandMessage(payload, settings, message)
-
-    // send the properties to the user
-    for (const property of properties) {
-        function format_property(p: PropertySnapshot) {
-            return `${p.address} - ${p.price_per_month} - ${p.summary_description} - ${p.url}`
-        }
-        await sendCommandMessage(payload, settings, format_property(property))
-    }
-
-    // mark properties as seen
-    await mark_properties_as_seen(settings.db, properties.map(p => p.property_id))
+    await send_all_property_alerts(settings)
 }
 
 
