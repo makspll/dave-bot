@@ -452,10 +452,12 @@ export async function initiate_property_search(payload: TelegramMessage, setting
 export async function send_property_alerts(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
     let user = user_from_message(payload)
     let queries = await get_user_property_queries(settings.db, user)
-
+    console.log(queries[0], typeof queries[0].available_from, queries[0].available_from instanceof Date)
     // find all properties that match the queries
     let merged_query = queries.reduce(merge_queries)
+
     console.log("merged query: ", merged_query)
+    console.log(typeof merged_query.available_from, merged_query.available_from instanceof Date)
     let properties = await get_properties_matching_query(settings.db, merged_query, true)
 
     let message = "there are " + properties.length + " properties matching your queries " + JSON.stringify(merged_query.query)
