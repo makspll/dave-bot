@@ -154,8 +154,17 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
             }
             ctx.waitUntil(
                 inject_logger_with_tags(settings)
-                    .then(() => callback(event, env, ctx, settings))
-                    .then(() => flush_logs(settings))
+                    .then(async () => {
+                        // flush logs periodically
+                        const intervalId = setInterval(() => {
+                            flush_logs(settings);
+                        }, 1000);
+
+                        return callback(event, env, ctx, settings).finally(() => {
+                            clearInterval(intervalId);
+                            flush_logs(settings);
+                        })
+                    })
             )
             return new Response(null, { status: 200 })
 
