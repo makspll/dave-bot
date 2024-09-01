@@ -29,7 +29,9 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
 
     console.log("Starting scrape for query", query)
     await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
+    console.log("Session started")
     await insert_new_search(settings.db, query)
+    console.log("Inserted new search")
 
     let page_num = 1
     let zoopla_query: ZooplaQuery = {

@@ -56,6 +56,7 @@ export class Query<T> {
      */
     public static async unwrapD1Result<T>(result: D1Result<T>): Promise<T[]> {
         if (!result.success || result.error) {
+            console.error(`Error in query`, result.error)
             throw result.error ?? `Error when executing query`
         }
         return result.results
