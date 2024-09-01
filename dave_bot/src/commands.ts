@@ -59,6 +59,7 @@ export class Command<T extends any[]> {
                     delay: 0
                 })
             } else {
+                console.error("Error running command: ", e)
                 sendCommandMessage(payload, settings, "There was an error processing your command, please try again later")
                 throw e
             }
