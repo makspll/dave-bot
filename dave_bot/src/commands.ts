@@ -9,7 +9,7 @@ import { delete_user_property_query, get_bot_users_for_chat, get_game_submission
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
-import { BoolArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
+import { BoolArg, DateArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
 import { send } from "process";
 import { Scores } from "./types/formatters.js";
 import { ChatbotSettings } from "./types/settings.js";
@@ -395,16 +395,26 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
 }
 
 
-export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
+export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, string | null, number | null, number | null, number | null, number | null, Date | null]): Promise<any> {
+    let location = args[0]
+    let query = args[1] ?? location
+    let min_price = args[2] ?? 0
+    let max_price = args[3] ?? 9999
+    let min_bedrooms = args[4] ?? 0
+    let max_bedrooms = args[5] ?? 5
+    let available_from = args[6] ?? new Date()
+
     let user = user_from_message(payload)
-    await insert_user_property_query(settings.db, user, args[0])
+    await insert_user_property_query(settings.db, user, {
+        location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from
+    })
     await sendCommandMessage(payload, settings, "Query added")
 }
 
 export async function remove_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
     let user = user_from_message(payload)
     await delete_user_property_query(settings.db, user, args[0])
-    await sendCommandMessage(payload, settings, "Query added")
+    await sendCommandMessage(payload, settings, "Query removed")
 }
 
 export async function initiate_property_search(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
@@ -413,7 +423,17 @@ export async function initiate_property_search(payload: TelegramMessage, setting
     let message = "I will now search for properties matching your queries: " + queries.map(q => q.query).join(", ")
     await sendCommandMessage(payload, settings, message)
 
-    let query = queries[0]
+    let query = queries.reduce((acc, q) => {
+        if (q.min_bedrooms < acc.min_bedrooms) acc.min_bedrooms = q.min_bedrooms
+        if (q.max_bedrooms > acc.max_bedrooms) acc.max_bedrooms = q.max_bedrooms
+        if (q.min_price < acc.min_price) acc.min_price = q.min_price
+        if (q.max_price > acc.max_price) acc.max_price = q.max_price
+        return acc
+    })
+
+    if (queries.length > 1) {
+        query.query = query.location
+    }
 
     try {
         await scrape_zoopla(query, settings)
@@ -437,7 +457,15 @@ export const COMMANDS: Command<any>[] = [
     ]), leaderboard_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
-    new Command("newpropertyquery", "Add a new property query to scrape", new ManyArgs([new StringArg("query", "The query to add")]), new_property_query_command, ["Manage Property Query"]),
+    new Command("newpropertyquery", "Add a new property query to scrape", new ManyArgs([
+        new EnumArg("location", "the location to scrape", ["london"]),
+        new OptionalArg(new StringArg("query", "The query to filter by, by default this is the location")),
+        new OptionalArg(new NumberArg("min_price", "The minimum price to filter by")),
+        new OptionalArg(new NumberArg("max_price", "The maximum price to filter by")),
+        new OptionalArg(new NumberArg("min_bedrooms", "The minimum number of bedrooms to filter by")),
+        new OptionalArg(new NumberArg("max_bedrooms", "The maximum number of bedrooms to filter by")),
+        new OptionalArg(new DateArg("available_from", "The earliest date the property is available from")),
+    ]), new_property_query_command, ["Manage Property Query"]),
     new Command("removepropertyquery", "Remove a property query", new ManyArgs([new StringArg("query", "The query to remove")]), remove_property_query_command, ["Manage Property Query"]),
     new Command("initiatepropertysearch", "Initiate a property search", new ManyArgs([]), initiate_property_search, ["Manage Property Query"]),
 ]

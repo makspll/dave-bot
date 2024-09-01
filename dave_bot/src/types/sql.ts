@@ -55,19 +55,20 @@ export interface GameSubmission {
 export interface UserQuery {
     user_query_id: number,
     user_id: number,
+    location: string
     query: string,
+    min_price: number,
+    max_price: number,
+    min_bedrooms: number,
+    max_bedrooms: number,
+    available_from: Date,
     creation_date: Date
 }
 
-export interface Search {
-    search_id: number,
-    user_query_id: number,
-    search_datetime: Date
-}
 
 export interface PropertySnapshot {
     property_id: string,
-    search_id: number,
+    location: string,
     url: string,
     address: string,
     price_per_month: number,
@@ -77,6 +78,7 @@ export interface PropertySnapshot {
     summary_description: string,
     published_on?: Date,
     available_from?: Date,
+    shown: boolean,
     comma_separated_images: string,
     num_bedrooms: number
 }

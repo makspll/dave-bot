@@ -1,7 +1,7 @@
 import { PropertySnapshot, UserQuery } from "@src/types/sql.js";
 import { make_scrape_config, scrape, ScrapeResult } from "./scrapfly.js";
 import { LogBatcher } from "../logging.js";
-import { get_latest_search, get_latest_two_searches, get_todays_searches, insert_new_search, insert_property_snapshots } from "../data/sql.js";
+import { get_user_property_queries_by_location, insert_property_snapshots } from "../data/sql.js";
 import moment from "moment-timezone";
 import { ChatbotSettings } from "@src/types/settings.js";
 
@@ -29,9 +29,6 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
 
     console.log("Starting scrape for query", query)
     await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
-    console.log("Session started")
-    await insert_new_search(settings.db, query)
-    console.log("Inserted new search")
 
     let page_num = 1
     let zoopla_query: ZooplaQuery = {
@@ -98,10 +95,10 @@ function parseDate(dateStr: string): Date | null {
     return null;
 }
 
-function convertPropertyData(propertyData: PropertyData, search_id: number): PropertySnapshot {
+function convertPropertyData(propertyData: PropertyData, location: string): PropertySnapshot {
     const propertySnapshot: PropertySnapshot = {
         property_id: propertyData.listingId,
-        search_id: search_id,
+        location,
         url: `https://www.zoopla.co.uk${propertyData.listingUris.detail}`,
         address: propertyData.address,
         price_per_month: parseInt(propertyData.price.replace(/[^0-9]/g, "")),
@@ -111,6 +108,7 @@ function convertPropertyData(propertyData: PropertyData, search_id: number): Pro
         summary_description: propertyData.summaryDescription,
         num_bedrooms: 0,
         comma_separated_images: propertyData.gallery.join(","),
+        shown: false,
         published_on: parseDate(propertyData.publishedOn) ?? new Date(),
         available_from: parseDate(propertyData.availableFrom) ?? new Date()
     }
@@ -137,29 +135,24 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
         console.log("processed initial scrape for session:", request.context.session?.name)
         return
     }
-    let last_search_id = await get_latest_search(settings.db);
 
-    if (!last_search_id) {
-        console.error("No search id found")
-        return
-    }
-
+    // find query by parameters
+    // location is part of the url
+    let location = url.split("property/")[1].split("/")[0];
     let content = request.result.content;
     let flightData = parseFlightData(content);
     let snapshots = flightData.map((propertyData) => {
         try {
-            return convertPropertyData(propertyData, last_search_id?.search_id)
+            return convertPropertyData(propertyData, location)
         } catch (e) {
             console.error("Failed to convert property data", e, typeof e, "from", propertyData)
             return null
         }
     }).filter((snapshot) => snapshot !== null);
 
-    console.log("Saving", snapshots.length, "properties to db")
+    console.log("Saving", snapshots.length, "properties to db under location", location)
     await insert_property_snapshots(settings.db, snapshots)
 
-    let latest_search_id = await get_latest_search(settings.db);
-    console.log("saving properties to latest search id", latest_search_id)
 }
 
 
