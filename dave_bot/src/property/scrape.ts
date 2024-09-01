@@ -51,11 +51,12 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
         is_shared_accommodation: false,
         is_student_accommodation: false,
     }
-
+    let last_url = "https://www.zoopla.co.uk"
     while (page_num <= 2) {
         zoopla_query.pn = page_num;
-        const config = make_scrape_config(make_zoopla_url(zoopla_query), session_id.toString(), undefined, settings);
-
+        let zoopla_url = make_zoopla_url(zoopla_query);
+        const config = make_scrape_config(zoopla_url, session_id.toString(), last_url, settings);
+        last_url = zoopla_url;
         let retries = 3;
         while (retries > 0) {
             console.log("Initiating scraping of page:", page_num, "retries?:", retries)
