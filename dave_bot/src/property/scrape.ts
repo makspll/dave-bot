@@ -111,6 +111,7 @@ async function begin_zoopla_session(key: string, search_id: number, settings: Ch
     const url = "https://www.zoopla.co.uk/";
     const session_id = search_id.toString();
     const scrapeConfig = make_scrape_config(url, session_id, undefined, settings);
+    scrapeConfig.wait_for_selector = undefined;
     const response = await scrape({
         apiKey: key,
         payload: scrapeConfig
