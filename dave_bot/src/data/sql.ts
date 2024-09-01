@@ -33,6 +33,13 @@ class DBException extends Error {
         super(message)
         this.name = "DBException"
     }
+    toJSON() {
+        return {
+            name: this.name,
+            message: this.message,
+            stack: this.stack
+        };
+    }
 }
 
 /**
