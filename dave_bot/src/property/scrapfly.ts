@@ -86,6 +86,8 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
         clearInterval(interval);
     });
 
+    console.log("Finished scrape: ", response.result.success);
+
     return response
 }
 
