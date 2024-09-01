@@ -455,6 +455,7 @@ export async function send_property_alerts(payload: TelegramMessage, settings: C
 
     // find all properties that match the queries
     let merged_query = queries.reduce(merge_queries)
+    console.log("merged query: ", merged_query)
     let properties = await get_properties_matching_query(settings.db, merged_query, true)
 
     let message = "there are " + properties.length + " properties matching your queries " + JSON.stringify(merged_query.query)
