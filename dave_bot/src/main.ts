@@ -180,6 +180,7 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
         } catch (e) {
             console.error(e)
             console.error(`Error in ${name} callback`, e)
+            flush_logs(get_settings(env))
             return new Response(null, { status: 500 })
         }
     }
