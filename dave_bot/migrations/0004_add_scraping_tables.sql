@@ -20,7 +20,7 @@ CREATE TABLE property_snapshots (
 CREATE TABLE searches (
     search_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_query_id INTEGER NOT NULL,
-    search_datetime TIMESTAMP NOT NULL DEFAULT (TIMESTAMP('now')),
+    search_datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_query_id) REFERENCES user_queries(user_query_id) ON DELETE CASCADE
 );
