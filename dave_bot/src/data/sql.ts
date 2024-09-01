@@ -244,7 +244,7 @@ export async function insert_property_snapshots(db: D1Database, snapshots: Prope
     return await new QueryBatch(...snapshots.map(s => new Query(`
         INSERT INTO property_snapshots (property_id, search_id, url, address, price_per_month, longitude, latitude, property_type, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, s.property_id, s.search_id, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on, s.available_from, s.num_bedrooms, s.comma_separated_images))).execute(db)
+        `, s.property_id, s.search_id, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on?.toISOString(), s.available_from?.toISOString(), s.num_bedrooms, s.comma_separated_images))).execute(db)
 }
 
 export async function get_latest_two_searches(db: D1Database, user_query_id: number): Promise<Search[]> {
