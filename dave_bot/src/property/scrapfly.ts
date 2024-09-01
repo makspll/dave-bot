@@ -24,7 +24,7 @@ export interface ScrapeflyScrapeResponse {
 
 }
 
-export function make_scrape_config(url: string, session_id: string, refferer: string | undefined = undefined, settings: ChatbotSettings): ScrapflyScrapeConfig {
+export function make_scrape_config(url: string, session_id: string | undefined, refferer: string | undefined = undefined, settings: ChatbotSettings): ScrapflyScrapeConfig {
     let headers: any = {};
     if (refferer) headers['referer'] = refferer;
     let config: any = {

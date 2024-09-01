@@ -24,18 +24,12 @@ export interface ZooplaQuery {
 
 export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings): Promise<void> {
     // find searches from today
-    let searches = await get_todays_searches(settings.db)
-    // get day number since epoch
-    let session_id = moment().tz("Europe/London").startOf('day').unix();
+    // get session id from epoch time now
+    let session_id = moment().tz("Europe/London").unix()
 
-
-
-    if (searches.length === 0) {
-        console.log("No existing session yet, beginning session")
-        await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
-        // insert search into db
-        await insert_new_search(settings.db, query)
-    }
+    console.log("Starting scrape for query", query)
+    await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
+    await insert_new_search(settings.db, query)
 
     let page_num = 1
     let zoopla_query: ZooplaQuery = {
@@ -81,8 +75,8 @@ export async function process_scrape_result(request: ScrapeResult, settings: Cha
         console.error("Scrape failed", request.result.error, request.result.url)
         if (request.result.error?.retryable) {
             console.log("Retrying")
-            let today_session = moment().tz("Europe/London").startOf('day').unix();
-            let config = make_scrape_config(request.result.url, request.context.session?.name ?? today_session.toString(), undefined, settings);
+
+            let config = make_scrape_config(request.result.url, request.context.session?.name, undefined, settings);
             await scrape({
                 apiKey: settings.scrapfly_api_key,
                 payload: config
