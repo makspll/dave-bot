@@ -114,10 +114,7 @@ async function begin_zoopla_session(key: string, search_id: number, settings: Ch
     const response = await scrape({
         apiKey: key,
         payload: scrapeConfig
-    }) as ScrapeResult;
-
-    console.log("begin scrape session result", response.result.success)
-    if (!response.result.success) throw new Error("Failed to begin Zoopla session");
+    })
 }
 
 function make_zoopla_url(params: ZooplaQuery) {
