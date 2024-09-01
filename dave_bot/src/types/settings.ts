@@ -11,5 +11,6 @@ export interface ChatbotSettings {
     loki_password: string,
     environment: string,
     scrapfly_api_key: string,
-    db: D1Database
+    db: D1Database,
+    worker_url: string
 }

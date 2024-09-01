@@ -252,6 +252,12 @@ export async function get_latest_two_searches(db: D1Database, user_query_id: num
         `, user_query_id).getMany(db)
 }
 
+export async function get_latest_search(db: D1Database): Promise<Search | null> {
+    return await new Query<Search>(`
+        SELECT * FROM searches ORDER BY search_datetime DESC LIMIT 1
+        `).getFirst(db)
+}
+
 export async function get_todays_searches(db: D1Database): Promise<Search[]> {
     const date_now = moment().tz("Europe/London").format("YYYY-MM-DD")
     return await new Query<Search>(`

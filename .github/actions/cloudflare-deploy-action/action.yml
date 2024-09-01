@@ -39,6 +39,9 @@ inputs:
     description: 'Working Directory'
     required: false
     default: '.'
+  workerUrl:
+    description: 'Worker URL'
+    required: true
   environment:
     description: 'Environment'
     required: true
@@ -75,6 +78,7 @@ runs:
           LOKI_PASSWORD
           ENVIRONMENT
           SCRAPFLY_API_KEY
+          WORKER_URL
         workingDirectory: ${{ inputs.workingDirectory }}
         preCommands: |
           echo "Running wrangler migrations from $PWD"
@@ -93,3 +97,4 @@ runs:
         LOKI_PASSWORD: ${{ inputs.lokiPassword }}
         ENVIRONMENT: ${{ inputs.environment }}
         SCRAPFLY_API_KEY: ${{ inputs.scrapflyApiKey }}
+        WORKER_URL: ${{ inputs.workerUrl }}

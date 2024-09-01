@@ -1,3 +1,5 @@
+import { ChatbotSettings } from "@src/types/settings.js";
+
 export interface ScrapflyScrapeRequest {
     apiKey: string;
     payload: ScrapflyScrapeConfig
@@ -12,26 +14,38 @@ export interface ScrapflyScrapeConfig {
     headers: any,
     proxy_pool: string,
     cost_budget?: number,
-    wait_for_selector?: string
-    screenshots?: any
-    debug?: boolean
+    wait_for_selector?: string,
+    screenshots?: any,
+    debug?: boolean,
+    webhook_name?: string
 }
 
 export interface ScrapeflyScrapeResponse {
 
 }
 
-export function make_scrape_config(url: string, session_id: string, refferer: string | undefined = undefined, enable_debug: boolean | undefined = undefined): ScrapflyScrapeConfig {
+export function make_scrape_config(url: string, session_id: string, refferer: string | undefined = undefined, settings: ChatbotSettings): ScrapflyScrapeConfig {
     let headers: any = {};
     if (refferer) headers['referer'] = refferer;
     let config: any = {
-        url, render_js: true, asp: true, session: session_id, session_sticky_proxy: true, country: 'gb', headers, proxy_pool: 'public_datacenter_pool', cost_budget: 30, wait_for_selector: "[id^=\"listing\"]", screenshots: { "page": "fullpage" }
+        url,
+        render_js: true,
+        asp: true,
+        session:
+            session_id,
+        session_sticky_proxy: true,
+        country: 'gb', headers,
+        proxy_pool: 'public_datacenter_pool',
+        cost_budget: 30,
+        wait_for_selector: "[id^=\"listing\"]",
+        screenshots: { "page": "fullpage" },
+        webhook_name: settings.environment
     };
-    config.debug = enable_debug;
+    config.debug = settings.environment !== "production";
     return config
 }
 
-export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<ScrapeResult> {
+export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any> {
 
     const url = "https://api.scrapfly.io/scrape";
     const payload = new URLSearchParams();
@@ -59,12 +73,6 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
 
     payload.append("key", scrapeRequest.apiKey);
 
-    let elapsed_time = 0;
-    const interval = setInterval(() => {
-        elapsed_time += 1;
-        console.log(`awaiting scrape for ${elapsed_time} seconds`);
-    }, 1000);
-
     let response = await fetch(`${url}?${payload.toString()}`, {
         method: "GET"
     }).then(async response => {
@@ -80,13 +88,7 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
             throw new Error("Failed to scrape: " + response.status + " " + error);
         }
         return response.json();
-    }).then((data: any) => {
-        return data as ScrapeResult;
-    }).finally(() => {
-        clearInterval(interval);
     });
-
-    console.log("Finished scrape: ", response.result.success);
 
     return response
 }
@@ -167,7 +169,9 @@ export interface ContextData {
     redirects: Array<string>;
     retry: number;
     schedule?: string;
-    session?: string;
+    session?: {
+        name: string
+    };
     spider?: any;
     throttler?: any;
     uri: {

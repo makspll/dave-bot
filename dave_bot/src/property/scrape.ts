@@ -1,8 +1,9 @@
 import { PropertySnapshot, UserQuery } from "@src/types/sql.js";
-import { make_scrape_config, scrape } from "./scrapfly.js";
+import { make_scrape_config, scrape, ScrapeResult } from "./scrapfly.js";
 import { LogBatcher } from "../logging.js";
-import { get_todays_searches, insert_new_search } from "../data/sql.js";
+import { get_latest_search, get_latest_two_searches, get_todays_searches, insert_new_search } from "../data/sql.js";
 import moment from "moment-timezone";
+import { ChatbotSettings } from "@src/types/settings.js";
 
 export interface ZooplaQuery {
     location: string,
@@ -21,22 +22,23 @@ export interface ZooplaQuery {
 }
 
 
-
-export async function scrape_zoopla(db: D1Database, api_key: string, query: UserQuery, debug: boolean | undefined = undefined): Promise<PropertySnapshot[]> {
+export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings): Promise<void> {
     // find searches from today
-    let searches = await get_todays_searches(db)
+    let searches = await get_todays_searches(settings.db)
     // get day number since epoch
     let session_id = moment().tz("Europe/London").startOf('day').unix();
+
+
+
     if (searches.length === 0) {
         console.log("No existing session yet, beginning session")
-        await begin_zoopla_session(api_key, session_id);
+        await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
+        // insert search into db
+        await insert_new_search(settings.db, query)
     }
-    console.log("using session id:", session_id)
 
-    // insert search into db
-    await insert_new_search(db, query)
-
-    const zoopla_query: ZooplaQuery = {
+    let page_num = 1
+    let zoopla_query: ZooplaQuery = {
         location: "london",
         q: query.query,
         results_sort: "newest_listings",
@@ -47,32 +49,52 @@ export async function scrape_zoopla(db: D1Database, api_key: string, query: User
         price_max: 2000,
         is_retirement_home: false,
         is_shared_accommodation: false,
-        is_student_accommodation: false
-
+        is_student_accommodation: false,
     }
 
-
-    // scrape 
-    let last_url = "https://www.zoopla.co.uk/"
-
-    for (const page_num of [1]) {
+    while (page_num <= 2) {
         zoopla_query.pn = page_num;
-        console.log("scraping page", page_num)
+        const config = make_scrape_config(make_zoopla_url(zoopla_query), session_id.toString(), undefined, settings);
 
-        const config = make_scrape_config(make_zoopla_url(zoopla_query), session_id.toString(), last_url, debug);
+        let retries = 3;
+        while (retries > 0) {
+            console.log("Initiating scraping of page:", page_num, "retries?:", retries)
+            try {
+                await scrape({
+                    apiKey: settings.scrapfly_api_key,
+                    payload: config
+                });
+                break
+            } catch (e) {
+                console.error("Failed to initiate scrape", e)
+                retries--;
+            }
+        }
 
-        const response = await scrape({
-            apiKey: api_key,
-            payload: config
-        });
-
-        last_url = config.url;
-        const html = response.result.content;
-        const contains_flight_data = html.includes("__next_f");
-        const data = parseFlightData(html);
-        console.log("flight data count", Object.keys(data).length)
+        page_num++;
     }
-    return []
+}
+
+export async function process_scrape_result(request: ScrapeResult, settings: ChatbotSettings) {
+    if (!request.result.success) {
+        console.error("Scrape failed", request.result.error)
+        if (request.result.error?.retryable) {
+            console.log("Retrying")
+            let today_session = moment().tz("Europe/London").startOf('day').unix();
+            let config = make_scrape_config(request.result.url, request.context.session?.name ?? today_session.toString(), undefined, settings);
+            await scrape({
+                apiKey: settings.scrapfly_api_key,
+                payload: config
+            })
+        }
+        return
+    }
+    let url = request.result.url;
+    let params = new URLSearchParams(url.split("?")[1]);
+    let content = request.result.content;
+    let flightData = parseFlightData(content);
+    let latest_search_id = await get_latest_search(settings.db);
+    console.log("saving properties to latest search id", latest_search_id)
 }
 
 
@@ -80,15 +102,15 @@ export async function scrape_zoopla(db: D1Database, api_key: string, query: User
 /**
  * Begins a session with Zoopla by visiting the Zoopla homepage and collecting cookies. returns scrapfly session id if successful or throws error
  */
-async function begin_zoopla_session(key: string, search_id: number): Promise<void> {
+async function begin_zoopla_session(key: string, search_id: number, settings: ChatbotSettings): Promise<void> {
     const url = "https://www.zoopla.co.uk/";
     const session_id = search_id.toString();
-    const scrapeConfig = make_scrape_config(url, session_id);
-
+    const scrapeConfig = make_scrape_config(url, session_id, undefined, settings);
+    scrapeConfig.webhook_name = undefined
     const response = await scrape({
         apiKey: key,
         payload: scrapeConfig
-    });
+    }) as ScrapeResult;
 
     console.log("begin scrape session result", response.result.success)
     if (!response.result.success) throw new Error("Failed to begin Zoopla session");

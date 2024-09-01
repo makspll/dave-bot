@@ -6,6 +6,7 @@ import { Action } from "./types/actions.js";
 import { ChatbotSettings } from "./types/settings.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { flush_logs, inject_logger } from "./logging.js";
+import { process_scrape_result } from "./property/scrape.js";
 
 export interface Env {
     MAIN_CHAT_ID: number,
@@ -18,6 +19,7 @@ export interface Env {
     LOKI_PASSWORD: string,
     ENVIRONMENT: string,
     SCRAPFLY_API_KEY: string,
+    WORKER_URL: string,
     DB: D1Database;
 }
 
@@ -39,6 +41,7 @@ function get_settings(env: Env): ChatbotSettings {
         loki_password: env.LOKI_PASSWORD,
         environment: env.ENVIRONMENT,
         scrapfly_api_key: env.SCRAPFLY_API_KEY,
+        worker_url: env.WORKER_URL,
         db: env.DB
     }
 }
@@ -131,7 +134,11 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
             inject_logger_with_tags(settings)
             if (event instanceof Request) {
                 // check X-Telegram-Bot-Api-Secret-Token is correct
-                if (event.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
+                if (event.headers.get("X-Scrapfly-Webhook-Signature")) {
+                    // verify signature 
+                    await process_scrape_result(await event.json(), settings)
+                    return new Response(null, { status: 200 })
+                } else if (event.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
                     console.warn("Unauthorized webhook call", {
                         method: event.method,
                         url: event.url,
