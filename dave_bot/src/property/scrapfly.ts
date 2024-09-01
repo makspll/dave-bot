@@ -26,14 +26,14 @@ export interface ScrapeflyScrapeResponse {
 
 export function make_scrape_config(url: string, session_id: string | undefined, refferer: string | undefined = undefined, settings: ChatbotSettings): ScrapflyScrapeConfig {
     let headers: any = {};
-    if (refferer) headers['referer'] = refferer;
+    // if (refferer) headers['referer'] = refferer;
     let config: any = {
         url,
         render_js: true,
         asp: true,
-        session:
-            session_id,
-        session_sticky_proxy: true,
+        // session:
+        //     session_id,
+        // session_sticky_proxy: true,
         country: 'gb', headers,
         proxy_pool: 'public_datacenter_pool',
         cost_budget: 30,
