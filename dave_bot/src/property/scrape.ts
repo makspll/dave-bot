@@ -90,7 +90,7 @@ async function begin_zoopla_session(key: string, search_id: number): Promise<voi
         payload: scrapeConfig
     });
 
-    console.log("begin scrape session result", response.uuid)
+    console.log("begin scrape session result", response.result.success)
     if (!response.result.success) throw new Error("Failed to begin Zoopla session");
 }
 
