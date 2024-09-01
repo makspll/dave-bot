@@ -463,7 +463,7 @@ export async function send_property_alerts(payload: TelegramMessage, settings: C
         function format_property(p: PropertySnapshot) {
             return `${p.address} - ${p.price_per_month} - ${p.summary_description} - ${p.url}`
         }
-        await sendCommandMessage(payload, settings, JSON.stringify(property))
+        await sendCommandMessage(payload, settings, format_property(property))
     }
 
 }
@@ -494,4 +494,5 @@ export const COMMANDS: Command<any>[] = [
     ]), new_property_query_command, ["Manage Property Query"]),
     new Command("removepropertyquery", "Remove a property query", new ManyArgs([new StringArg("query", "The query to remove")]), remove_property_query_command, ["Manage Property Query"]),
     new Command("initiatepropertysearch", "Initiate a property search", new ManyArgs([]), initiate_property_search, ["Manage Property Query"]),
+    new Command("sendpropertyalerts", "Send property alerts", new ManyArgs([]), send_property_alerts, ["Manage Property Query"]),
 ]
