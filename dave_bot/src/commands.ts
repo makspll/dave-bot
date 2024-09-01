@@ -180,11 +180,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     switch (game_type) {
         case "connections":
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
-            first_id = 413
             break
         case "wordle":
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
-            first_id = 1134
             break
         case "autism_test":
             first_id = 0
