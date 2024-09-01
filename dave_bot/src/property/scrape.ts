@@ -67,6 +67,10 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
                 retries--;
             }
         }
+        if (retries === 0) {
+            console.error("Failed to scrape page", page_num)
+            break
+        }
 
         page_num++;
     }

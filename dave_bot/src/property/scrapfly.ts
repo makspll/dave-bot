@@ -15,6 +15,7 @@ export interface ScrapflyScrapeConfig {
     proxy_pool: string,
     cost_budget?: number,
     wait_for_selector?: string,
+    rendering_wait?: number,
     screenshots?: any,
     debug?: boolean,
     webhook_name?: string
@@ -39,7 +40,8 @@ export function make_scrape_config(url: string, session_id: string | undefined, 
         cost_budget: 30,
         wait_for_selector: "[id^=\"listing\"]",
         screenshots: { "page": "fullpage" },
-        webhook_name: settings.environment
+        webhook_name: settings.environment,
+        rendering_wait: 5000,
     };
     config.debug = settings.environment !== "production";
     return config
@@ -60,8 +62,8 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<any>
     if (scrapeRequest.payload.wait_for_selector) {
         payload.append("wait_for_selector", scrapeRequest.payload.wait_for_selector);
     }
+    if (scrapeRequest.payload.rendering_wait) payload.append("rendering_wait", scrapeRequest.payload.rendering_wait.toString());
     if (scrapeRequest.payload.debug) payload.append("debug", scrapeRequest.payload.debug.toString());
-
     if (scrapeRequest.payload.headers) {
         for (const key in scrapeRequest.payload.headers) {
             payload.append(`headers[${key}]`, scrapeRequest.payload.headers[key]);
