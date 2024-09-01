@@ -77,7 +77,7 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
 
 export async function process_scrape_result(request: ScrapeResult, settings: ChatbotSettings) {
     if (!request.result.success) {
-        console.error("Scrape failed", request.result.error)
+        console.error("Scrape failed", request.result.error, request.result.url)
         if (request.result.error?.retryable) {
             console.log("Retrying")
             let today_session = moment().tz("Europe/London").startOf('day').unix();
