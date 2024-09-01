@@ -61,9 +61,9 @@ export async function scrape(scrapeRequest: ScrapflyScrapeRequest): Promise<Scra
 
     let elapsed_time = 0;
     const interval = setInterval(() => {
-        elapsed_time += 5;
+        elapsed_time += 1;
         console.log(`awaiting scrape for ${elapsed_time} seconds`);
-    }, 5000);
+    }, 1000);
 
     let response = await fetch(`${url}?${payload.toString()}`, {
         method: "GET"

@@ -158,7 +158,7 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
                         // flush logs periodically
                         const intervalId = setInterval(() => {
                             flush_logs(settings);
-                        }, 1000);
+                        }, 500);
 
                         return callback(event, env, ctx, settings).finally(() => {
                             clearInterval(intervalId);
