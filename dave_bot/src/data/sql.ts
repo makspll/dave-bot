@@ -1,5 +1,6 @@
 import { D1Database, D1Result, D1PreparedStatement } from "@cloudflare/workers-types"
 import { Chat, GameSubmission, GameType, PropertySnapshot, Search, User, UserPermission, UserQuery } from "@src/types/sql.js";
+import moment from "moment-timezone";
 
 
 export function isUser(obj: any): obj is User {
@@ -249,6 +250,13 @@ export async function get_latest_two_searches(db: D1Database, user_query_id: num
     return await new Query<Search>(`
         SELECT * FROM searches WHERE user_query_id = ? ORDER BY search_datetime DESC LIMIT 2
         `, user_query_id).getMany(db)
+}
+
+export async function get_todays_searches(db: D1Database): Promise<Search[]> {
+    const date_now = moment().tz("Europe/London").format("YYYY-MM-DD")
+    return await new Query<Search>(`
+        SELECT * FROM searches WHERE search_datetime >= ? ORDER BY search_datetime DESC
+        `, date_now).getMany(db)
 }
 
 export async function get_snapshots_from_search(db: D1Database, search_id: number): Promise<PropertySnapshot[]> {

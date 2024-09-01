@@ -412,23 +412,11 @@ export async function initiate_property_search(payload: TelegramMessage, setting
     let queries = await get_user_property_queries(settings.db, user)
     let message = "I will now search for properties matching your queries: " + queries.map(q => q.query).join(", ")
     await sendCommandMessage(payload, settings, message)
-    const query: ZooplaQuery = {
-        location: "london",
-        q: queries[0].query,
-        results_sort: "newest_listings",
-        search_source: "to-rent",
-        beds_min: 1,
-        beds_max: 1,
-        price_min: 1000,
-        price_max: 2000,
-        is_retirement_home: false,
-        is_shared_accommodation: false,
-        is_student_accommodation: false
 
-    }
-    console.log("query: ", query)
+    let query = queries[0]
+
     try {
-        await scrape_zoopla(settings.scrapfly_api_key, query, settings.environment == "staging" ? true : undefined)
+        await scrape_zoopla(settings.db, settings.scrapfly_api_key, query, settings.environment == "staging" ? true : undefined)
     } catch (e) {
         await sendCommandMessage(payload, settings, "There was an error searching for properties, please try again later")
     }
