@@ -107,7 +107,7 @@ function convertPropertyData(propertyData: PropertyData, location: string): Prop
         property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
         num_bedrooms: 0,
-        comma_separated_images: propertyData.gallery.join(","),
+        comma_separated_images: propertyData.gallery?.join(",") ?? "",
         shown: false,
         published_on: parseDate(propertyData.publishedOn) ?? new Date(),
         available_from: parseDate(propertyData.availableFrom) ?? new Date()
@@ -178,9 +178,11 @@ function make_zoopla_url(params: ZooplaQuery) {
 
     if (params.beds_max) zooplaUrlArgs.set("beds_max", params.beds_max.toString());
     if (params.beds_min) zooplaUrlArgs.set("beds_min", params.beds_min.toString());
-    if (params.is_retirement_home) zooplaUrlArgs.set("is_retirement_home", params.is_retirement_home.toString());
-    if (params.is_shared_accommodation) zooplaUrlArgs.set("is_shared_accommodation", params.is_shared_accommodation.toString());
-    if (params.is_student_accommodation) zooplaUrlArgs.set("is_student_accommodation", params.is_student_accommodation.toString());
+
+    zooplaUrlArgs.set("is_retirement_home", params.is_retirement_home?.toString() ?? "false");
+    zooplaUrlArgs.set("is_shared_accommodation", params.is_shared_accommodation?.toString() ?? "false");
+    zooplaUrlArgs.set("is_student_accommodation", params.is_student_accommodation?.toString() ?? "false");
+
     if (params.price_frequency) zooplaUrlArgs.set("price_frequency", params.price_frequency.toString());
     if (params.price_max) zooplaUrlArgs.set("price_max", params.price_max.toString());
     if (params.price_min) zooplaUrlArgs.set("price_min", params.price_min.toString());
@@ -337,7 +339,7 @@ interface PropertyData {
     featuredType: string | null;
     features: Feature[];
     flag: string;
-    gallery: string[];
+    gallery?: string[];
     highlights: any[]; // Adjust the type if you have a specific structure for highlights
     image: Image;
     isFavourite: boolean;
