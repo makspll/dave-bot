@@ -135,16 +135,31 @@ async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionConte
 
 type Callback = (event: any | Request, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) => Promise<void>
 
+function inject_logger_with_tags(settings: ChatbotSettings): Promise<any> {
+    return new Promise((resolve, reject) => {
+        try {
+            inject_logger(settings, { service: "dave", environment: settings.environment })
+            resolve(void 0)
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, name: string, callback: Callback): () => Promise<Response> {
     return async function () {
         try {
             let settings: ChatbotSettings = get_settings(env)
-            inject_logger(settings, { service: "dave", environment: settings.environment })
+            inject_logger_with_tags(settings)
             if (event instanceof Request) {
                 let body = await event.text()
                 event = new Response(body, event)
             }
-            ctx.waitUntil(callback(event, env, ctx, settings).then(() => flush_logs(settings)))
+            ctx.waitUntil(
+                inject_logger_with_tags(settings)
+                    .then(() => callback(event, env, ctx, settings))
+                    .then(() => flush_logs(settings))
+            )
             return new Response(null, { status: 200 })
 
         } catch (e) {
