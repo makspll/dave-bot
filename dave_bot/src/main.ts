@@ -2,7 +2,6 @@ import { sendMessage } from "./telegram.js";
 import { commands_and_filter_optins, hardlyfier, keywords, nyt_games_submission, screamo, sickomode } from "./actions.js";
 import { COMMANDS, connections_command, wordle_command } from "./commands.js";
 import { TRIGGERS } from "./data.js";
-import * as util from "node:util";
 import { Action } from "./types/actions.js";
 import { ChatbotSettings } from "./types/settings.js";
 import { TelegramMessage } from "./types/telegram.js";
@@ -44,53 +43,32 @@ function get_settings(env: Env): ChatbotSettings {
     }
 }
 
-async function fetch_callback(request: Request, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
+async function fetch_callback(payload: TelegramMessage, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
     // for easy access
     console.log("fetch callback")
-    // check X-Telegram-Bot-Api-Secret-Token is correct
-    if (request.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
-        console.warn("Unauthorized webhook call", {
-            method: request.method,
-            url: request.url,
-            cloudflare_props: JSON.stringify(request.cf),
-            headers: {
-                "User-Agent": request.headers.get("User-Agent"),
-                "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
-                "Content-Type": request.headers.get("Content-Type"),
-            },
-            ip: request.headers.get("CF-Connecting-IP") || "Unknown",
-        });
+    // Getting the POST request JSON payload
+    if ('message' in payload && payload.message.text) {
+        console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
+        let actions: [string, Action][] = [
+            ["commands and optin filters", commands_and_filter_optins],
+            ["nyt game submissions", nyt_games_submission],
+            ["hardly know her", hardlyfier],
+            ["dave sickomode", sickomode],
+            ["keyword triggers", keywords(TRIGGERS)],
+            ["random scream", screamo],
+        ]
 
-        return
-    }
-    console.log(request.method)
-    if (request.method === "POST") {
-        const payload: TelegramMessage = await request.json()
-        // Getting the POST request JSON payload
-        if ('message' in payload && payload.message.text) {
-            console.log("Received telegram message from chat: " + (payload.message.chat.title || payload.message.chat.id))
-            let actions: [string, Action][] = [
-                ["commands and optin filters", commands_and_filter_optins],
-                ["nyt game submissions", nyt_games_submission],
-                ["hardly know her", hardlyfier],
-                ["dave sickomode", sickomode],
-                ["keyword triggers", keywords(TRIGGERS)],
-                ["random scream", screamo],
-            ]
-
-            for (const [name, action] of actions) {
-                console.log("Running action: " + name)
-                let keep_going = await action(payload, settings)
-                if (!keep_going) {
-                    console.log("Action " + name + " stopped the chain")
-                    break
-                }
+        for (const [name, action] of actions) {
+            console.log("Running action: " + name)
+            let keep_going = await action(payload, settings)
+            if (!keep_going) {
+                console.log("Action " + name + " stopped the chain")
+                break
             }
-
-        } else {
-            console.log(JSON.stringify(payload || {}))
         }
+
     }
+
 }
 
 async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
@@ -133,7 +111,7 @@ async function schedule_callback(event: CronEvent, env: Env, ctx: ExecutionConte
 
 }
 
-type Callback = (event: any | Request, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) => Promise<void>
+type Callback = (event: any, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) => Promise<void>
 
 function inject_logger_with_tags(settings: ChatbotSettings): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -152,8 +130,27 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
             let settings: ChatbotSettings = get_settings(env)
             inject_logger_with_tags(settings)
             if (event instanceof Request) {
-                let body = await event.text()
-                event = new Response(body, event)
+                // check X-Telegram-Bot-Api-Secret-Token is correct
+                if (event.headers.get("X-Telegram-Bot-Api-Secret-Token") !== env.TELEGRAM_WEBHOOK_SECRET) {
+                    console.warn("Unauthorized webhook call", {
+                        method: event.method,
+                        url: event.url,
+                        cloudflare_props: JSON.stringify(event.cf),
+                        headers: {
+                            "User-Agent": event.headers.get("User-Agent"),
+                            "X-Forwarded-For": event.headers.get("X-Forwarded-For"),
+                            "Content-Type": event.headers.get("Content-Type"),
+                        },
+                        ip: event.headers.get("CF-Connecting-IP") || "Unknown",
+                    });
+
+                    return new Response(null, { status: 401 })
+                }
+                if (event.method === "POST") {
+                    event = await event.json()
+                } else {
+                    console.log("received valid callback with no body", event.url, await event.text())
+                }
             }
             ctx.waitUntil(
                 inject_logger_with_tags(settings)
