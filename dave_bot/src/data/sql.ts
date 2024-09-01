@@ -243,7 +243,7 @@ export async function insert_new_search(db: D1Database, user_query: UserQuery): 
 export async function insert_property_snapshots(db: D1Database, snapshots: PropertySnapshot[]): Promise<void> {
     return await new QueryBatch(...snapshots.map(s => new Query(`
         INSERT INTO property_snapshots (property_id, search_id, url, address, price_per_month, longitude, latitude, property_type, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, s.property_id, s.search_id, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on, s.available_from, s.num_bedrooms, s.comma_separated_images))).execute(db)
 }
 
