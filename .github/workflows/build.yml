@@ -49,7 +49,7 @@ jobs:
             LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
             ENVIRONMENT=${{ secrets.ENVIRONMENT }}
             SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
-            WORKER_URL=${{ secrets.WORKER_URL }}
+            WORKER_URL=https://hardly-know-her-telegram-bot.makspl17.workers.dev
 
   pr-deploy:
     name: Deploy To Staging On PR
@@ -91,4 +91,4 @@ jobs:
             LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
             ENVIRONMENT=${{ secrets.ENVIRONMENT }}
             SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
-            WORKER_URL=${{ secrets.WORKER_URL }}
+            WORKER_URL=https://hardly-know-her-telegram-bot-staging.makspl17.workers.dev
