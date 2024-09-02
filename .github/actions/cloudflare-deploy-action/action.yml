@@ -83,7 +83,6 @@ runs:
         preCommands: |
           echo "Running wrangler migrations from $PWD"
           ls -la 
-          npx wrangler d1 migrations list DB --remote
           npx wrangler d1 migrations apply DB --remote
           echo "Wrangler migrations completed"
 
