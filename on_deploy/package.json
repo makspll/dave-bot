@@ -4,7 +4,7 @@
   "main": "on_deploy.js",
   "scripts": {
     "build": "tsc -b",
-    "start": "node dist/on_deploy.js"
+    "start": "node --env-file=.env dist/on_deploy.js"
   },
   "dependencies": {
     "dave-bot": "file:../dave_bot",

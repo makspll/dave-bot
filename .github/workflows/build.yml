@@ -37,9 +37,19 @@ jobs:
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:
-          args: '${{ secrets.TELEGRAM_API_KEY }} ${{ secrets.TELEGRAM_WEBHOOK_SECRET }} ${{ secrets.TELEGRAM_WEBHOOK_URL }}'          
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
+          env: |
+            TELEGRAM_WEBHOOK_SECRET=${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+            TELEGRAM_API_KEY=${{ secrets.TELEGRAM_API_KEY }}
+            OPEN_AI_KEY=${{ secrets.OPEN_AI_KEY }}
+            GOD_ID=${{ secrets.GOD_ID }}
+            MAIN_CHAT_ID=${{ secrets.MAIN_CHAT_ID }}
+            LOKI_USERNAME=${{ secrets.LOKI_USERNAME }}
+            LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
+            ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+            SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
+            WORKER_URL=https://hardly-know-her-telegram-bot.makspl17.workers.dev
 
   pr-deploy:
     name: Deploy To Staging On PR
@@ -69,6 +79,16 @@ jobs:
       - name: On Deploy Hooks
         uses: ./.github/actions/run-node-callback
         with:
-          args: '${{ secrets.TELEGRAM_API_KEY }} ${{ secrets.TELEGRAM_WEBHOOK_SECRET }} ${{ secrets.TELEGRAM_WEBHOOK_URL }}'          
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
+          env_file: |
+            TELEGRAM_WEBHOOK_SECRET=${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+            TELEGRAM_API_KEY=${{ secrets.TELEGRAM_API_KEY }}
+            OPEN_AI_KEY=${{ secrets.OPEN_AI_KEY }}
+            GOD_ID=${{ secrets.GOD_ID }}
+            MAIN_CHAT_ID=${{ secrets.MAIN_CHAT_ID }}
+            LOKI_USERNAME=${{ secrets.LOKI_USERNAME }}
+            LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
+            ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+            SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
+            WORKER_URL=https://hardly-know-her-telegram-bot-staging.makspl17.workers.dev

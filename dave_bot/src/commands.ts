@@ -3,7 +3,7 @@ import { convertGuessToPrompt, generateConnectionsShareable, getConnectionsForDa
 import { SYSTEM_PROMPT, TRIGGERS } from "./data.js";
 import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatters.js";
 import { call_gpt } from "./openai.js";
-import { chat_from_message, sendMessage, setReaction, user_from_message } from "./telegram.js";
+import { chat_from_message, sendLocation, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
 import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
@@ -47,7 +47,7 @@ export class Command<T extends any[]> {
             console.log("Parsed args: ", parsed_args)
             await this.callback(payload, settings, parsed_args);
         } catch (e: any) {
-            console.error("Error running command: ", e, e.toString())
+            console.error("Error running command: ", e)
 
             if (e instanceof UserErrorException) {
                 await sendMessage({
@@ -395,7 +395,8 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
 }
 
 
-export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, string | null, number | null, number | null, number | null, number | null, Date | null, number | null, number | null, number | null]): Promise<any> {
+
+export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: PropertyQueryArgs): Promise<any> {
     let location = args[0]
     let query = args[1] ?? location
     let min_price = args[2] ?? 0
@@ -433,7 +434,34 @@ export async function send_property_alerts(payload: TelegramMessage, settings: C
     await send_all_property_alerts(settings)
 }
 
+export async function show_user_property_queries(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
+    let user = user_from_message(payload)
+    let queries = await get_user_property_queries(settings.db, user)
+    for (const query of queries) {
+        const exclude = new Set(["chat_id", "user_id", "user_query_id"])
+        const params = Object.entries(query).filter(([k, v]) => !exclude.has(k)).map(([k, v]) => `${k}: ${v}`).join(", ")
+        await sendCommandMessage(payload, settings, params)
+        if (query.target_latitude && query.target_longitude) {
+            await sendLocation(settings.telegram_api_key, payload.message.chat.id, query.target_latitude, query.target_longitude)
+        }
+    }
+}
 
+
+
+type PropertyQueryArgs = [string, string | null, number | null, number | null, number | null, number | null, Date | null, number | null, number | null, number | null]
+const property_query_args = new ManyArgs<PropertyQueryArgs>([
+    new EnumArg("location", "the location to scrape", ["london"]),
+    new OptionalArg(new StringArg("query", "The query to filter by, by default this is the location", "q")),
+    new OptionalArg(new NumberArg("min_price", "The minimum price to filter by", "min_p")),
+    new OptionalArg(new NumberArg("max_price", "The maximum price to filter by", "max_P")),
+    new OptionalArg(new NumberArg("min_bedrooms", "The minimum number of bedrooms to filter by", "min_b")),
+    new OptionalArg(new NumberArg("max_bedrooms", "The maximum number of bedrooms to filter by", "max_b")),
+    new OptionalArg(new DateArg("available_from", "The earliest date the property is available from", "af")),
+    new OptionalArg(new NumberArg("longitude", "The search center square's longitude", "long")),
+    new OptionalArg(new NumberArg("latitude", "The search center square's latitude", "lat")),
+    new OptionalArg(new NumberArg("radius", "The search radius in km", "r"))
+])
 export const COMMANDS: Command<any>[] = [
     new Command("listtriggers", "List all the triggers that Dave responds to", new ManyArgs([]), list_triggers_command),
     new Command("optout", "Opt out of Dave's services", new ManyArgs([new OptionalArg(new BoolArg("confirmation", "confirm you want to opt out"))]), optout_command),
@@ -448,19 +476,10 @@ export const COMMANDS: Command<any>[] = [
     ]), leaderboard_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
-    new Command("newpropertyquery", "Add a new property query to scrape", new ManyArgs([
-        new EnumArg("location", "the location to scrape", ["london"]),
-        new OptionalArg(new StringArg("query", "The query to filter by, by default this is the location", "q")),
-        new OptionalArg(new NumberArg("min_price", "The minimum price to filter by", "min_p")),
-        new OptionalArg(new NumberArg("max_price", "The maximum price to filter by", "max_P")),
-        new OptionalArg(new NumberArg("min_bedrooms", "The minimum number of bedrooms to filter by", "min_b")),
-        new OptionalArg(new NumberArg("max_bedrooms", "The maximum number of bedrooms to filter by", "max_b")),
-        new OptionalArg(new DateArg("available_from", "The earliest date the property is available from", "af")),
-        new OptionalArg(new NumberArg("longitude", "The search center square's longitude", "long")),
-        new OptionalArg(new NumberArg("latitude", "The search center square's latitude", "lat")),
-        new OptionalArg(new NumberArg("radius", "The search radius in km", "r")),
-    ]), new_property_query_command, ["Manage Property Query"]),
+    new Command("newpropertyquery", "Add a new property query to scrape", property_query_args, new_property_query_command, ["Manage Property Query"]),
+    new Command("showpropertyqueries", "Show all your property queries", new ManyArgs([]), show_user_property_queries, ["Manage Property Query"]),
     new Command("removepropertyquery", "Remove a property query", new ManyArgs([new StringArg("query", "The query to remove")]), remove_property_query_command, ["Manage Property Query"]),
     new Command("initiatepropertysearch", "Initiate a property search", new ManyArgs([]), initiate_property_search, ["Manage Property Query"]),
     new Command("sendpropertyalerts", "Send property alerts", new ManyArgs([]), send_property_alerts, ["Manage Property Query"]),
 ]
+

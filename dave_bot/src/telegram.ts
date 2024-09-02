@@ -155,6 +155,7 @@ export async function setWebhook(api_key: string, webhookUrl: string, secret_tok
     if (secret_token) {
         parameters.append("secret_token", secret_token)
     }
+    console.log("setting telegram webhook", webhookUrl)
 
     return fetch(url, { method: "POST", body: parameters }).then(res => res.json()).then((data: any) => {
         if (!data.ok) {

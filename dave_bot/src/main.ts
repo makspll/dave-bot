@@ -7,6 +7,7 @@ import { ChatbotSettings } from "./types/settings.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { flush_logs, inject_logger } from "./logging.js";
 import { process_scrape_result, scrape_all_queries, send_all_property_alerts } from "./property/scrape.js";
+import { get_settings } from "./get_settings.js";
 
 export interface Env {
     MAIN_CHAT_ID: number,
@@ -27,23 +28,6 @@ export interface CronEvent {
     cron: string
     type: "scheduled"
     scheduledTime: number
-}
-
-function get_settings(env: Env): ChatbotSettings {
-    return {
-        telegram_webhook_secret: env.TELEGRAM_WEBHOOK_SECRET,
-        telegram_api_key: env.TELEGRAM_API_KEY,
-        openai_api_key: env.OPEN_AI_KEY,
-        main_chat_id: env.MAIN_CHAT_ID,
-        god_id: env.GOD_ID,
-        kv_namespace: env.KV_STORE,
-        loki_username: env.LOKI_USERNAME,
-        loki_password: env.LOKI_PASSWORD,
-        environment: env.ENVIRONMENT,
-        scrapfly_api_key: env.SCRAPFLY_API_KEY,
-        worker_url: env.WORKER_URL,
-        db: env.DB
-    }
 }
 
 async function fetch_callback(payload: TelegramMessage, env: Env, ctx: ExecutionContext, settings: ChatbotSettings) {
@@ -193,8 +177,7 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
             return new Response(null, { status: 200 })
 
         } catch (e) {
-            console.error(e)
-            console.error(`Error in ${name} callback`, e)
+            console.error(`Error in '${name}' callback`, e)
             await flush_logs(get_settings(env))
             return new Response(null, { status: 500 })
         }

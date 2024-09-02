@@ -21,7 +21,10 @@ inputs:
     description: 'Working Directory'
     required: false
     default: '.'
-
+  env_file:
+    description: 'Environment Variables'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -40,4 +43,5 @@ runs:
         cd ../${{ inputs.workingDirectory }}
         npm install --include=dev 
         npm run ${{ inputs.buildScript }}
+        echo "${{ inputs.env_file }}" > .env
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}

@@ -46,7 +46,7 @@ export function inject_logger(settings: ChatbotSettings, tags: ServiceTags) {
 
 function args_to_string(args: any[]): string {
     return args.map(arg => {
-        if (typeof arg === "object") {
+        if (typeof arg === "object" && !(arg instanceof Error)) {
             return JSON.stringify(arg)
         } else {
             return arg.toString()
