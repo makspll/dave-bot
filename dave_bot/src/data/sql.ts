@@ -294,7 +294,7 @@ export async function get_properties_matching_query(db: D1Database, query: UserQ
     return await new Query<PropertySnapshot>(`
         SELECT * FROM property_snapshots 
         WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query} ${radius_query}`,
-        all_args).getMany(db)
+        ...all_args).getMany(db)
 }
 
 export async function mark_properties_as_seen(db: D1Database, listing_ids: string[]): Promise<void> {
