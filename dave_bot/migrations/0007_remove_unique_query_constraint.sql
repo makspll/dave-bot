@@ -15,9 +15,9 @@ CREATE TABLE user_queries (
     max_bedrooms INTEGER NOT NULL,
     available_from DATE NOT NULL,
     creation_date DATE NOT NULL DEFAULT (DATE('now')),
-    search_radius_km FLOAT;
-    target_latitude FLOAT;
-    target_longitude FLOAT;
+    search_radius_km FLOAT,
+    target_latitude FLOAT,
+    target_longitude FLOAT,
 
     CONSTRAINT unique_user_query
     UNIQUE (user_id, query) ON CONFLICT REPLACE
