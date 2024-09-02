@@ -288,6 +288,7 @@ export async function get_properties_matching_query(db: D1Database, query: UserQ
         const maxLon = query.target_longitude + lonDelta;
         radius_query = `AND latitude >= ? AND latitude <= ? AND longitude >= ? AND longitude <= ?`
         radius_query_args = [minLat.toString(), maxLat.toString(), minLon.toString(), maxLon.toString()]
+        console.log(`Radius query: ${radius_query} with args ${radius_query_args} and query ${query}`)
     }
     let all_args = [query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()]
     all_args = all_args.concat(radius_query_args)
