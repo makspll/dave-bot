@@ -170,7 +170,7 @@ export function convertPropertyData(propertyData: PropertyData, location: string
         latitude: propertyData.pos?.lat ?? propertyData.location?.latitude ?? 0,
         property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
-        num_bedrooms: propertyData.features.filter(x => x).filter(x => x != null).find((feature) => feature.iconId === "bed")?.content ?? 1,
+        num_bedrooms: propertyData.features?.filter(x => x).filter(x => x != null).find((feature) => feature.iconId === "bed")?.content ?? 1,
         comma_separated_images: propertyData.gallery?.join(",") ?? "",
         shown: false,
         published_on: parseDate(propertyData.publishedOn) ?? new Date(),
@@ -401,7 +401,7 @@ export interface PropertyData {
     branch: Branch;
     displayType: string;
     featuredType: string | null;
-    features: (Feature | null | undefined)[];
+    features?: (Feature | null | undefined)[];
     flag: string;
     gallery?: string[];
     highlights: any[]; // Adjust the type if you have a specific structure for highlights

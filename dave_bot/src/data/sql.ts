@@ -63,8 +63,7 @@ export class Query<T> {
      */
     public static async unwrapD1Result<T>(result: D1Result<T>): Promise<T[]> {
         if (!result.success || result.error) {
-            console.error(`Error in query`, result.error ?? `unknown error`)
-            throw result.error ?? `Error when executing query`
+            throw result.error ?? "Unknown error"
         }
         return result.results
     }
@@ -74,7 +73,6 @@ export class Query<T> {
         try {
             return db.prepare(this.query).bind(...this.args);
         } catch (e: any) {
-            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -84,7 +82,6 @@ export class Query<T> {
             const result = await this.getBound(db).all<T>()
             return Query.unwrapD1Result(result)
         } catch (e: any) {
-            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -99,7 +96,6 @@ export class Query<T> {
                 return results[0]
             }
         } catch (e: any) {
-            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }
@@ -108,7 +104,6 @@ export class Query<T> {
         try {
             await this.getBound(db).run()
         } catch (e: any) {
-            console.error(`Error in query`, this.query, this.args, e.toString())
             throw new DBException(`Error in query '${this}': '${e}'`)
         }
     }

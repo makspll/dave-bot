@@ -47,7 +47,7 @@ export class Command<T extends any[]> {
             console.log("Parsed args: ", parsed_args)
             await this.callback(payload, settings, parsed_args);
         } catch (e: any) {
-            console.error("Error running command: ", e, e.toString())
+            console.error("Error running command: ", e)
 
             if (e instanceof UserErrorException) {
                 await sendMessage({
@@ -438,7 +438,8 @@ export async function show_user_property_queries(payload: TelegramMessage, setti
     let user = user_from_message(payload)
     let queries = await get_user_property_queries(settings.db, user)
     for (const query of queries) {
-        const params = Object.entries(query).map(([k, v]) => `${k}= ${v}`).join(", ")
+        const exclude = new Set(["chat_id", "user_id", "user_query_id"])
+        const params = Object.entries(query).filter(([k, v]) => !exclude.has(k)).map(([k, v]) => `${k}: ${v}`).join(", ")
         await sendCommandMessage(payload, settings, params)
         if (query.target_latitude && query.target_longitude) {
             await sendLocation(settings.telegram_api_key, payload.message.chat.id, query.target_latitude, query.target_longitude)

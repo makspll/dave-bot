@@ -193,8 +193,7 @@ function wrap_callback(event: any | Request, env: Env, ctx: ExecutionContext, na
             return new Response(null, { status: 200 })
 
         } catch (e) {
-            console.error(e)
-            console.error(`Error in ${name} callback`, e)
+            console.error(`Error in '${name}' callback`, e)
             await flush_logs(get_settings(env))
             return new Response(null, { status: 500 })
         }
