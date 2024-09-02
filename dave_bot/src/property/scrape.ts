@@ -36,6 +36,22 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
     let queries = await get_all_user_property_queries(settings.db)
     for (let query of queries) {
         let properties = await get_properties_matching_query(settings.db, query, false)
+        const max_properties = 10
+        sendMessage({
+            api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
+            payload: {
+                chat_id: query.chat_id,
+                text: `Found ${properties.length} new properties matching your query. Showing the first ${max_properties}`
+            },
+            delay: 0,
+            audio_chance: 0,
+        })
+
+        if (properties.length > max_properties) {
+            properties = properties.slice(0, max_properties)
+        }
+
         for (let property of properties) {
             let msg = `${property.address} - ${property.price_per_month} - ${property.summary_description} - ${property.url}`
             await sendMessage({
