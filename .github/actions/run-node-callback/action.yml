@@ -43,6 +43,6 @@ runs:
         cd ../${{ inputs.workingDirectory }}
         npm install --include=dev 
         npm run ${{ inputs.buildScript }}
-        echo "${{ inputs.env }}" > .env
+        echo "${{ inputs.env_file }}" > .env
         cat .env
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}
