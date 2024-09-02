@@ -25,6 +25,7 @@ async function on_deploy(args: string[], settings: ChatbotSettings) {
 
 async function main() {
     const args = process.argv.slice(2);
+    console.log("worker url", process.env.WORKER_URL)
     let settings = get_settings(process.env as unknown as Env)
 
     inject_logger(settings, { service: "dave", environment: settings.environment })
