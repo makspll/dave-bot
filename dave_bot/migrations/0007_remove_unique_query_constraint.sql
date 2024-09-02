@@ -29,4 +29,7 @@ CREATE TABLE user_queries (
 -- copy data from old table to new table
 INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, creation_date, search_radius_km, target_latitude, target_longitude)
 SELECT user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, creation_date, search_radius_km, target_latitude, target_longitude
+FROM user_queries_old
 ORDER BY user_query_id;
+
+DROP TABLE user_queries_old;
