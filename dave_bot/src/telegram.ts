@@ -106,6 +106,28 @@ export async function setReaction(request: TelegramSetReactionRequest): Promise<
         })
 }
 
+export async function sendLocation(api_key: string, chat_id: number, latitude: number, longitude: number): Promise<void> {
+    let url = `https://api.telegram.org/bot${api_key}/sendLocation`
+    let parameters = new URLSearchParams({
+        chat_id: chat_id.toString(),
+        latitude: latitude.toString(),
+        longitude: longitude.toString()
+    })
+
+    return fetch(`${url}?${parameters.toString()}`, {
+        method: "GET",
+    }).then(res => res.json())
+        .then((data: any) => {
+            if (!data.ok) {
+                throw new Error(`Failed to send telegram location: ${JSON.stringify(data)}`)
+            }
+            console.log("Successfully sent telegram location", data)
+        }).catch((err: Error) => {
+            console.error("Error in sending telegram location", err)
+            throw err
+        })
+}
+
 export async function setMyCommands(request: TelegramSetCommandRequest): Promise<void> {
     let url = `https://api.telegram.org/bot${request.api_key}/setMyCommands`
 
