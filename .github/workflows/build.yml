@@ -47,7 +47,7 @@ jobs:
             MAIN_CHAT_ID=${{ secrets.MAIN_CHAT_ID }}
             LOKI_USERNAME=${{ secrets.LOKI_USERNAME }}
             LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
-            ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+            ENVIRONMENT=production
             SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
             WORKER_URL=https://hardly-know-her-telegram-bot.makspl17.workers.dev
 
@@ -89,6 +89,6 @@ jobs:
             MAIN_CHAT_ID=${{ secrets.MAIN_CHAT_ID }}
             LOKI_USERNAME=${{ secrets.LOKI_USERNAME }}
             LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
-            ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+            ENVIRONMENT=staging
             SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
             WORKER_URL=https://hardly-know-her-telegram-bot-staging.makspl17.workers.dev
