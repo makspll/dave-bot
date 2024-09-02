@@ -40,16 +40,16 @@ jobs:
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
           env: |
-            TELEGRAM_WEBHOOK_SECRET=${{ inputs.telegramWebhookSecret }}
-            TELEGRAM_API_KEY=${{ inputs.telegramApiKey }}
-            OPEN_AI_KEY=${{ inputs.openAiKey }}
-            GOD_ID=${{ inputs.godId }}
-            MAIN_CHAT_ID=${{ inputs.mainChatId }}
-            LOKI_USERNAME=${{ inputs.lokiUsername }}
-            LOKI_PASSWORD=${{ inputs.lokiPassword }}
-            ENVIRONMENT=${{ inputs.environment }}
-            SCRAPFLY_API_KEY=${{ inputs.scrapflyApiKey }}
-            WORKER_URL=${{ inputs.workerUrl }}
+            TELEGRAM_WEBHOOK_SECRET=${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+            TELEGRAM_API_KEY=${{ secrets.TELEGRAM_API_KEY }}
+            OPEN_AI_KEY=${{ secrets.OPEN_AI_KEY }}
+            GOD_ID=${{ secrets.GOD_ID }}
+            MAIN_CHAT_ID=${{ secrets.MAIN_CHAT_ID }}
+            LOKI_USERNAME=${{ secrets.LOKI_USERNAME }}
+            LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
+            ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+            SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
+            WORKER_URL=${{ secrets.WORKER_URL }}
 
   pr-deploy:
     name: Deploy To Staging On PR
@@ -82,13 +82,13 @@ jobs:
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
           env_file: |
-            TELEGRAM_WEBHOOK_SECRET=${{ inputs.telegramWebhookSecret }}
-            TELEGRAM_API_KEY=${{ inputs.telegramApiKey }}
-            OPEN_AI_KEY=${{ inputs.openAiKey }}
-            GOD_ID=${{ inputs.godId }}
-            MAIN_CHAT_ID=${{ inputs.mainChatId }}
-            LOKI_USERNAME=${{ inputs.lokiUsername }}
-            LOKI_PASSWORD=${{ inputs.lokiPassword }}
-            ENVIRONMENT=${{ inputs.environment }}
-            SCRAPFLY_API_KEY=${{ inputs.scrapflyApiKey }}
-            WORKER_URL=${{ inputs.workerUrl }}
+            TELEGRAM_WEBHOOK_SECRET=${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+            TELEGRAM_API_KEY=${{ secrets.TELEGRAM_API_KEY }}
+            OPEN_AI_KEY=${{ secrets.OPEN_AI_KEY }}
+            GOD_ID=${{ secrets.GOD_ID }}
+            MAIN_CHAT_ID=${{ secrets.MAIN_CHAT_ID }}
+            LOKI_USERNAME=${{ secrets.LOKI_USERNAME }}
+            LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
+            ENVIRONMENT=${{ secrets.ENVIRONMENT }}
+            SCRAPFLY_API_KEY=${{ secrets.SCRAPFLY_API_KEY }}
+            WORKER_URL=${{ secrets.WORKER_URL }}
