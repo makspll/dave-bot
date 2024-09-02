@@ -44,4 +44,5 @@ runs:
         npm install --include=dev 
         npm run ${{ inputs.buildScript }}
         echo "${{ inputs.env }}" > .env
+        cat .env
         npm run ${{ inputs.onDeployScript }} ${{ inputs.args }}

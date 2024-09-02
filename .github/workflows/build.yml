@@ -82,13 +82,7 @@ jobs:
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
           env_file: |
-            TELEGRAM_WEBHOOK_SECRET=${{ inputs.telegramWebhookSecret }}
-            TELEGRAM_API_KEY=${{ inputs.telegramApiKey }}
-            OPEN_AI_KEY=${{ inputs.openAiKey }}
-            GOD_ID=${{ inputs.godId }}
-            MAIN_CHAT_ID=${{ inputs.mainChatId }}
-            LOKI_USERNAME=${{ inputs.lokiUsername }}
-            LOKI_PASSWORD=${{ inputs.lokiPassword }}
-            ENVIRONMENT=${{ inputs.environment }}
-            SCRAPFLY_API_KEY=${{ inputs.scrapflyApiKey }}
-            WORKER_URL=${{ inputs.workerUrl }}
+            TEST_ENV=1
+            TEST_ENV2=2
+
+
