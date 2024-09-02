@@ -78,7 +78,6 @@ export interface PropertySnapshot {
     price_per_month: number,
     longitude: number,
     latitude: number,
-    property_type: string,
     summary_description: string,
     published_on?: Date,
     available_from?: Date,

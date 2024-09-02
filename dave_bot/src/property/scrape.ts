@@ -168,7 +168,6 @@ export function convertPropertyData(propertyData: PropertyData, location: string
         price_per_month: parseInt(propertyData.price.replace(/[^0-9]/g, "")),
         longitude: propertyData.pos?.lng ?? propertyData.location?.longitude ?? 0,
         latitude: propertyData.pos?.lat ?? propertyData.location?.latitude ?? 0,
-        property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
         num_bedrooms: propertyData.features?.filter(x => x).filter(x => x != null).find((feature) => feature.iconId === "bed")?.content ?? 1,
         comma_separated_images: propertyData.gallery?.join(",") ?? "",
