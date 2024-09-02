@@ -1,7 +1,5 @@
 -- Migration number: 0007 	 2024-09-02T17:53:00.714Z
 
-BEGIN TRANSACTION;
-
 -- rename old table
 ALTER TABLE user_queries RENAME TO user_queries_old;
 
@@ -32,5 +30,3 @@ CREATE TABLE user_queries (
 INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, creation_date, search_radius_km, target_latitude, target_longitude)
 SELECT user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, creation_date, search_radius_km, target_latitude, target_longitude
 ORDER BY user_query_id;
-
-COMMIT;
