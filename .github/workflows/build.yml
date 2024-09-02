@@ -40,16 +40,16 @@ jobs:
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
           env: |
-            TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
-            TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
-            OPEN_AI_KEY: ${{ inputs.openAiKey }}
-            GOD_ID: ${{ inputs.godId }}
-            MAIN_CHAT_ID: ${{ inputs.mainChatId }}
-            LOKI_USERNAME: ${{ inputs.lokiUsername }}
-            LOKI_PASSWORD: ${{ inputs.lokiPassword }}
-            ENVIRONMENT: ${{ inputs.environment }}
-            SCRAPFLY_API_KEY: ${{ inputs.scrapflyApiKey }}
-            WORKER_URL: ${{ inputs.workerUrl }}
+            TELEGRAM_WEBHOOK_SECRET=${{ inputs.telegramWebhookSecret }}
+            TELEGRAM_API_KEY=${{ inputs.telegramApiKey }}
+            OPEN_AI_KEY=${{ inputs.openAiKey }}
+            GOD_ID=${{ inputs.godId }}
+            MAIN_CHAT_ID=${{ inputs.mainChatId }}
+            LOKI_USERNAME=${{ inputs.lokiUsername }}
+            LOKI_PASSWORD=${{ inputs.lokiPassword }}
+            ENVIRONMENT=${{ inputs.environment }}
+            SCRAPFLY_API_KEY=${{ inputs.scrapflyApiKey }}
+            WORKER_URL=${{ inputs.workerUrl }}
 
   pr-deploy:
     name: Deploy To Staging On PR
@@ -82,13 +82,13 @@ jobs:
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
           env: |
-            TELEGRAM_WEBHOOK_SECRET: ${{ inputs.telegramWebhookSecret }}
-            TELEGRAM_API_KEY: ${{ inputs.telegramApiKey }}
-            OPEN_AI_KEY: ${{ inputs.openAiKey }}
-            GOD_ID: ${{ inputs.godId }}
-            MAIN_CHAT_ID: ${{ inputs.mainChatId }}
-            LOKI_USERNAME: ${{ inputs.lokiUsername }}
-            LOKI_PASSWORD: ${{ inputs.lokiPassword }}
-            ENVIRONMENT: ${{ inputs.environment }}
-            SCRAPFLY_API_KEY: ${{ inputs.scrapflyApiKey }}
-            WORKER_URL: ${{ inputs.workerUrl }}
+            TELEGRAM_WEBHOOK_SECRET=${{ inputs.telegramWebhookSecret }}
+            TELEGRAM_API_KEY=${{ inputs.telegramApiKey }}
+            OPEN_AI_KEY=${{ inputs.openAiKey }}
+            GOD_ID=${{ inputs.godId }}
+            MAIN_CHAT_ID=${{ inputs.mainChatId }}
+            LOKI_USERNAME=${{ inputs.lokiUsername }}
+            LOKI_PASSWORD=${{ inputs.lokiPassword }}
+            ENVIRONMENT=${{ inputs.environment }}
+            SCRAPFLY_API_KEY=${{ inputs.scrapflyApiKey }}
+            WORKER_URL=${{ inputs.workerUrl }}
