@@ -63,7 +63,10 @@ export interface UserQuery {
     min_bedrooms: number,
     max_bedrooms: number,
     available_from: Date,
-    creation_date: Date
+    creation_date: Date,
+    target_longitude?: number,
+    target_latitude?: number,
+    search_radius_km?: number
 }
 
 
