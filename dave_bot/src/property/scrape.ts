@@ -36,6 +36,22 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
     let queries = await get_all_user_property_queries(settings.db)
     for (let query of queries) {
         let properties = await get_properties_matching_query(settings.db, query, false)
+        const max_properties = 10
+        await sendMessage({
+            api_key: settings.telegram_api_key,
+            open_ai_key: settings.openai_api_key,
+            payload: {
+                chat_id: query.chat_id,
+                text: `Found ${properties.length} new properties matching your query. Showing the first ${max_properties}`
+            },
+            delay: 0,
+            audio_chance: 0,
+        })
+
+        if (properties.length > max_properties) {
+            properties = properties.slice(0, max_properties)
+        }
+
         for (let property of properties) {
             let msg = `${property.address} - ${property.price_per_month} - ${property.summary_description} - ${property.url}`
             await sendMessage({
@@ -109,7 +125,7 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
         is_student_accommodation: false,
     }
     let last_url = "https://www.zoopla.co.uk"
-    while (page_num <= 5) {
+    while (page_num <= 10) {
         zoopla_query.pn = page_num;
         let zoopla_url = make_zoopla_url(zoopla_query);
         const config = make_scrape_config(zoopla_url, session_id.toString(), last_url, settings);
@@ -168,7 +184,6 @@ export function convertPropertyData(propertyData: PropertyData, location: string
         price_per_month: parseInt(propertyData.price.replace(/[^0-9]/g, "")),
         longitude: propertyData.pos?.lng ?? propertyData.location?.longitude ?? 0,
         latitude: propertyData.pos?.lat ?? propertyData.location?.latitude ?? 0,
-        property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
         num_bedrooms: propertyData.features?.filter(x => x).filter(x => x != null).find((feature) => feature.iconId === "bed")?.content ?? 1,
         comma_separated_images: propertyData.gallery?.join(",") ?? "",

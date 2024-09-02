@@ -257,10 +257,10 @@ export async function delete_user_property_query(db: D1Database, user: User, que
 
 export async function insert_property_snapshots(db: D1Database, snapshots: PropertySnapshot[]): Promise<void> {
     return await new QueryBatch(...snapshots.map(s => new Query(`
-        INSERT INTO property_snapshots (property_id, location, url, address, price_per_month, longitude, latitude, property_type, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO UPDATE
+        INSERT INTO property_snapshots (property_id, location, url, address, price_per_month, longitude, latitude, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO UPDATE
         SET price_per_month = ?, available_from = ?, comma_separated_images = ?
-        `, s.property_id, s.location, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.property_type, s.summary_description, s.published_on?.toISOString(), s.available_from?.toISOString(), s.num_bedrooms, s.comma_separated_images,
+        `, s.property_id, s.location, s.url, s.address, s.price_per_month, s.longitude, s.latitude, s.summary_description, s.published_on?.toISOString(), s.available_from?.toISOString(), s.num_bedrooms, s.comma_separated_images,
         s.price_per_month, s.available_from?.toISOString(), s.comma_separated_images))).execute(db)
 }
 
