@@ -264,26 +264,32 @@ export async function insert_property_snapshots(db: D1Database, snapshots: Prope
         s.price_per_month, s.available_from?.toISOString(), s.comma_separated_images))).execute(db)
 }
 
+function degreesToRadians(degrees: number) {
+    return degrees * Math.PI / 180;
+}
+
 export async function get_properties_matching_query(db: D1Database, query: UserQuery, include_seen: boolean): Promise<PropertySnapshot[]> {
     const seen_query = include_seen ? "" : "AND shown = false"
     // Constants
     let radius_query = ""
     let radius_query_args: string[] = []
     if (query.search_radius_km && query.target_latitude && query.target_longitude) {
-        const earthRadiusKm = 6371;
+        const latRads = degreesToRadians(query.target_latitude);
+        const kmPerDegreeLat = 110.574;
+        const kmPerDegreeLon = 111.320 * Math.cos(latRads);
 
-        // Calculate the latitude and longitude deltas
-        const latDelta = query.search_radius_km / earthRadiusKm;
-        const lonDelta = query.search_radius_km / (earthRadiusKm * Math.cos(Math.PI * query.target_latitude / 180));
+        const searchRadiusDegreesLat = query.search_radius_km / kmPerDegreeLat;
+        const searchRadiusDegreesLon = query.search_radius_km / kmPerDegreeLon;
 
         // Calculate the bounding box
-        const minLat = query.target_latitude - latDelta;
-        const maxLat = query.target_latitude + latDelta;
-        const minLon = query.target_longitude - lonDelta;
-        const maxLon = query.target_longitude + lonDelta;
+        const minLat = query.target_latitude - searchRadiusDegreesLat;
+        const maxLat = query.target_latitude + searchRadiusDegreesLat;
+        const minLon = query.target_longitude - searchRadiusDegreesLon;
+        const maxLon = query.target_longitude + searchRadiusDegreesLon;
+
         radius_query = `AND latitude >= ? AND latitude <= ? AND longitude >= ? AND longitude <= ?`
         radius_query_args = [minLat.toString(), maxLat.toString(), minLon.toString(), maxLon.toString()]
-        console.log(`Radius query: ${radius_query} with args ${radius_query_args} and query ${query}`)
+        console.log(`Radius query: ${radius_query} with args ${radius_query_args}`)
     }
     let all_args = [query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()]
     all_args = all_args.concat(radius_query_args)
