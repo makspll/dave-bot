@@ -64,9 +64,9 @@ export interface UserQuery {
     max_bedrooms: number,
     available_from: Date,
     creation_date: Date,
-    target_longitude?: number,
-    target_latitude?: number,
-    search_radius_km?: number
+    target_longitude?: number | null,
+    target_latitude?: number | null,
+    search_radius_km?: number | null
 }
 
 

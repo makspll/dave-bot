@@ -403,9 +403,9 @@ export async function new_property_query_command(payload: TelegramMessage, setti
     let min_bedrooms = args[4] ?? 0
     let max_bedrooms = args[5] ?? 5
     let available_from = args[6] ?? new Date()
-    let longitude = args[7] ?? undefined
-    let latitude = args[8] ?? undefined
-    let radius = args[9] ?? undefined
+    let longitude = args[7]
+    let latitude = args[8]
+    let radius = args[9]
 
     let user = user_from_message(payload)
     await insert_user_property_query(settings.db, user, {
