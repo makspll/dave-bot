@@ -223,8 +223,8 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
 
 export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {
     return await new Query(`
-        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, user.user_id, query.chat_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).run(db)
+        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, target_longitude, target_latitude, search_radius_km) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
+        `, user.user_id, query.chat_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString(), query.target_longitude, query.target_longitude, query.search_radius_km).run(db)
 }
 
 export async function get_user_property_queries(db: D1Database, user: User): Promise<UserQuery[]> {
@@ -271,10 +271,30 @@ export async function insert_property_snapshots(db: D1Database, snapshots: Prope
 
 export async function get_properties_matching_query(db: D1Database, query: UserQuery, include_seen: boolean): Promise<PropertySnapshot[]> {
     const seen_query = include_seen ? "" : "AND shown = false"
+    // Constants
+    let radius_query = ""
+    let radius_query_args: string[] = []
+    if (query.search_radius_km && query.target_latitude && query.target_longitude) {
+        const earthRadiusKm = 6371;
+
+        // Calculate the latitude and longitude deltas
+        const latDelta = query.search_radius_km / earthRadiusKm;
+        const lonDelta = query.search_radius_km / (earthRadiusKm * Math.cos(Math.PI * query.target_latitude / 180));
+
+        // Calculate the bounding box
+        const minLat = query.target_latitude - latDelta;
+        const maxLat = query.target_latitude + latDelta;
+        const minLon = query.target_longitude - lonDelta;
+        const maxLon = query.target_longitude + lonDelta;
+        radius_query = `AND latitude >= ? AND latitude <= ? AND longitude >= ? AND longitude <= ?`
+        radius_query_args = [minLat.toString(), maxLat.toString(), minLon.toString(), maxLon.toString()]
+    }
+    let all_args = [query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()]
+    all_args = all_args.concat(radius_query_args)
     return await new Query<PropertySnapshot>(`
         SELECT * FROM property_snapshots 
-        WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query}`,
-        query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()).getMany(db)
+        WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query} ${radius_query}`,
+        ...all_args).getMany(db)
 }
 
 export async function mark_properties_as_seen(db: D1Database, listing_ids: string[]): Promise<void> {

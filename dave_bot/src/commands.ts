@@ -395,7 +395,7 @@ export async function connections_command(payload: TelegramMessage, settings: Ch
 }
 
 
-export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, string | null, number | null, number | null, number | null, number | null, Date | null]): Promise<any> {
+export async function new_property_query_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, string | null, number | null, number | null, number | null, number | null, Date | null, number | null, number | null, number | null]): Promise<any> {
     let location = args[0]
     let query = args[1] ?? location
     let min_price = args[2] ?? 0
@@ -403,11 +403,16 @@ export async function new_property_query_command(payload: TelegramMessage, setti
     let min_bedrooms = args[4] ?? 0
     let max_bedrooms = args[5] ?? 5
     let available_from = args[6] ?? new Date()
+    let longitude = args[7]
+    let latitude = args[8]
+    let radius = args[9]
 
     let user = user_from_message(payload)
     await insert_user_property_query(settings.db, user, {
-        location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, chat_id: payload.message.chat.id
+        location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, chat_id: payload.message.chat.id,
+        target_longitude: longitude, target_latitude: latitude, search_radius_km: radius
     })
+
     await sendCommandMessage(payload, settings, "Query added")
 }
 
@@ -451,6 +456,9 @@ export const COMMANDS: Command<any>[] = [
         new OptionalArg(new NumberArg("min_bedrooms", "The minimum number of bedrooms to filter by", "min_b")),
         new OptionalArg(new NumberArg("max_bedrooms", "The maximum number of bedrooms to filter by", "max_b")),
         new OptionalArg(new DateArg("available_from", "The earliest date the property is available from", "af")),
+        new OptionalArg(new NumberArg("longitude", "The search center square's longitude", "long")),
+        new OptionalArg(new NumberArg("latitude", "The search center square's latitude", "lat")),
+        new OptionalArg(new NumberArg("radius", "The search radius in km", "r")),
     ]), new_property_query_command, ["Manage Property Query"]),
     new Command("removepropertyquery", "Remove a property query", new ManyArgs([new StringArg("query", "The query to remove")]), remove_property_query_command, ["Manage Property Query"]),
     new Command("initiatepropertysearch", "Initiate a property search", new ManyArgs([]), initiate_property_search, ["Manage Property Query"]),

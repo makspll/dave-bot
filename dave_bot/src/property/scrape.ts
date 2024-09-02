@@ -4,7 +4,7 @@ import { LogBatcher } from "../logging.js";
 import { get_all_user_property_queries, get_properties_matching_query, get_user_property_queries_by_location, insert_property_snapshots, mark_properties_as_seen } from "../data/sql.js";
 import moment from "moment-timezone";
 import { ChatbotSettings } from "@src/types/settings.js";
-import { sendMessage } from "../telegram.js";
+import { sendLocation, sendMessage } from "../telegram.js";
 
 export interface ZooplaQuery {
     location: string,
@@ -38,7 +38,7 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
         let properties = await get_properties_matching_query(settings.db, query, false)
         for (let property of properties) {
             let msg = `${property.address} - ${property.price_per_month} - ${property.summary_description} - ${property.url}`
-            sendMessage({
+            await sendMessage({
                 api_key: settings.telegram_api_key,
                 open_ai_key: settings.openai_api_key,
                 payload: {
@@ -48,7 +48,8 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
                 delay: 0,
                 audio_chance: 0,
             })
-            mark_properties_as_seen(settings.db, [property.property_id])
+            await sendLocation(settings.telegram_api_key, query.chat_id, property.latitude, property.longitude)
+            await mark_properties_as_seen(settings.db, [property.property_id])
         }
 
         if (properties.length === 0) {
@@ -169,7 +170,7 @@ export function convertPropertyData(propertyData: PropertyData, location: string
         latitude: propertyData.pos?.lat ?? propertyData.location?.latitude ?? 0,
         property_type: propertyData.propertyType,
         summary_description: propertyData.summaryDescription,
-        num_bedrooms: propertyData.features.find((feature) => feature.iconId === "bed")?.content ?? 1,
+        num_bedrooms: propertyData.features.filter(x => x).filter(x => x != null).find((feature) => feature.iconId === "bed")?.content ?? 1,
         comma_separated_images: propertyData.gallery?.join(",") ?? "",
         shown: false,
         published_on: parseDate(propertyData.publishedOn) ?? new Date(),
@@ -400,11 +401,11 @@ export interface PropertyData {
     branch: Branch;
     displayType: string;
     featuredType: string | null;
-    features: Feature[];
+    features: (Feature | null | undefined)[];
     flag: string;
     gallery?: string[];
     highlights: any[]; // Adjust the type if you have a specific structure for highlights
-    image: Image;
+    image?: Image | null;
     isFavourite: boolean;
     isPremium: boolean;
     lastPublishedDate: string;
