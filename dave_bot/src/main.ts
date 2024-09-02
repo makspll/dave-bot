@@ -192,7 +192,7 @@ export default {
 
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         // ingest the request and make a new one 
-        return await wrap_callback(request, env, ctx, "scheduled", fetch_callback)()
+        return await wrap_callback(request, env, ctx, "fetch", fetch_callback)()
     },
 };
 
