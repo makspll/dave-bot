@@ -223,7 +223,7 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
 
 export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {
     return await new Query(`
-        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, target_longitude, target_latitude, search_radius_km) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, target_longitude, target_latitude, search_radius_km) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
         `, user.user_id, query.chat_id, query.location, query.query, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString(), query.target_longitude, query.target_longitude, query.search_radius_km).run(db)
 }
 
