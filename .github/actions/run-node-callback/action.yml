@@ -21,7 +21,7 @@ inputs:
     description: 'Working Directory'
     required: false
     default: '.'
-  env:
+  env_file:
     description: 'Environment Variables'
     required: false
     default: ''

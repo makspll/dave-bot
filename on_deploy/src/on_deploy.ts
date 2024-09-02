@@ -26,7 +26,7 @@ async function on_deploy(args: string[], settings: ChatbotSettings) {
 async function main() {
     const args = process.argv.slice(2);
     let settings = get_settings(process.env as unknown as Env)
-    console.log(process.env.TELEGRAM_API_KEY)
+
     inject_logger(settings, { service: "dave", environment: settings.environment })
     try {
         console.log("Running on deploy node hooks")

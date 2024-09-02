@@ -81,7 +81,7 @@ jobs:
         with:
           workingDirectory: 'on_deploy'
           nodeVersionFile: '.nvmrc'
-          env: |
+          env_file: |
             TELEGRAM_WEBHOOK_SECRET=${{ inputs.telegramWebhookSecret }}
             TELEGRAM_API_KEY=${{ inputs.telegramApiKey }}
             OPEN_AI_KEY=${{ inputs.openAiKey }}
