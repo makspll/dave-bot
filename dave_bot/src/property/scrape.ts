@@ -125,7 +125,7 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
         is_student_accommodation: false,
     }
     let last_url = "https://www.zoopla.co.uk"
-    while (page_num <= 5) {
+    while (page_num <= 10) {
         zoopla_query.pn = page_num;
         let zoopla_url = make_zoopla_url(zoopla_query);
         const config = make_scrape_config(zoopla_url, session_id.toString(), last_url, settings);
