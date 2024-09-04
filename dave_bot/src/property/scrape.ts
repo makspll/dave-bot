@@ -37,7 +37,8 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
     for (let query of queries) {
         let properties = await get_properties_matching_query(settings.db, query, false)
         const max_properties = 10
-        if (properties.length({
+        if (properties.length) 
+        {
             await sendMessage({
                 api_key: settings.telegram_api_key,
                 open_ai_key: settings.openai_api_key,
