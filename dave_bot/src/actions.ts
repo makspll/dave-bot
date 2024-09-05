@@ -273,7 +273,7 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     // capture group hard_mode is optional (if present the game is in hard mode)
     let regex_and_game_types: [RegExp, GameType][] = [
         [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
-        [/^Connections \nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
+        [/^Connections\nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
         [/^Autism Test: (?<game_score>)/, "autism_test"]
     ]
 
