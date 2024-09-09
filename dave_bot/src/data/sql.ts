@@ -256,6 +256,10 @@ export async function delete_user_property_query(db: D1Database, user: User, que
 
 
 export async function insert_property_snapshots(db: D1Database, snapshots: PropertySnapshot[]): Promise<void> {
+    if (snapshots.length == 0) {
+        return
+    }
+    
     return await new QueryBatch(...snapshots.map(s => new Query(`
         INSERT INTO property_snapshots (property_id, location, url, address, price_per_month, longitude, latitude, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO UPDATE
