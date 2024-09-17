@@ -93,10 +93,10 @@ export async function scrape_all_queries(settings: ChatbotSettings) {
 export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings): Promise<void> {
     // find searches from today
     // get session id from epoch time now
-    let session_id = moment().tz("Europe/London").unix()
+    // let session_id = moment().tz("Europe/London").unix()
 
     console.log("Starting scrape for query", query)
-    await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
+    // await begin_zoopla_session(settings.scrapfly_api_key, session_id, settings);
 
     let page_num = 1
     let zoopla_query: ZooplaQuery = {
@@ -116,7 +116,7 @@ export async function scrape_zoopla(query: UserQuery, settings: ChatbotSettings)
     while (page_num <= 10) {
         zoopla_query.pn = page_num;
         let zoopla_url = make_zoopla_url(zoopla_query);
-        const config = make_scrape_config(zoopla_url, session_id.toString(), last_url, settings);
+        const config = make_scrape_config(zoopla_url, undefined, last_url, settings);
         last_url = zoopla_url;
         let retries = 3;
         while (retries > 0) {
