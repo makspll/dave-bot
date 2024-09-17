@@ -451,7 +451,7 @@ export async function show_user_property_queries(payload: TelegramMessage, setti
 
 type PropertyQueryArgs = [string, string | null, number | null, number | null, number | null, number | null, Date | null, number | null, number | null, number | null]
 const property_query_args = new ManyArgs<PropertyQueryArgs>([
-    new EnumArg("location", "the location to scrape", ["london"]),
+    new EnumArg("location", "the location to scrape", ["london","edinburgh"]),
     new OptionalArg(new StringArg("query", "The query to filter by, by default this is the location", "q")),
     new OptionalArg(new NumberArg("min_price", "The minimum price to filter by", "min_p")),
     new OptionalArg(new NumberArg("max_price", "The maximum price to filter by", "max_P")),
