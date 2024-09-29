@@ -74,7 +74,7 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
     }
 }
 
-function delay(ms) {
+function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
