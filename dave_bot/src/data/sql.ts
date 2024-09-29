@@ -297,6 +297,7 @@ export async function get_properties_matching_query(db: D1Database, query: UserQ
     }
     let all_args = [query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()]
     all_args = all_args.concat(radius_query_args)
+    console.log("all args:",all_args)
     return await new Query<PropertySnapshot>(`
         SELECT * FROM property_snapshots 
         WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query} ${radius_query}`,
