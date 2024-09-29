@@ -68,8 +68,14 @@ export async function send_all_property_alerts(settings: ChatbotSettings) {
             })
             await sendLocation(settings.telegram_api_key, query.chat_id, property.latitude, property.longitude)
             await mark_properties_as_seen(settings.db, [property.property_id])
+            await delay(50)
+            
         }
     }
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export async function scrape_all_queries(settings: ChatbotSettings) {
