@@ -27,29 +27,54 @@ function compare_scores(a: MetricBody | undefined, b: MetricBody | undefined, as
         return compB - compA;
     }
 }
-
 function sort_scores(scores: LeaderboardScores, sort_by_order: MetricId[]) {
     let all_scores = Array.from(scores.scores.entries());
-    all_scores.sort(([_a, metricsA], [_b, metricsB]) => {
-        for (const sort_metric of sort_by_order) {
-            let ascending = scores.scorekinds.get(sort_metric)?.ascending ?? false;
-            let diff = compare_scores(metricsA.get(sort_metric), metricsB.get(sort_metric), ascending)
 
-            if (Math.abs(diff) >= 0.01) {
-                return diff
-            }
-        }
-        return 0
+    // Separate scores with "games" metric less than 5
+    let penalized_scores = all_scores.filter(([_a, metrics]) => {
+        let games = metrics.get("games");
+        return games && games.value < 5;
     });
 
-    all_scores.forEach(([a, b], i) => {
+    let valid_scores = all_scores.filter(([_a, metrics]) => {
+        let games = metrics.get("games");
+        return !games || games.value >= 5;
+    });
+
+    // Define a sorting function
+    const sortFunction = ([_a, metricsA], [_b, metricsB]) => {
+        for (const sort_metric of sort_by_order) {
+            let ascending = scores.scorekinds.get(sort_metric)?.ascending ?? false;
+            let diff = compare_scores(metricsA.get(sort_metric), metricsB.get(sort_metric), ascending);
+            if (Math.abs(diff) >= 0.01) {
+                return diff;
+            }
+        }
+        return 0;
+    };
+
+    // Sort both valid and penalized scores using the same function
+    valid_scores.sort(sortFunction);
+    penalized_scores.sort(sortFunction);
+
+    // Assign ranks to valid scores
+    valid_scores.forEach(([a, b], i) => {
         let m = b.get(sort_by_order[0]);
         if (m) {
             m.rank = i + 1;
         }
-    })
+    });
 
-    scores.scores = new Map([...all_scores]);
+    // Assign ranks to penalized scores, continuing from the last rank of valid scores
+    penalized_scores.forEach(([a, b], i) => {
+        let m = b.get(sort_by_order[0]);
+        if (m) {
+            m.rank = valid_scores.length + i + 1;
+        }
+    });
+
+    // Combine valid and penalized scores
+    all_scores = valid_scores.concat(penalized_scores);
 }
 
 
