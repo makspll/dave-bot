@@ -177,7 +177,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     // get all games for this month, the game id can be converted to a date
     const now = moment.tz('Europe/London')
-    const first_date_this_month = now.clone().set("date", 1).toDate()
+    const first_date_this_month = now.clone().startOf('month').toDate()
     console.log("first date this month: ", first_date_this_month)
     
     let first_id: number
