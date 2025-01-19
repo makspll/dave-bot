@@ -72,12 +72,12 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     // calculate boundaries between tiers, i.e. where the players switch from tier 1 to 0
     // after that index we want to insert a line 
     // calcualte where the dividing index is in the current scores 
-    let tier_insertions = [];
+    let tier_insertions: Array<[string, number]> = [];
     let last_tier = 0;
     for (const [name, user_scores] of scores.scores) {
-        let tier = user_scores.get("tier") || 0;
+        let tier = user_scores.get("tier")?.value || 0;
         if (tier != last_tier) {
-            tier_insertions.push(name)
+            tier_insertions.push([name, tier])
             last_tier = tier;
         }
     }
@@ -114,8 +114,9 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     // headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of scores.scores) {
-        if (tier_insertions.includes(name)) {
-            let tier = tier_insertions.indexOf(name);
+        let tier_insertion = tier_insertions.find(x => x[0] === name);
+        if (tier_insertion) {
+            let tier = tier_insertion[1];
             let tier_string = ' TIER ' + tier + ' ';
             let length_for_dashes = header_length - tier_string.length;
             let length_for_dashes_half = Math.ceil(length_for_dashes / 2);
