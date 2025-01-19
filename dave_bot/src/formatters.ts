@@ -219,7 +219,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     metric_definitions.set("avg", { title: "Avg", ascending: true })
     metric_definitions.set("games", { title: "N", ascending: false })
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
-    metric_definitions.set("tier", { title: "Tier", ascending: false })
+    metric_definitions.set("tier", { title: "Tier", ascending: true })
 
     let converted_names = new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics]))
 
