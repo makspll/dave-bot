@@ -73,7 +73,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
     // after that index we want to insert a line 
     // calcualte where the dividing index is in the current scores 
     let tier_insertions: Array<[string, number]> = [];
-    let last_tier = 0;
+    let last_tier = -1;
     for (const [name, user_scores] of scores.scores) {
         let tier = user_scores.get("tier")?.value || 0;
         if (tier != last_tier) {
