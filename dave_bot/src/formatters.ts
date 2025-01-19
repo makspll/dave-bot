@@ -108,7 +108,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${padded_score_titles}\n`;
     let header_length = stringWidth(headers);
-    headers += '-'.repeat(headers.length) + '\n';
+    // headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of scores.scores) {
         if (tier_insertions.includes(name)) {
