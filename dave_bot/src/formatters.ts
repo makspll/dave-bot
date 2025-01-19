@@ -107,17 +107,17 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
         .join(" | ");
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${padded_score_titles}\n`;
+    let header_length = stringWidth(headers);
     headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of scores.scores) {
         if (tier_insertions.includes(name)) {
             let tier = tier_insertions.indexOf(name);
             let tier_string = ' TIER ' + tier + ' ';
-            let length_for_dashes = headers.length - tier_string.length;
+            let length_for_dashes = header_length - tier_string.length;
             let length_for_dashes_half = Math.floor(length_for_dashes / 2);
             let length_for_dashes_half_left = length_for_dashes - length_for_dashes_half;
-            rows += '-'.repeat(headers.length) + '\n';
-            // rows += '-'.repeat(length_for_dashes_half_left) + tier_string + '-'.repeat(length_for_dashes_half) + '\n';
+            rows += '-'.repeat(length_for_dashes_half_left) + tier_string + '-'.repeat(length_for_dashes_half) + '\n';
         }
 
         let change = '';
