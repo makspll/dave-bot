@@ -114,9 +114,10 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
             let tier = tier_insertions.indexOf(name);
             let tier_string = ' TIER ' + tier + ' ';
             let length_for_dashes = headers.length - tier_string.length;
-            let length_for_dashes_half = length_for_dashes / 2;
+            let length_for_dashes_half = Math.floor(length_for_dashes / 2);
             let length_for_dashes_half_left = length_for_dashes - length_for_dashes_half;
-            rows += '-'.repeat(length_for_dashes_half_left) + tier_string + '-'.repeat(length_for_dashes_half) + '\n';
+            rows += '-'.repeat(headers.length) + '\n';
+            // rows += '-'.repeat(length_for_dashes_half_left) + tier_string + '-'.repeat(length_for_dashes_half) + '\n';
         }
 
         let change = '';
