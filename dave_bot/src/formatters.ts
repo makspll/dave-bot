@@ -209,7 +209,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
         let avg_delta = metrics.get("avg_delta")!
-        let tier = games.value > 15 ? 0 : 1;
+        let tier = games.value >= 15 ? 0 : 1;
         metrics.set("tier", { value: tier, rank: 0 })
         avg.value = avg.value / games.value
         if (games_3_plus.value > 0) {
