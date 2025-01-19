@@ -63,11 +63,26 @@ export interface LeaderboardScores {
 export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId, title = "Leaderboard", previous_scores: LeaderboardScores | null = null, shit_moji: string = '💩') {
     // first of all sort scores by sort_by score kind, depending on the score kind it can be ascending or descending
     // sort scores.scores by sort_by
-    sort_scores(scores, [sort_by, "games", "avg_delta"]);
+    sort_scores(scores, ["tier", sort_by, "games", "avg_delta"]);
     if (previous_scores) {
         // sort previous_scores.scores by sort_by
-        sort_scores(previous_scores, [sort_by, "games", "avg_delta"]);
+        sort_scores(previous_scores, ["tier", sort_by, "games", "avg_delta"]);
     }
+
+    // calculate boundaries between tiers, i.e. where the players switch from tier 1 to 0
+    // after that index we want to insert a line 
+    // calcualte where the dividing index is in the current scores 
+    let tier_insertions = [];
+    let last_tier = 0;
+    for (const [name, user_scores] of scores.scores) {
+        let tier = user_scores.get("tier") || 0;
+        if (tier != last_tier) {
+            tier_insertions.push(name)
+        }
+    }
+    // delete tier so it's not visible
+    scores.scorekinds.delete("tier");
+
 
     // generate leaderboard string, make it aligned and pretty
     let emojis = ['🏆', '🥈', '🥉', '🎖️', '🧻'];
@@ -94,9 +109,19 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
         .join(" | ");
 
     let headers = `${stringPad(title, title_column_length, ' ', 'center')} | ${padded_score_titles}\n`;
-    headers += '-'.repeat(headers.length) + '\n';
+    let header_length = stringWidth(headers);
+    // headers += '-'.repeat(headers.length) + '\n';
     let rows = ''
     for (const [name, user_scores] of scores.scores) {
+        if (tier_insertions.includes(name)) {
+            let tier = tier_insertions.indexOf(name);
+            let tier_string = ' TIER ' + tier + ' ';
+            let length_for_dashes = header_length - tier_string.length;
+            let length_for_dashes_half = Math.ceil(length_for_dashes / 2);
+            let length_for_dashes_half_left = length_for_dashes - length_for_dashes_half;
+            rows += '-'.repeat(length_for_dashes_half_left) + tier_string + '-'.repeat(length_for_dashes_half) + '\n';
+        }
+
         let change = '';
         if (previous_scores) {
             let current_metric = user_scores.get(sort_by);
@@ -182,6 +207,8 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
         let avg_delta = metrics.get("avg_delta")!
+        let tier = games.value > 15 ? 0 : 1;
+        metrics.set("tier", { value: tier, rank: 0 })
         avg.value = avg.value / games.value
         if (games_3_plus.value > 0) {
             avg_delta.value = avg_delta.value / games_3_plus.value
@@ -195,6 +222,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     metric_definitions.set("avg", { title: "Avg", ascending: true })
     metric_definitions.set("games", { title: "N", ascending: false })
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
+    metric_definitions.set("tier", { title: "Tier", ascending: true })
 
     let converted_names = new Map([...player_to_metrics.entries()].map(([player_id, metrics]) => [player_names.get(player_id) ?? "Unknown", metrics]))
 
