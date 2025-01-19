@@ -80,6 +80,8 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
             tier_insertions.push(name)
         }
     }
+    // delete tier so it's not visible
+    scores.scorekinds.delete("tier");
 
 
     // generate leaderboard string, make it aligned and pretty
