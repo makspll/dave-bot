@@ -78,6 +78,7 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
         let tier = user_scores.get("tier") || 0;
         if (tier != last_tier) {
             tier_insertions.push(name)
+            last_tier = tier;
         }
     }
     // delete tier so it's not visible
