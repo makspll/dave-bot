@@ -167,7 +167,6 @@ export function generateLeaderboard(scores: LeaderboardScores, sort_by: MetricId
 // the score must be a number and the larger number is treated as a worse score. a 0 is the perfect score
 export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<number>, player_names: Map<number, string>): LeaderboardScores {
     let player_to_metrics: Map<number, Map<MetricId, MetricBody>> = new Map()
-
     for (const [game_id, player_scores] of scores.entries()) {
         let all_player_daily_average = 0
         const day_players_count = [...player_scores.keys()].filter(x => !bot_ids.has(x)).length
@@ -203,13 +202,23 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         }
     }
 
+    let avg_games_count = 0
+    let players = 0
+    for (const [player_id, metrics] of player_to_metrics.entries()) {
+        avg_games_count = avg_games_count + metrics.get("games")!.value
+        players = players + 1
+    }
+    
+    avg_games_count = avg_games_count / players
+
+
     // finalize the metrics
     for (const [player_id, metrics] of player_to_metrics.entries()) {
         let avg = metrics.get("avg")!
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
         let avg_delta = metrics.get("avg_delta")!
-        let tier = games.value >= 15 ? 0 : 1;
+        let tier = games.value > (avg_games_count * 0.8) ? 0 : 1;
         metrics.set("tier", { value: tier, rank: 0 })
         avg.value = avg.value / games.value
         if (games_3_plus.value > 0) {
