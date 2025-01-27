@@ -205,7 +205,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     let avg_games_count = 0
     let players = 0
     for (const [player_id, metrics] of player_to_metrics.entries()) {
-        avg_games_count = avg_games_count + metrics.get("games")
+        avg_games_count = avg_games_count + metrics.get("games")!
         players = players + 1
     }
     
