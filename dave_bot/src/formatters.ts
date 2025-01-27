@@ -205,7 +205,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     let avg_games_count = 0
     let players = 0
     for (const [player_id, metrics] of player_to_metrics.entries()) {
-        avg_games_count = avg_games_count + metrics.get("games")!
+        avg_games_count = avg_games_count + metrics.get("games")!.value
         players = players + 1
     }
     
@@ -218,7 +218,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
         let avg_delta = metrics.get("avg_delta")!
-        let tier = games > (avg_games_count * 0.8) ? 0 : 1;
+        let tier = games.value > (avg_games_count * 0.8) ? 0 : 1;
         metrics.set("tier", { value: tier, rank: 0 })
         avg.value = avg.value / games.value
         if (games_3_plus.value > 0) {
