@@ -100,8 +100,8 @@ export const TRIGGERS: KeywordTrigger[] = [
   },
   {
     "trigger": ["job"],
-    "chance": 0.5,
-    "pos_sent_variations": ["get a job.."],
+    "chance": 0.3,
+    "pos_sent_variations": ["quit your job.."],
     "neg_sent_variations": ["get a new job.."],
     "gpt_prompt": [
       "Tell the previous user that they seriously need to get a job in a very condescending way while being very alloof and in extremely simple language",
