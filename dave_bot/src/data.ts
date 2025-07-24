@@ -130,7 +130,7 @@ export const TRIGGERS: KeywordTrigger[] = [
   },
   {
     "trigger": ["pizza"],
-    "chance": 0.9,
+    "chance": 0.3,
     "pos_sent_variations": ["yeah pizza is great, anyway did you know @Rokas doesn't eat his crusts and is a little man baby?"],
     "neg_sent_variations": ["how dare you, anyway did you know @Rokas doesn't eat his crusts and is a little man baby?"]
   }
