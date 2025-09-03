@@ -13,8 +13,6 @@ rules = [
   ], fallthrough = true },
 ]
 
-[triggers]
-crons = ["0 8 * * *"]
 
 [[d1_databases]]
 binding = "DB"                                       # i.e. available in your Worker on env.DB
