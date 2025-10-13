@@ -495,7 +495,7 @@ export async function fetch_social_score(payload: TelegramMessage, settings: Cha
     const target = await user_from_name(target_name, payload, settings);
 
     const submissions = await get_last_n_game_submissions(settings.db, "social_score", target, 10) ?? []
-    const message = submissions.join("\n")
+    const message = submissions.map((s) => s.submission).join("\n")
     sendMessage({
         api_key: settings.telegram_api_key,
         open_ai_key: settings.openai_api_key,
