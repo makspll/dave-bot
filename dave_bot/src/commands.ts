@@ -476,7 +476,7 @@ export async function social_score_command(payload: TelegramMessage, settings: C
         user_id: target,
         game_type: "social_score",
         submission: `${target_name} ${sign} socialscore ${score}`,
-        submission_date: new Date(moment.now())
+        submission_date: moment.tz('Europe/London').toDate()
     })
 }
 
