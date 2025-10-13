@@ -216,6 +216,13 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
         `, game_id, game_type, user_id).getFirst(db)
 }
 
+export async function get_last_n_game_submissions(db: D1Database, game_type: GameType, user_id: number, limit: number): Promise<GameSubmission[]> {
+    return await new Query<GameSubmission>(`
+        SELECT * FROM game_submissions WHERE game_type = ? AND user_id = ? ORDER BY game_id DESC LIMIT ? 
+        `, game_type, user_id, limit).getMany(db) ?? []
+}
+
+
 export async function get_last_submission_id(db: D1Database, game_type: GameType, user_id: number): Promise<{ max_id: number }> {
     return await new Query<{ max_id: number }>(`
         SELECT MAX(game_id) as max_id FROM game_submissions WHERE game_type = ? AND user_id = ?

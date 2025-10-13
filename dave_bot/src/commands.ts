@@ -5,7 +5,7 @@ import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatte
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendLocation, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
-import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_last_submission_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_last_n_game_submissions, get_last_submission_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
@@ -18,6 +18,7 @@ import { TelegramMessage } from "./types/telegram.js";
 import { UserErrorException } from "./error.js";
 import { merge_queries, scrape_all_queries, scrape_zoopla, send_all_property_alerts, ZooplaQuery } from "./property/scrape.js";
 import { parse_social_score } from "./social_score.js";
+import { escapeMarkdown } from "./markdown.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
@@ -489,6 +490,23 @@ export async function social_score_command(payload: TelegramMessage, settings: C
     })
 }
 
+export async function fetch_social_score(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
+    const target_name = args[0];
+    const target = await user_from_name(target_name, payload, settings);
+
+    const submissions = await get_last_n_game_submissions(settings.db, "social_score", target, 10) ?? []
+    const message = submissions.join("\n")
+    sendMessage({
+        api_key: settings.telegram_api_key,
+        open_ai_key: settings.openai_api_key,
+        payload: {
+            chat_id: payload.message.chat.id,
+            text: message,
+        },
+        audio_chance: 0,
+        delay: 0
+    })
+}
 
 
 type PropertyQueryArgs = [string, string | null, number | null, number | null, number | null, number | null, Date | null, number | null, number | null, number | null]
@@ -517,6 +535,7 @@ export const COMMANDS: Command<any>[] = [
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),
     new Command("socialscore", "Add a new social score entry", new ManyArgs([new StringArg("user", "User to modify"), new NumberArg("value", "The social score value"), new StringArg("reason", "the social reason")]), social_score_command),
+    new Command("listsocialscore", "Lists social score entries for comrade", new ManyArgs([new StringArg("comrade", "User to list last 10 scores for")]), fetch_social_score),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
     new Command("newpropertyquery", "Add a new property query to scrape", property_query_args, new_property_query_command, ["Manage Property Query"]),
