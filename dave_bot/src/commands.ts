@@ -298,12 +298,12 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
             }
 
             if (!use_tiers) {
-                b.scores.entries().forEach(([_, val]) => {
+                for (const [_, val] of b.scores.entries()) {
                     val.set("tier", {
                         value: 0,
                         rank: 0
                     });
-                })
+                }
             }
         }
     })
