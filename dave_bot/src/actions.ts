@@ -11,6 +11,7 @@ import { GameType } from "./types/sql.js"
 import { TelegramMessage, TelegramEmoji } from "./types/telegram.js"
 import { calculate_sentiment, sample, to_words } from "./utils.js"
 import { read_raw_args } from "./argparse.js"
+import { SOCIAL_SCORE_REGEX } from "./social_score.js"
 
 
 export let commands_and_filter_optins: Action = async (message: TelegramMessage, settings: ChatbotSettings) => {
@@ -274,7 +275,7 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     let regex_and_game_types: [RegExp, GameType][] = [
         [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
         [/^Connections\nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
-        [/^Autism Test: (?<game_score>)/, "autism_test"]
+        [/^Autism Test: (?<game_score>)/, "autism_test"],
     ]
 
     for (let [regex, game_type] of regex_and_game_types) {
