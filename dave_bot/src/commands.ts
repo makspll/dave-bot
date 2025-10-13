@@ -493,6 +493,10 @@ export async function social_score_command(payload: TelegramMessage, settings: C
 
     const target = await user_from_name(target_name, payload, settings);
 
+    if (target == payload.message.from.id) {
+        throw new UserErrorException(`Nice try buddy 💩💩`)
+    }
+
     const last_id = (await get_last_submission_id(settings.db, "social_score", target)).max_id
     const sign = "+"
     console.log(`social score against: ${target_name}. adding ${score}, because: ${reason}. last_id: ${last_id} sign: ${sign}`);
