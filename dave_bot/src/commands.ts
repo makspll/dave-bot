@@ -462,9 +462,10 @@ export async function show_user_property_queries(payload: TelegramMessage, setti
     }
 }
 
-export async function social_score_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, number]): Promise<any> {
+export async function social_score_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, number, string]): Promise<any> {
     const target_name = args[0];
     const score = args[1];
+    const reason = args[2];
 
     const target = await user_from_name(target_name, payload, settings);
 
@@ -475,7 +476,7 @@ export async function social_score_command(payload: TelegramMessage, settings: C
         game_id: last_id ?? 0 + 1,
         user_id: target,
         game_type: "social_score",
-        submission: `${target_name} ${sign} socialscore ${score}`,
+        submission: `${target_name} ${sign} socialscore ${score}. ${reason}`,
         submission_date: moment.tz('Europe/London').toDate()
     })
 }
