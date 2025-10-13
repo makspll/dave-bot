@@ -510,7 +510,7 @@ export const COMMANDS: Command<any>[] = [
         new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),
-    new Command("socialscore", "Add a new social score entry", new ManyArgs([new StringArg("user", "User to modify"), new NumberArg("value", "The social score value")]), social_score_command),
+    new Command("socialscore", "Add a new social score entry", new ManyArgs([new StringArg("user", "User to modify"), new NumberArg("value", "The social score value"), new StringArg("reason", "the social reason")]), social_score_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
     new Command("newpropertyquery", "Add a new property query to scrape", property_query_args, new_property_query_command, ["Manage Property Query"]),
