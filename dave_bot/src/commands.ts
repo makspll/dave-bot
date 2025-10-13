@@ -220,6 +220,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     const player_ids_to_names = new Map<number, string>()
     let scores: Scores = new Map();
+    let low_is_good = true;
     submissions.forEach(s => {
         latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
 
@@ -242,9 +243,11 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
                 break
             case "autism_test":
+                low_is_good = false;
                 score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
                 break
             case "social_score":
+                low_is_good = false;
                 score_map.set(s.user_id, parse_social_score(s.submission)?.score ?? 0);
                 break
             default:
@@ -269,7 +272,20 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     }
 
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
-    const low_moji = game_type == 'autism_test' ? '🎉' : '💩'
+    const low_moji = '💩'
+
+    if (!low_is_good) {
+        if (previous_leaderboard) {
+            let previous_avg = previous_leaderboard.scorekinds.get('avg');
+            if (previous_avg) {
+                previous_avg.ascending = false;
+            }
+        }
+        let current_avg = current_leaderboard.scorekinds.get('avg');
+        if (current_avg) {
+            current_avg.ascending = false;
+        }
+    }
     const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}`, previous_leaderboard, low_moji)
 
     await sendMessage({
