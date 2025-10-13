@@ -216,10 +216,10 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
         `, game_id, game_type, user_id).getFirst(db)
 }
 
-export async function get_last_submission_id(db: D1Database, game_type: GameType, user_id: number): Promise<number | null> {
-    return await new Query<number>(`
-        SELECT MAX(game_id) FROM game_submissions WHERE game_type = ? AND user_id = ?
-        `, game_type, user_id).getFirst(db)
+export async function get_last_submission_id(db: D1Database, game_type: GameType, user_id: number): Promise<{ max_id: number }> {
+    return await new Query<{ max_id: number }>(`
+        SELECT MAX(game_id) as max_id FROM game_submissions WHERE game_type = ? AND user_id = ?
+        `, game_type, user_id).getFirst(db) ?? { max_id: 0 }
 }
 
 export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {

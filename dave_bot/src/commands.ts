@@ -468,7 +468,7 @@ export async function social_score_command(payload: TelegramMessage, settings: C
 
     const target = await user_from_name(target_name, payload, settings);
 
-    const last_id = await get_last_submission_id(settings.db, "social_score", target)
+    const last_id = (await get_last_submission_id(settings.db, "social_score", target)).max_id
     const sign = score > 0 ? "+" : "-";
 
     await insert_game_submission(settings.db, {
