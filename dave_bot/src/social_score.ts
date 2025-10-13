@@ -5,7 +5,7 @@ export const SOCIAL_SCORE_REGEX = /(\w+)\s*([+-])\s*socialscore\s*(-?\d+(?:\.\d+
 export function parse_social_score(entry: string): SocialScore | null {
     // the 3rd word
     const regex = SOCIAL_SCORE_REGEX;
-    const match = entry.match(regex);
+    const match = regex.exec(entry);
 
     if (!match) {
         return null
