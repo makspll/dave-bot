@@ -19,6 +19,7 @@ import { UserErrorException } from "./error.js";
 import { merge_queries, scrape_all_queries, scrape_zoopla, send_all_property_alerts, ZooplaQuery } from "./property/scrape.js";
 import { parse_social_score } from "./social_score.js";
 import { escapeMarkdown } from "./markdown.js";
+import { keywords } from "./actions.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
@@ -221,6 +222,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     const player_ids_to_names = new Map<number, string>()
     let scores: Scores = new Map();
     let low_is_good = true;
+    let use_tiers = true;
     submissions.forEach(s => {
         latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
 
@@ -243,10 +245,12 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
                 break
             case "autism_test":
+                use_tiers = false;
                 low_is_good = false;
                 score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
                 break
             case "social_score":
+                use_tiers = false;
                 low_is_good = false;
                 score_map.set(s.user_id, parse_social_score(s.submission)?.score ?? 0);
                 break
@@ -286,6 +290,24 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
             current_avg.ascending = false;
         }
     }
+    [previous_leaderboard, current_leaderboard].forEach((b) => {
+        if (b) {
+            let avg = current_leaderboard.scorekinds.get('avg');
+            if (avg) {
+                avg.ascending = false;
+            }
+
+            if (!use_tiers) {
+                b.scores.entries().forEach(([_, val]) => {
+                    val.set("tier", {
+                        value: 0,
+                        rank: 0
+                    });
+                })
+            }
+        }
+    })
+
     const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}`, previous_leaderboard, low_moji)
 
     await sendMessage({
