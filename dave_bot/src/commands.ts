@@ -464,14 +464,20 @@ export async function show_user_property_queries(payload: TelegramMessage, setti
 
 export async function social_score_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, number, string]): Promise<any> {
     const target_name = args[0];
-    const score = args[1];
+    let score = args[1];
     const reason = args[2];
+
+    if (!score || score > 10 || score < -10) {
+        throw new UserErrorException(`score: ${score} is invalid. Valid scores are numbers between -10 and 10`)
+    }
+
+    score = Math.trunc(score);
 
 
     const target = await user_from_name(target_name, payload, settings);
 
     const last_id = (await get_last_submission_id(settings.db, "social_score", target)).max_id
-    const sign = score > 0 ? "+" : "-";
+    const sign = "+"
     console.log(`social score against: ${target_name}. adding ${score}, because: ${reason}. last_id: ${last_id} sign: ${sign}`);
 
     await insert_game_submission(settings.db, {
