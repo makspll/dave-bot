@@ -12,12 +12,12 @@ export function parse_social_score(entry: string): SocialScore | null {
     }
     const user = match[1];
     const sign = match[2];
-    const score = Number.parseInt(match[3]!);
+    const score = Number.parseInt(match[3]);
     const reason = match[4];
 
     return {
         'user': user,
-        'score': sign == '+' ? + score : - score,
+        'score': sign == '+' ? score : - score,
         'reason': reason
     };
 }
