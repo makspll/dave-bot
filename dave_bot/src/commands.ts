@@ -5,7 +5,7 @@ import { convertDailyScoresToLeaderboard, generateLeaderboard } from "./formatte
 import { call_gpt } from "./openai.js";
 import { chat_from_message, sendLocation, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
-import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
+import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_last_submission_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
 import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
@@ -13,10 +13,11 @@ import { BoolArg, DateArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg 
 import { send } from "process";
 import { Scores } from "./types/formatters.js";
 import { ChatbotSettings } from "./types/settings.js";
-import { GameType, Permission, PropertySnapshot, UserQuery } from "./types/sql.js";
+import { GameType, Permission, PropertySnapshot, User, UserQuery } from "./types/sql.js";
 import { TelegramMessage } from "./types/telegram.js";
 import { UserErrorException } from "./error.js";
 import { merge_queries, scrape_all_queries, scrape_zoopla, send_all_property_alerts, ZooplaQuery } from "./property/scrape.js";
+import { parse_social_score } from "./social_score.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
@@ -118,14 +119,20 @@ export async function info_command(payload: TelegramMessage, settings: ChatbotSe
     await sendCommandMessage(payload, settings, "I am Dave, I am here to help you with your messages, to opt in use /optin, to opt out use /optout.\n If you don't optin I won't process your messages (apart from some commands) but I won't be able to accept game submissions from you either.")
 }
 
-export async function attack_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
-    const target_name = args[0]
+async function user_from_name(target_name: string, payload: TelegramMessage, settings: ChatbotSettings): Promise<number> {
     const users = await get_bot_users_for_chat(settings.db, payload.message.chat.id)
     const target = users.find(x => x.alias == target_name)?.user_id
-    console.log("target: ", target)
+
     if (!target) {
         throw new UserErrorException(`User ${target_name} not found, choose one of: ${users.map(x => x.alias).join(", ")}`)
     }
+
+    return target;
+}
+
+export async function attack_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
+    const target_name = args[0]
+    const target = await user_from_name(target_name, payload, settings);
 
     const is_from_god = payload.message.from.id == settings.god_id
     if (!is_from_god) {
@@ -179,7 +186,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     const now = moment.tz('Europe/London')
     const first_date_this_month = now.clone().startOf('month').toDate()
     console.log("first date this month: ", first_date_this_month)
-    
+
     let first_id: number
     let latest_id: number | undefined = undefined
     console.log("game type: ", game_type)
@@ -191,6 +198,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
             first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
             break
         case "autism_test":
+            first_id = 0
+            break
+        case "social_score":
             first_id = 0
             break
         default:
@@ -232,6 +242,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 break
             case "autism_test":
                 score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
+                break
+            case "social_score":
+                score_map.set(s.user_id, parse_social_score(s.submission)?.score ?? 0);
                 break
             default:
                 console.error("Unknown game type: ", s.game_type)
@@ -311,6 +324,7 @@ export async function wordle_command(payload: TelegramMessage, settings: Chatbot
     await sendCommandMessage(payload, settings, generateWordleShareable(wordle, solution) + '\n')
     return
 }
+
 
 export async function connections_command(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
     let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
@@ -448,11 +462,32 @@ export async function show_user_property_queries(payload: TelegramMessage, setti
     }
 }
 
+export async function social_score_command(payload: TelegramMessage, settings: ChatbotSettings, args: [string, number, string]): Promise<any> {
+    const target_name = args[0];
+    const score = args[1];
+    const reason = args[2];
+
+
+    const target = await user_from_name(target_name, payload, settings);
+
+    const last_id = (await get_last_submission_id(settings.db, "social_score", target)).max_id
+    const sign = score > 0 ? "+" : "-";
+    console.log(`social score against: ${target_name}. adding ${score}, because: ${reason}. last_id: ${last_id} sign: ${sign}`);
+
+    await insert_game_submission(settings.db, {
+        game_id: last_id + 1,
+        user_id: target,
+        game_type: "social_score",
+        submission: `${target_name} ${sign} socialscore ${score}. ${reason}`,
+        submission_date: moment.tz('Europe/London').toDate()
+    })
+}
+
 
 
 type PropertyQueryArgs = [string, string | null, number | null, number | null, number | null, number | null, Date | null, number | null, number | null, number | null]
 const property_query_args = new ManyArgs<PropertyQueryArgs>([
-    new EnumArg("location", "the location to scrape", ["london","edinburgh"]),
+    new EnumArg("location", "the location to scrape", ["london", "edinburgh"]),
     new OptionalArg(new StringArg("query", "The query to filter by, by default this is the location", "q")),
     new OptionalArg(new NumberArg("min_price", "The minimum price to filter by", "min_p")),
     new OptionalArg(new NumberArg("max_price", "The maximum price to filter by", "max_P")),
@@ -471,10 +506,11 @@ export const COMMANDS: Command<any>[] = [
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
     new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
     new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([
-        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test"]),
+        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test", "social_score"]),
         new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),
+    new Command("socialscore", "Add a new social score entry", new ManyArgs([new StringArg("user", "User to modify"), new NumberArg("value", "The social score value"), new StringArg("reason", "the social reason")]), social_score_command),
     new Command("wordle", "Get dave to play today's wordle", new ManyArgs([]), wordle_command),
     new Command("connections", "Get dave to play today's connections", new ManyArgs([]), connections_command),
     new Command("newpropertyquery", "Add a new property query to scrape", property_query_args, new_property_query_command, ["Manage Property Query"]),

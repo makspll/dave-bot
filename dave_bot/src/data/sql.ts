@@ -216,6 +216,12 @@ export async function get_game_submission(db: D1Database, game_id: number, game_
         `, game_id, game_type, user_id).getFirst(db)
 }
 
+export async function get_last_submission_id(db: D1Database, game_type: GameType, user_id: number): Promise<{ max_id: number }> {
+    return await new Query<{ max_id: number }>(`
+        SELECT MAX(game_id) as max_id FROM game_submissions WHERE game_type = ? AND user_id = ?
+        `, game_type, user_id).getFirst(db) ?? { max_id: 0 }
+}
+
 export async function insert_user_property_query(db: D1Database, user: User, query: Partial<UserQuery>): Promise<void> {
     return await new Query(`
         INSERT INTO user_queries (user_id, chat_id, location, query, min_price, max_price, min_bedrooms, max_bedrooms, available_from, target_longitude, target_latitude, search_radius_km) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
@@ -259,7 +265,7 @@ export async function insert_property_snapshots(db: D1Database, snapshots: Prope
     if (snapshots.length == 0) {
         return
     }
-    
+
     return await new QueryBatch(...snapshots.map(s => new Query(`
         INSERT INTO property_snapshots (property_id, location, url, address, price_per_month, longitude, latitude, summary_description, published_on, available_from, num_bedrooms, comma_separated_images) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO UPDATE
@@ -297,7 +303,7 @@ export async function get_properties_matching_query(db: D1Database, query: UserQ
     }
     let all_args = [query.location, query.min_price, query.max_price, query.min_bedrooms, query.max_bedrooms, query.available_from?.toISOString()]
     all_args = all_args.concat(radius_query_args)
-    console.log("all args:",all_args)
+    console.log("all args:", all_args)
     return await new Query<PropertySnapshot>(`
         SELECT * FROM property_snapshots 
         WHERE location = ? AND price_per_month >= ? AND price_per_month <= ? AND num_bedrooms >= ? AND num_bedrooms <= ? AND available_from >= ? ${seen_query} ${radius_query}`,
