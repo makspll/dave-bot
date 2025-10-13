@@ -475,7 +475,7 @@ export async function social_score_command(payload: TelegramMessage, settings: C
     console.log(`social score against: ${target_name}. adding ${score}, because: ${reason}. last_id: ${last_id} sign: ${sign}`);
 
     await insert_game_submission(settings.db, {
-        game_id: last_id ?? 0 + 1,
+        game_id: last_id + 1,
         user_id: target,
         game_type: "social_score",
         submission: `${target_name} ${sign} socialscore ${score}. ${reason}`,
