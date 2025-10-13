@@ -10,12 +10,10 @@ export function parse_social_score(entry: string): SocialScore | null {
     if (!match) {
         return null
     }
-    const user = match[0];
-    const sign = match[1];
-    const score = Number.parseInt(match[2]!);
-    const reason = match[3];
-
-    console.log(`parsed regex: ${JSON.stringify(match)}, user: ${user}, sign: ${sign}, score: ${score}, reason: ${match}`)
+    const user = match[1];
+    const sign = match[2];
+    const score = Number.parseInt(match[3]!);
+    const reason = match[4];
 
     return {
         'user': user,
