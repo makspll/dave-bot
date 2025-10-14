@@ -177,11 +177,13 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
                 player_metrics.set("games", { value: 0, rank: 0 })
                 player_metrics.set("games_3_plus", { value: 0, rank: 0 })
                 player_metrics.set("avg_delta", { value: 0, rank: 0 })
+                player_metrics.set("sum", { value: 0, rank: 0 })
                 player_to_metrics.set(player_id, player_metrics)
             }
             let player_metrics = player_to_metrics.get(player_id)!
 
             player_metrics.get("avg")!.value += score
+            player_metrics.get("sum")!.value += score
             player_metrics.get("games")!.value += 1
             if (day_players_count >= 3) {
                 player_metrics.get("games_3_plus")!.value += 1
@@ -208,13 +210,14 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
         avg_games_count = avg_games_count + metrics.get("games")!.value
         players = players + 1
     }
-    
+
     avg_games_count = avg_games_count / players
 
 
     // finalize the metrics
     for (const [player_id, metrics] of player_to_metrics.entries()) {
         let avg = metrics.get("avg")!
+        let sum = metrics.get("sum")!
         let games = metrics.get("games")!
         let games_3_plus = metrics.get("games_3_plus")!
         let avg_delta = metrics.get("avg_delta")!
@@ -231,6 +234,7 @@ export function convertDailyScoresToLeaderboard(scores: Scores, bot_ids: Set<num
     // generate leaderoard dictionary
     let metric_definitions: Map<MetricId, MetricDefinition> = new Map()
     metric_definitions.set("avg", { title: "Avg", ascending: true })
+    metric_definitions.set("sum", { title: "Sum", ascending: true })
     metric_definitions.set("games", { title: "N", ascending: false })
     metric_definitions.set("avg_delta", { title: "Avg-", ascending: true })
     metric_definitions.set("tier", { title: "Tier", ascending: true })

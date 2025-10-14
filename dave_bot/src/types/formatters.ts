@@ -1,4 +1,4 @@
-export type MetricId = "avg" | "games" | "games_3_plus" | "avg_delta" | "rank" | "tier";
+export type MetricId = "avg" | "games" | "games_3_plus" | "avg_delta" | "rank" | "tier" | "sum";
 
 export type Scores = Map<number, Map<number, number>>;
 

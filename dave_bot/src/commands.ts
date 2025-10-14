@@ -223,6 +223,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     let scores: Scores = new Map();
     let low_is_good = true;
     let use_tiers = true;
+    let use_sum = false;
     submissions.forEach(s => {
         latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
 
@@ -250,6 +251,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
                 break
             case "social_score":
+                use_sum = true;
                 use_tiers = false;
                 low_is_good = false;
                 score_map.set(s.user_id, parse_social_score(s.submission)?.score ?? 0);
@@ -278,37 +280,42 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
     const low_moji = '💩'
 
-    if (!low_is_good) {
-        if (previous_leaderboard) {
-            let previous_avg = previous_leaderboard.scorekinds.get('avg');
-            if (previous_avg) {
-                previous_avg.ascending = false;
-            }
-        }
-        let current_avg = current_leaderboard.scorekinds.get('avg');
-        if (current_avg) {
-            current_avg.ascending = false;
-        }
-    }
-    [previous_leaderboard, current_leaderboard].forEach((b) => {
+    let _ = [previous_leaderboard, current_leaderboard].forEach((b) => {
         if (b) {
-            let avg = current_leaderboard.scorekinds.get('avg');
-            if (avg) {
+            let avg = b.scorekinds.get('avg');
+            let sum = b.scorekinds.get('sum');
+            if (avg && sum && !low_is_good) {
                 avg.ascending = false;
+                sum.ascending = false;
             }
 
-            if (!use_tiers) {
-                for (const [_, val] of b.scores.entries()) {
+            for (const [_, val] of b.scores.entries()) {
+                if (!use_tiers) {
                     val.set("tier", {
                         value: 0,
                         rank: 0
                     });
                 }
+                if (use_sum) {
+                    val.delete("avg")
+                    val.delete("avg_delta")
+                } else {
+                    val.delete("sum")
+                }
+            }
+
+            if (use_sum) {
+                b.scorekinds.delete("avg")
+                b.scorekinds.delete("avg_delta")
+            } else {
+                b.scorekinds.delete("sum")
             }
         }
     })
 
-    const leaderboard = generateLeaderboard(current_leaderboard, "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}`, previous_leaderboard, low_moji)
+
+    const leaderboard = generateLeaderboard(current_leaderboard, use_sum ? "sum" : "avg", `Top ${game_type.charAt(0).toUpperCase() + game_type.slice(1)}`, previous_leaderboard, low_moji)
+
 
     await sendMessage({
         api_key: settings.telegram_api_key,
