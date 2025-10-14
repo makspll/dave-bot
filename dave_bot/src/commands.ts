@@ -537,7 +537,7 @@ export async function social_score_command(payload: TelegramMessage, settings: C
         submission_date: moment.tz('Europe/London').toDate()
     })
 
-    await sendCommandMessage(payload, settings, `Social score update acknowledged 🫡. Adding ${score} social score for ${target_name}`)
+    await sendCommandMessage(payload, settings, `acknowledged 🫡.`)
 }
 
 export async function fetch_social_score(payload: TelegramMessage, settings: ChatbotSettings, args: [string]): Promise<any> {
