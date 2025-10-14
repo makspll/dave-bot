@@ -520,14 +520,13 @@ export async function social_score_command(payload: TelegramMessage, settings: C
     }
 
     const last_id = (await get_last_submission_id(settings.db, "social_score", target)).max_id
-    const sign = "+"
-    console.log(`social score against: ${target_name}. adding ${score}, because: ${reason}. last_id: ${last_id} sign: ${sign}`);
+    console.log(`social score against: ${target_name}. adding ${score}, because: ${reason}. last_id: ${last_id}`);
 
     await insert_game_submission(settings.db, {
         game_id: last_id + 1,
         user_id: target,
         game_type: "social_score",
-        submission: `${target_name} ${sign} socialscore ${score}. ${reason}`,
+        submission: `${target_name} socialscore ${score}. ${reason}`,
         submission_date: moment.tz('Europe/London').toDate()
     })
 
