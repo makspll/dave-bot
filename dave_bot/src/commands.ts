@@ -512,8 +512,9 @@ export async function social_score_command(payload: TelegramMessage, settings: C
     const target_name = args[0];
     let score = args[1];
     const reason = args[2];
-
-    if (!score || score > 10 || score < -10) {
+    const is_from_god = payload.message.from.id == settings.god_id
+    
+    if (!score || ((score > 10 || score < -10) && !is_from_god)) {
         throw new UserErrorException(`score: ${score} is invalid. Valid scores are numbers between -10 and 10`)
     }
 
