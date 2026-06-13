@@ -1,4 +1,4 @@
-import { printDateToNYTGameId } from "@src/utils.js";
+import { printDateToGameId } from "@src/utils.js";
 import { generateConnectionsShareable, parseConnectionsScoreFromShareable, solveConnections } from "../connections.js";
 import { makeMockServer } from "../server.js";
 import { compareMultilineStrings } from "./utils/utils.test.js";
@@ -47,13 +47,13 @@ it('print date calculated correctly for years in the future', async () => {
     let connectionsNumber = 1
 
     while (connectionsNumber < 4000) {
-        let out = printDateToNYTGameId(currentDate, new Date('2023-06-12'))
+        let out = printDateToGameId(currentDate, new Date('2023-06-12'))
         expect(out).toBe(connectionsNumber)
         currentDate.setDate(currentDate.getDate() + 1)
         connectionsNumber++;
     }
 
-    expect(413).toBe(printDateToNYTGameId(new Date('2024-07-28'), new Date('2023-06-12')))
+    expect(413).toBe(printDateToGameId(new Date('2024-07-28'), new Date('2023-06-12')))
 })
 
 

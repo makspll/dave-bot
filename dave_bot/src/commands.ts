@@ -6,7 +6,7 @@ import { call_gpt } from "./openai.js";
 import { chat_from_message, sendLocation, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
 import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_last_n_game_submissions, get_last_submission_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
-import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToNYTGameId } from "./utils.js";
+import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
 import { BoolArg, DateArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
@@ -20,6 +20,8 @@ import { merge_queries, scrape_all_queries, scrape_zoopla, send_all_property_ale
 import { parse_social_score } from "./social_score.js";
 import { escapeMarkdown } from "./markdown.js";
 import { keywords } from "./actions.js";
+import { FIRST_POOPLE_DATE } from "./types/poople.js";
+import { score_from_poople_shareable } from "./poople.js";
 
 export type CommandCallback<T> = (payload: TelegramMessage, settings: ChatbotSettings, args: T) => Promise<any>
 
@@ -194,10 +196,10 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     console.log("game type: ", game_type)
     switch (game_type) {
         case "connections":
-            first_id = printDateToNYTGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
+            first_id = printDateToGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
             break
         case "wordle":
-            first_id = printDateToNYTGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
+            first_id = printDateToGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
             break
         case "autism_test":
             first_id = 0
@@ -205,8 +207,11 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         case "social_score":
             first_id = 0
             break
+        case "poople":
+            first_id = printDateToGameId(first_date_this_month, FIRST_POOPLE_DATE, true)
+            break;
         default:
-            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test")
+            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test, poople")
     }
 
     if (start != null) {
@@ -250,6 +255,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 low_is_good = false;
                 score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
                 break
+            case "poople":
+                use_tiers = false;
+                score_map.set(s.user_id, score_from_poople_shareable(s.submission).score)
             case "social_score":
                 use_sum = true;
                 use_tiers = false;
@@ -332,7 +340,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
 export async function wordle_command(payload: TelegramMessage, settings: ChatbotSettings): Promise<any> {
     const now = moment.tz('Europe/London').toDate()
-    let todays_wordle_no = printDateToNYTGameId(now, FIRST_WORDLE_DATE, true)
+    let todays_wordle_no = printDateToGameId(now, FIRST_WORDLE_DATE, true)
     let bot_user_id = parseInt(settings.telegram_api_key.split(':')[0])
     let previous_score = await get_game_submission(settings.db, todays_wordle_no, "wordle", bot_user_id);
 
@@ -589,7 +597,7 @@ export const COMMANDS: Command<any>[] = [
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
     new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
     new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([
-        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test", "social_score"]),
+        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test", "social_score", "poople"]),
         new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),
