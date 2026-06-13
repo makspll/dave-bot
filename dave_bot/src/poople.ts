@@ -34,7 +34,7 @@ export function score_from_poople_shareable(shareable: string): PoopleScore {
 
     return {
         'poopleNo': number,
-        'score': guesses / best,
+        'score': guesses,
     };
 }
 
