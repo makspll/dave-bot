@@ -1,0 +1,28 @@
+import { getWordleList, getWordleForDay, getAllWordlesBetweenInclusive, calculateLetterProbabilities, makeNextGuess, updateKnowledgeState, ALL_LETTERS, pruneWords, solveWordle, generateWordleShareable, initialKnowledgeState, getHistoricWordleStats, WordleIndices } from '../wordle.js';
+import { makeMockServer } from '../server.js';
+import { WordleWord } from '@src/types/wordle.js';
+import { printDateToGameId as printDateToGameId } from '@src/utils.js';
+import { FIRST_POOPLE_DATE } from '@src/types/poople.js';
+import { score_from_poople_shareable } from '@src/poople.js';
+
+const TEST_TIMEOUT_SECONDS = 120;
+jest.setTimeout(70 * TEST_TIMEOUT_SECONDS)
+
+let server = makeMockServer()
+
+beforeEach(() => {
+    server = makeMockServer();
+    server.listen();
+});
+
+afterEach(() => {
+    server.close();
+});
+
+describe('Poople tests', () => {
+    it('Print date works correctly', async () => {
+        const res = printDateToGameId('303', FIRST_POOPLE_DATE, false);
+        expect(res).toBe(new Date('2026-06-13'))
+    });
+
+});

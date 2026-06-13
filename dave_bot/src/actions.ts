@@ -276,6 +276,7 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
         [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
         [/^Connections\nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
         [/^Autism Test: (?<game_score>)/, "autism_test"],
+        [/^Poople #(?<game_id>\d+) (?<game_score>\d+)\/(?<game_maximum>\d+)/, "poople"]
     ]
 
     for (let [regex, game_type] of regex_and_game_types) {
