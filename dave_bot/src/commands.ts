@@ -210,7 +210,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         case "poople":
             first_id = printDateToGameId(first_date_this_month, FIRST_POOPLE_DATE, true)
         default:
-            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test")
+            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test, poople")
     }
 
     if (start != null) {
