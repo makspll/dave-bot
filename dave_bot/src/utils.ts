@@ -140,7 +140,7 @@ export const GAME_DESCRIPTORS: Record<GameType, GameDescriptor> = {
     low_is_good: false,
     low_emoji: '🧠',
     use_sum: false,
-    regex: /^Anthropeum\.com · (?<game_date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{4})\n.*\n(?<game_score>[\d\s\u00A0]+)\s·\s/
+    regex: /^Anthropeum\.com · (?<game_date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{4})\n.*\n(?<game_score>[\d\s\u00A0,]+)\s·\s/
 }
 };
 
@@ -154,7 +154,7 @@ export function parse_anthropeum_score(s: string): number {
     }
 
     return parseInt(
-        match.groups.game_score.replace(/[\s\u00A0]/g, ""),10
+        match.groups.game_score.replace(/[\s\u00A0,]/g, ""),10
     );
 }
 
