@@ -9,7 +9,7 @@ import { KeywordTrigger } from "./types/data.js"
 import { ChatbotSettings } from "./types/settings.js"
 import { GameType } from "./types/sql.js"
 import { TelegramMessage, TelegramEmoji } from "./types/telegram.js"
-import { calculate_sentiment, sample, to_words } from "./utils.js"
+import { all_game_descriptors, calculate_sentiment, sample, to_words } from "./utils.js"
 import { read_raw_args } from "./argparse.js"
 import { SOCIAL_SCORE_REGEX } from "./social_score.js"
 
@@ -272,18 +272,18 @@ export let nyt_games_submission: Action = async (message: TelegramMessage, setti
     // capture group game_id is required
     // capture group game_score is optional (if present the score is processed via callback, and used for immediate feedback)
     // capture group hard_mode is optional (if present the game is in hard mode)
-    let regex_and_game_types: [RegExp, GameType][] = [
-        [/^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/, "wordle"],
-        [/^Connections\nPuzzle #(?<game_id>[\d,.]+)/, "connections"],
-        [/^Autism Test: (?<game_score>)/, "autism_test"],
-        [/^Poople #(?<game_id>\d+) (?<game_score>\d+)\/(?<game_maximum>\d+)/, "poople"]
-    ]
 
-    for (let [regex, game_type] of regex_and_game_types) {
+
+    for (let [game_type, descriptor] of all_game_descriptors()) {
+        let regex = descriptor.regex;
+        if (!regex)
+            continue
+
         let match = message.message.text.match(regex)
         if (match) {
             console.log("game submission detected for: ", game_type)
-            let game_id = game_type == "autism_test" ? 0 : parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
+
+            let game_id = descriptor.regex_to_id ? descriptor.regex_to_id(match) : parseInt(match.groups!.game_id.replace(/[^\d]/g, ""))
 
             let user = user_from_message(message)
 

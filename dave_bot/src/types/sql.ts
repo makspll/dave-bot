@@ -14,6 +14,20 @@ export interface Chat {
 
 export type GameType = "wordle" | "connections" | "autism_test" | "social_score" | "poople"
 
+
+export type GameDescriptor = {
+    first_id_fn: (first_date_of_month: string | Date) => number,
+    score_function: (submission: string) => number,
+    use_tiers: boolean,
+    low_is_good: boolean,
+    low_emoji: string,
+    use_sum: boolean,
+    regex?: RegExp | undefined,
+    regex_to_score?: (reg: RegExpMatchArray) => number,
+    regex_to_id?: (reg: RegExpMatchArray) => number,
+}
+
+
 // Added in Migration number: 0002
 export interface GameSubmission {
     game_id: number,

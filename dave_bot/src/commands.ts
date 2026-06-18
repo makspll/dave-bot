@@ -6,7 +6,7 @@ import { call_gpt } from "./openai.js";
 import { chat_from_message, sendLocation, sendMessage, setReaction, user_from_message } from "./telegram.js";
 import { generateWordleShareable, getWordleForDay, getWordleList, score_from_wordle_shareable, solveWordle } from "./wordle.js";
 import { delete_user_property_query, get_bot_users_for_chat, get_game_submission, get_game_submissions_since_game_id, get_last_n_game_submissions, get_last_submission_id, get_properties_matching_query, get_user_property_queries, insert_game_submission, insert_user_property_query, isGameType, mark_properties_as_seen, register_consenting_user_and_chat, unregister_user } from "./data/sql.js";
-import { clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, printDateToGameId } from "./utils.js";
+import { all_game_descriptors, clone_score, FIRST_CONNECTIONS_DATE, FIRST_WORDLE_DATE, GAME_DESCRIPTORS, printDateToGameId } from "./utils.js";
 import moment, { tz } from "moment-timezone";
 import { ResponseFormatJSONSchema } from "openai/src/resources/shared.js";
 import { BoolArg, DateArg, EnumArg, ManyArgs, NumberArg, OptionalArg, StringArg } from "./argparse.js";
@@ -191,28 +191,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     const first_date_this_month = now.clone().startOf('month').toDate()
     console.log("first date this month: ", first_date_this_month)
 
-    let first_id: number
+    let first_id: number = GAME_DESCRIPTORS[game_type].first_id_fn(first_date_this_month)
     let latest_id: number | undefined = undefined
     console.log("game type: ", game_type)
-    switch (game_type) {
-        case "connections":
-            first_id = printDateToGameId(first_date_this_month, FIRST_CONNECTIONS_DATE)
-            break
-        case "wordle":
-            first_id = printDateToGameId(first_date_this_month, FIRST_WORDLE_DATE, true)
-            break
-        case "autism_test":
-            first_id = 0
-            break
-        case "social_score":
-            first_id = 0
-            break
-        case "poople":
-            first_id = printDateToGameId(first_date_this_month, FIRST_POOPLE_DATE, true)
-            break;
-        default:
-            throw new UserErrorException("Valid game type required as the first argument: connections, wordle, autism_test, poople")
-    }
 
     if (start != null) {
         first_id = start
@@ -226,9 +207,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
 
     const player_ids_to_names = new Map<number, string>()
     let scores: Scores = new Map();
-    let low_is_good = true;
-    let use_tiers = true;
-    let use_sum = false;
+    let low_is_good =  GAME_DESCRIPTORS[game_type].low_is_good;
+    let use_tiers = GAME_DESCRIPTORS[game_type].use_tiers;
+    let use_sum =  GAME_DESCRIPTORS[game_type].use_sum;
     submissions.forEach(s => {
         latest_id = latest_id == undefined || s.game_id > latest_id ? s.game_id : latest_id
 
@@ -243,32 +224,8 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
         }
 
         player_ids_to_names.set(s.user_id, user_name)
-        switch (s.game_type) {
-            case "connections":
-                score_map.set(s.user_id, parseConnectionsScoreFromShareable(s.submission)!.mistakes)
-                break
-            case "wordle":
-                score_map.set(s.user_id, score_from_wordle_shareable(s.submission).guesses)
-                break
-            case "autism_test":
-                use_tiers = false;
-                low_is_good = false;
-                score_map.set(s.user_id, parseInt(s.submission.split(":")[1].trim()))
-                break
-            case "poople":
-                use_tiers = false;
-                const score_poopple = score_from_poople_shareable(s.submission).score;
-                score_map.set(s.user_id, score_poopple)
-                break
-            case "social_score":
-                use_sum = true;
-                use_tiers = false;
-                low_is_good = false;
-                score_map.set(s.user_id, parse_social_score(s.submission)?.score ?? 0);
-                break
-            default:
-                console.error("Unknown game type: ", s.game_type)
-        }
+        const score_from_game = GAME_DESCRIPTORS[game_type].score_function(s.submission)
+        score_map.set(s.user_id, score_from_game)
 
     })
 
@@ -288,7 +245,7 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
     }
 
     const current_leaderboard = convertDailyScoresToLeaderboard(scores, bot_ids, player_ids_to_names)
-    const low_moji = '💩'
+    const low_moji = GAME_DESCRIPTORS[game_type].low_emoji
 
     let _ = [previous_leaderboard, current_leaderboard].forEach((b) => {
         if (b) {
@@ -599,7 +556,7 @@ export const COMMANDS: Command<any>[] = [
     new Command("optindave", "Opt in Dave himself (he consents)", new ManyArgs([]), optindave_command),
     new Command("attack", "Attack a user with a message", new ManyArgs([new StringArg("user", "Name of the user to attack")]), attack_command),
     new Command("leaderboard", "Get the leaderboard for a game", new ManyArgs([
-        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", ["wordle", "connections", "autism_test", "social_score", "poople"]),
+        new EnumArg<GameType>("game_type", "The game type to get the leaderboard for", all_game_descriptors().map(x => x[0])),
         new OptionalArg(new NumberArg("start", "The first game id to use for the leaderboard (inclusive)", "l")),
         new OptionalArg(new NumberArg("end", "The last game id to use for the leaderboard (inclusive)", "e")),
     ]), leaderboard_command),

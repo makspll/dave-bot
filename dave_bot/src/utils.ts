@@ -1,6 +1,13 @@
 import stringWidth from "string-width";
 import { AFINN } from "./sem.js";
 import { Scores } from "./types/formatters.js";
+import { GameDescriptor, GameType } from "./types/sql.js";
+import { isGameSubmission } from "./data/sql.js";
+import { score_from_poople_shareable } from "./poople.js";
+import { FIRST_POOPLE_DATE } from "./types/poople.js";
+import { parse_social_score } from "./social_score.js";
+import { score_from_wordle_shareable } from "./wordle.js";
+import { parseConnectionsScoreFromShareable } from "./connections.js";
 
 
 export const FIRST_WORDLE_DATE = new Date('2021-06-19')
@@ -69,3 +76,59 @@ export function clone_score(score: Scores) {
     }
     return new_scores
 }
+
+export function all_game_descriptors(): [GameType, GameDescriptor][] {
+    return Object.entries(GAME_DESCRIPTORS) as [GameType, GameDescriptor][];
+}
+
+export const GAME_DESCRIPTORS: Record<GameType, GameDescriptor> = {
+    connections: {
+        first_id_fn: (date) => printDateToGameId(date, FIRST_CONNECTIONS_DATE),
+        score_function: (s) => parseConnectionsScoreFromShareable(s)!.mistakes,
+        use_tiers: false,
+        low_is_good: true,
+        low_emoji: '❌',
+        use_sum: false,
+        regex: /^Connections\nPuzzle #(?<game_id>[\d,.]+)/,
+    },
+
+    wordle: {
+        first_id_fn: (date) => printDateToGameId(date, FIRST_WORDLE_DATE, true),
+        score_function: (s) => score_from_wordle_shareable(s).guesses,
+        use_tiers: false,
+        low_is_good: true,
+        low_emoji: '🟨',
+        use_sum: false,
+        regex: /^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/
+    },
+
+    autism_test: {
+        first_id_fn: (_) => 0,
+        score_function: (s) => parseInt(s.split(":")[1].trim()),
+        use_tiers: false,
+        low_is_good: false,
+        low_emoji: '🧩',
+        use_sum: false,
+        regex: /^Autism Test: (?<game_score>\d+)/,
+        regex_to_id: (r) => 0,
+    },
+
+    social_score: {
+        first_id_fn: (_) => 0,
+        score_function: (s) => parse_social_score(s)?.score ?? 0,
+        use_tiers: false,
+        low_is_good: false,
+        low_emoji: '📈',
+        use_sum: true,
+    },
+
+    poople: {
+        first_id_fn: (date) => printDateToGameId(date, FIRST_POOPLE_DATE, true),
+        score_function: (s) => score_from_poople_shareable(s).score,
+        use_tiers: false,
+        low_is_good: true,
+        low_emoji: '💩',
+        use_sum: false,
+        regex: /^Poople #(?<game_id>\d+) (?<game_score>\d+)\/(?<game_maximum>\d+)/
+    }
+};
