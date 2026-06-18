@@ -140,7 +140,7 @@ export const GAME_DESCRIPTORS: Record<GameType, GameDescriptor> = {
     low_is_good: false,
     low_emoji: '🧠',
     use_sum: false,
-    regex: /^Anthropeum\.com · (?<game_date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{4})\n.*\n(?<game_score>[\d ]+) · top/
+    regex: /^Anthropeum\.com · (?<game_date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{4})\n.*\n(?<game_score>\d+(?:\s*\d+)*)\b/
 }
 };
 
