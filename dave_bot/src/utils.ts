@@ -1,6 +1,14 @@
 import stringWidth from "string-width";
 import { AFINN } from "./sem.js";
 import { Scores } from "./types/formatters.js";
+import { GameDescriptor, GameType } from "./types/sql.js";
+import { isGameSubmission } from "./data/sql.js";
+import { score_from_poople_shareable } from "./poople.js";
+import { FIRST_POOPLE_DATE } from "./types/poople.js";
+import { parse_social_score } from "./social_score.js";
+import { score_from_wordle_shareable } from "./wordle.js";
+import { parseConnectionsScoreFromShareable } from "./connections.js";
+import { FIRST_ANTHROPEUM_DATE } from "./types/anthropeum.js";
 
 
 export const FIRST_WORDLE_DATE = new Date('2021-06-19')
@@ -68,4 +76,104 @@ export function clone_score(score: Scores) {
         new_scores.set(key, new Map([...value]))
     }
     return new_scores
+}
+
+export function all_game_descriptors(): [GameType, GameDescriptor][] {
+    return Object.entries(GAME_DESCRIPTORS) as [GameType, GameDescriptor][];
+}
+
+export const GAME_DESCRIPTORS: Record<GameType, GameDescriptor> = {
+    connections: {
+        first_id_fn: (date) => printDateToGameId(date, FIRST_CONNECTIONS_DATE),
+        score_function: (s) => parseConnectionsScoreFromShareable(s)!.mistakes,
+        use_tiers: false,
+        low_is_good: true,
+        low_emoji: '❌',
+        use_sum: false,
+        regex: /^Connections\nPuzzle #(?<game_id>[\d,.]+)/,
+    },
+
+    wordle: {
+        first_id_fn: (date) => printDateToGameId(date, FIRST_WORDLE_DATE, true),
+        score_function: (s) => score_from_wordle_shareable(s).guesses,
+        use_tiers: false,
+        low_is_good: true,
+        low_emoji: '🟨',
+        use_sum: false,
+        regex: /^Wordle (?<game_id>[\d,\.]+) (?<game_score>[\dX]+\/\d+)(?<hard_mode>\*?)/
+    },
+
+    autism_test: {
+        first_id_fn: (_) => 0,
+        score_function: (s) => parseInt(s.split(":")[1].trim()),
+        use_tiers: false,
+        low_is_good: false,
+        low_emoji: '🧩',
+        use_sum: false,
+        regex: /^Autism Test: (?<game_score>\d+)/,
+        regex_to_id: (r) => 0,
+    },
+
+    social_score: {
+        first_id_fn: (_) => 0,
+        score_function: (s) => parse_social_score(s)?.score ?? 0,
+        use_tiers: false,
+        low_is_good: false,
+        low_emoji: '📈',
+        use_sum: true,
+    },
+
+    poople: {
+        first_id_fn: (date) => printDateToGameId(date, FIRST_POOPLE_DATE, true),
+        score_function: (s) => score_from_poople_shareable(s).score,
+        use_tiers: false,
+        low_is_good: true,
+        low_emoji: '💩',
+        use_sum: false,
+        regex: /^Poople #(?<game_id>\d+) (?<game_score>\d+)\/(?<game_maximum>\d+)/
+    },
+    anthropeum: {
+    first_id_fn: (date) => printDateToGameId(date, FIRST_ANTHROPEUM_DATE, true),
+    score_function: (submission) => parse_anthropeum_score(submission),
+    regex_to_id: (match) => anthropeum_date_to_id(match),
+    use_tiers: false,
+    low_is_good: false,
+    low_emoji: '🧠',
+    use_sum: false,
+    regex: /^Anthropeum\.com · (?<game_date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{4})\n.*\n(?<game_score>[\d\s\u00A0]+)\s·\s/
+}
+};
+
+export function parse_anthropeum_score(s: string): number {
+    const match = s.match(
+        GAME_DESCRIPTORS.anthropeum.regex!
+    );
+
+    if (!match?.groups?.game_score) {
+        throw new Error(`Invalid Anthropeum score: ${s}`);
+    }
+
+    return parseInt(
+        match.groups.game_score.replace(/[\s\u00A0]/g, ""),10
+    );
+}
+
+export function anthropeum_date_to_id(match: RegExpMatchArray): number {
+    const dateStr = match.groups?.game_date;
+
+    if (!dateStr) {
+        throw new Error("Missing Anthropeum game date");
+    }
+
+    const parsed = new Date(Date.parse(dateStr.trim()));
+
+    if (isNaN(parsed.getTime())) {
+        return 0;
+    }
+
+    return printDateToGameId(
+        parsed,
+        FIRST_ANTHROPEUM_DATE,
+        true
+    );
 }
