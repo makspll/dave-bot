@@ -154,8 +154,7 @@ export function parse_anthropeum_score(s: string): number {
     }
 
     return parseInt(
-        match.groups.game_score.replace(/\s/g, ""),
-        10
+        match.groups.game_score.replace(/[\s\u00A0]/g, ""),10
     );
 }
 
