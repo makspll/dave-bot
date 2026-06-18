@@ -21,8 +21,15 @@ afterEach(() => {
 
 describe('Poople tests', () => {
     it('Print date works correctly', async () => {
-        const res = printDateToGameId('303', FIRST_POOPLE_DATE, false);
-        expect(res).toBe(new Date('2026-06-13'))
+        const res = printDateToGameId('2026-06-18', FIRST_POOPLE_DATE, false);
+        expect(res).toBe(308)
     });
+
+    it('Parses score correctly', async () => {
+        const res = score_from_poople_shareable("Poople #303 8/5")
+        expect(res.score).toBe(3)
+        expect(res.poopleNo).toBe(303)
+    });
+
 
 });

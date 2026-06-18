@@ -257,7 +257,9 @@ export async function leaderboard_command(payload: TelegramMessage, settings: Ch
                 break
             case "poople":
                 use_tiers = false;
-                score_map.set(s.user_id, score_from_poople_shareable(s.submission).score)
+                const score_poopple = score_from_poople_shareable(s.submission).score;
+                score_map.set(s.user_id, score_poopple)
+                break
             case "social_score":
                 use_sum = true;
                 use_tiers = false;
