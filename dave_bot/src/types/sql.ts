@@ -12,7 +12,7 @@ export interface Chat {
     alias?: string
 }
 
-export type GameType = "wordle" | "connections" | "autism_test" | "social_score" | "poople"
+export type GameType = "wordle" | "connections" | "autism_test" | "social_score" | "poople" | "anthropeum"
 
 
 export type GameDescriptor = {

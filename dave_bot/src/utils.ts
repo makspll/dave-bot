@@ -8,6 +8,7 @@ import { FIRST_POOPLE_DATE } from "./types/poople.js";
 import { parse_social_score } from "./social_score.js";
 import { score_from_wordle_shareable } from "./wordle.js";
 import { parseConnectionsScoreFromShareable } from "./connections.js";
+import { FIRST_ANTHROPEUM_DATE } from "./types/anthropeum.js";
 
 
 export const FIRST_WORDLE_DATE = new Date('2021-06-19')
@@ -130,5 +131,47 @@ export const GAME_DESCRIPTORS: Record<GameType, GameDescriptor> = {
         low_emoji: '💩',
         use_sum: false,
         regex: /^Poople #(?<game_id>\d+) (?<game_score>\d+)\/(?<game_maximum>\d+)/
-    }
+    },
+    anthropeum: {
+    first_id_fn: (date) => printDateToGameId(date, FIRST_ANTHROPEUM_DATE, true),
+    score_function: (submission) => parse_anthropeum_score(submission),
+    regex_to_id: (match) => anthropeum_date_to_id(match),
+    use_tiers: false,
+    low_is_good: false,
+    low_emoji: '🧠',
+    use_sum: false,
+    regex: /^Anthropeum\.com · (?<game_date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{4})\n.*\n(?<game_score>[\d ]+) · top/
+}
 };
+
+export function parse_anthropeum_score(s: string): number {
+    const match = s.match(
+        GAME_DESCRIPTORS.anthropeum.regex!
+    );
+
+    if (!match?.groups?.game_score) {
+        throw new Error(`Invalid Anthropeum score: ${s}`);
+    }
+
+    return parseInt(match.groups.game_score.replaceAll(" ", ""), 10);
+}
+
+export function anthropeum_date_to_id(match: RegExpMatchArray): number {
+    const dateStr = match.groups?.game_date;
+
+    if (!dateStr) {
+        throw new Error("Missing Anthropeum game date");
+    }
+
+    const parsed = new Date(Date.parse(dateStr.trim()));
+
+    if (isNaN(parsed.getTime())) {
+        return 0;
+    }
+
+    return printDateToGameId(
+        parsed,
+        FIRST_ANTHROPEUM_DATE,
+        true
+    );
+}
