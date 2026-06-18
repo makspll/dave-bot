@@ -153,7 +153,10 @@ export function parse_anthropeum_score(s: string): number {
         throw new Error(`Invalid Anthropeum score: ${s}`);
     }
 
-    return parseInt(match.groups.game_score.replaceAll(" ", ""), 10);
+    return parseInt(
+        match.groups.game_score.replace(/\s/g, ""),
+        10
+    );
 }
 
 export function anthropeum_date_to_id(match: RegExpMatchArray): number {
